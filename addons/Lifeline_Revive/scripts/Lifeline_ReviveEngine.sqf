@@ -692,8 +692,8 @@ if (isServer) then {
 					if (lifeState _x == "INCAPACITATED" && pve == true) then {  
 						[_x] spawn { 
 							params ["_x"];
-							// hint "trigger";
-							sleep (random (Lifeline_ACE_OPFORlimitbleedtime - 60)); 
+							diag_log format ["trigger first gate autokill OPFOR: %1", name _x];
+							sleep (random (Lifeline_ACE_OPFORlimitbleedtime)); 
 							// if (alive _x && lifeState _x == "INCAPACITATED") then {
 							if (alive _x && lifeState _x == "INCAPACITATED" && _x getVariable ["ReviveInProgress",0] != 3) then {
 								[_x, "LifeLine Revive Timer", _x, _x] call ace_common_fnc_setDead;
