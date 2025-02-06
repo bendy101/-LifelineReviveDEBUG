@@ -1001,7 +1001,7 @@ if (isServer) then {
 if (!isServer) then {	
 	//DEBUG
 
-	_diag_textbaby = format [">>>>>>>[0798]>>>>>>>>>>>>>>> REMOTE PLAYER:%1 SCRIPT VERSION: %2 >>>>>>>>>>>>>>>>>>>>>>> loaded HUD loop", name player, _version];
+	_diag_textbaby = format [">>>>>>>[0798]>>>>>>>>>>>>>>> REMOTE PLAYER:%1 SCRIPT VERSION: %2  %3 >>>>>>>>>>>>>>>>>>>>>>> loaded HUD loop", name player, Lifeline_Version, Lifeline_Version_no];
 	[_diag_textbaby] remoteExec ["diag_log", 2];
 	//ENDDEBUG
 	[] spawn {
@@ -1031,7 +1031,7 @@ if (isServer) then {
 		_unitbaby == name player;
 	};
 
-	_diag_textbaby = format [">>>>>>>[0821]>>>>>>>>>>>>>>> Lifeline Revive initialized. HOST: %1 SCRIPT VERSION: %2 >>>>>>>>>>>>>>>>>>>>>>> ", _unitbaby, _version];
+	_diag_textbaby = format [">>>>>>>[0821]>>>>>>>>>>>>>>> Lifeline Revive initialized. HOST: %1 SCRIPT VERSION: %2  %3 >>>>>>>>>>>>>>>>>>>>>>> ", _unitbaby, Lifeline_Version, Lifeline_Version_no];
 	[_diag_textbaby] remoteExec ["diag_log", 2];
 
 	Lifeline_incaps2choose = [];
