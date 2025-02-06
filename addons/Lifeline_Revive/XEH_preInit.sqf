@@ -102,7 +102,7 @@ Lifeline_RevMethod = 2;
 if (Lifeline_ACEcheck_ == true) then {
 	["Lifeline_ACE_Bandage_Method", "LIST",     ["ACE Bandage method",     "1. Default ACE bandaging.\n2. Less Bandages required.\n\n"], "Lifeline Revive", [[1, 2], ["Default ACE bandaging","Less Bandages required"], 1]] call CBA_fnc_addSetting;
 	["Lifeline_ACE_Blackout", "CHECKBOX", ["Disable Unconscious Blackout Screen", "Disable the ACE blackout effect when unconscious\n\n"], "Lifeline Revive", false,true] call CBA_fnc_addSetting;
-	["Lifeline_ACE_OPFORlimitbleedtime", "SLIDER",   ["PVE: Enemy Bleedout Time Limit",   
+	["Lifeline_ACE_OPFORlimitbleedtime", "SLIDER",   ["PVE: Limit Enemy Bleedout Time",   
 	"Workshop missions often require certain number of enemies killed to 
 	complete a task or trigger a script. If you have ACE loaded and 
 	the mission is not designed for ACE, you have to wait sometimes ages 
