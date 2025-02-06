@@ -109,7 +109,7 @@ if (Lifeline_ACEcheck_ == true) then {
 	for enemies to bleedout before the task is triggered.
 	This setting limits bleedout time for enemy with ACE medical.
 	Set to zero to disable.
-	If the mission is PVP, this is bypassed.\n\n"], ["Lifeline Revive","TWEAKS | MISSIONS NOT DESIGNED FOR ACE"], [60, 120, 90, 0],true,{Lifeline_ACE_OPFORlimitbleedtime = round Lifeline_ACE_OPFORlimitbleedtime}] call CBA_fnc_addSetting;
+	If the mission is PVP, this is bypassed.\n\n"], ["Lifeline Revive","TWEAKS | MISSIONS NOT DESIGNED FOR ACE"], [0, 120, 90, 0],true,{Lifeline_ACE_OPFORlimitbleedtime = round Lifeline_ACE_OPFORlimitbleedtime}] call CBA_fnc_addSetting;
 	["Lifeline_ACE_CIVILIANlimitbleedtime", "CHECKBOX", ["Include Civilians for Bleedout Limit Above", "Include Civilians to setting above\n\n"], ["Lifeline Revive","TWEAKS | MISSIONS NOT DESIGNED FOR ACE"], false,true] call CBA_fnc_addSetting;
 	Lifeline_RevMethod = 3;
 	//DEBUG
