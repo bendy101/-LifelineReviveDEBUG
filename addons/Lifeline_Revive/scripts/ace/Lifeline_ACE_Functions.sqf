@@ -287,7 +287,7 @@ params ["_incap", "_medic","_EnemyCloseBy","_voice"];
 				// while {([_medic, _incap, _key1, "FieldDressing"] call ace_medical_treatment_fnc_canBandage)} do {
 				while {(_incap call ace_medical_blood_fnc_isBleeding)} do {
 
-					diag_log "================IS BLEEDING=================";
+					diag_log format ["%1 [0290 ACE_Functions.sqf]================IS BLEEDING==================", name _incap];
 					if (lifestate _incap != "INCAPACITATED") exitWith {diag_log format ["%1 ==== EXIT BANDAGE LOOP (KEY) 1280 ====", name _incap];};
 					if (lifestate _medic == "INCAPACITATED") exitWith {diag_log format ["%1 ==== EXIT MEDIC INCAP BANDAGE LOOP (KEY) 1281", name _incap];}; //with other players healing simultaneously, this can happen
 					//if ([_incap] call ace_medical_status_fnc_isBeingDragged || [_incap] call ace_medical_status_fnc_isBeingCarried) exitWith {diag_log "1627 xxxxxx DRAGGED CARRIED XXXX";};
