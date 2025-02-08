@@ -201,10 +201,10 @@ Lifeline_Incapped = {
 		// waitUntil { isDamageAllowed _unit == dmg_trig};
 		// diag_log format ["%1 | [0839][Lifeline_Functions.sqf] ALLOWDAMAGE SET: %2", name _unit, isDamageAllowed _unit];
 		//ENDDEBUG
-		
-		_unit allowDamage dmg_trig;diag_log format ["%1 | [0170][Lifeline_Functions.sqf] ALLOWDAMAGE SET: %2", name _unit, dmg_trig];
-		// _unit setCaptive true;diag_log format ["%1 | [0170]!!!!!!!!! change var setCaptive = true !!!!!!!!!!!!!", name _unit];//TEMPCAPTIVEOFF
-				
+		if (Lifeline_RevProtect != 3) then {
+			_unit allowDamage dmg_trig;diag_log format ["%1 | [0170][Lifeline_Functions.sqf] ALLOWDAMAGE SET: %2", name _unit, dmg_trig];
+			// _unit setCaptive true;diag_log format ["%1 | [0170]!!!!!!!!! change var setCaptive = true !!!!!!!!!!!!!", name _unit];//TEMPCAPTIVEOFF
+		};		
 			// diag_log format ["%1 [0185] ~~~ captive %2", name _unit, captive _unit];
 		
 		if (Lifeline_RevProtect != 1) then {

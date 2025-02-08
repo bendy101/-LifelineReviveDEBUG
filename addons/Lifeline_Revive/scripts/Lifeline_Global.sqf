@@ -1176,14 +1176,15 @@ Lifeline_StartRevive = {
 
 				if (captive _medic) then {_medic setVariable ["Lifeline_Captive",true,true]} else {_medic setVariable ["Lifeline_Captive",false,true]}; diag_log format ["%1 | [1177]==== UNCONC captive medic: %2 [_Global.sqf]", name _medic, captive _medic];//2025
 
-				
-				if !(local _medic) then {
-					[_medic,dmg_trig] remoteExec ["allowDamage",_medic];diag_log format ["%1 | [1020][Lifeline_Functions.sqf] ALLOWDAMAGE SET: %2", name _medic, dmg_trig];
-					[_medic,cptv_trig] remoteExec ["setCaptive",_medic];diag_log format ["%1 | [1021][Lifeline_Functions.sqf] !!!!!!!!! change var setCaptive = %2 !!!!!!!!!!!!!", name _medic,cptv_trig];
-				} else {
-					_medic allowDamage dmg_trig;diag_log format ["%1 | [1024][Lifeline_Functions.sqf] ALLOWDAMAGE SET: %2", name _medic, dmg_trig];
-					_medic setCaptive cptv_trig;diag_log format ["%1 | [1023][Lifeline_Functions.sqf] !!!!!!!!! change var setCaptive = %2 !!!!!!!!!!!!!", name _medic, cptv_trig];
-				};								
+				if (Lifeline_RevProtect != 3) then {
+					if !(local _medic) then {
+						[_medic,dmg_trig] remoteExec ["allowDamage",_medic];diag_log format ["%1 | [1020][Lifeline_Functions.sqf] ALLOWDAMAGE SET: %2", name _medic, dmg_trig];
+						[_medic,cptv_trig] remoteExec ["setCaptive",_medic];diag_log format ["%1 | [1021][Lifeline_Functions.sqf] !!!!!!!!! change var setCaptive = %2 !!!!!!!!!!!!!", name _medic,cptv_trig];
+					} else {
+						_medic allowDamage dmg_trig;diag_log format ["%1 | [1024][Lifeline_Functions.sqf] ALLOWDAMAGE SET: %2", name _medic, dmg_trig];
+						_medic setCaptive cptv_trig;diag_log format ["%1 | [1023][Lifeline_Functions.sqf] !!!!!!!!! change var setCaptive = %2 !!!!!!!!!!!!!", name _medic, cptv_trig];
+					};
+				};							
 			};
 
 			_linenumber = "0978";

@@ -17,7 +17,7 @@ if (Lifeline_Voices == 3) then { Lifeline_UnitVoices = ["Adam", "Antoni", "Arnol
 
 if (Lifeline_RevProtect == 1) then {dmg_trig=false; cptv_trig=true};
 if (Lifeline_RevProtect == 2) then {dmg_trig=true; cptv_trig=true};
-if (Lifeline_RevProtect == 3) then {dmg_trig=true; cptv_trig=true};//changed for antistasi
+//if (Lifeline_RevProtect == 3) then {dmg_trig=true; cptv_trig=true};//changed for antistasi
 
 if (Lifeline_Revive_debug) then {
 	[] call serverSide_MissionSettings;//just diaglogs
@@ -321,8 +321,7 @@ if (isServer) then {
 
 if (isServer) then {
 	[] spawn {
-		
-		
+				
 		while {true} do {
 			_alldown = true;
 			_autorevive = false;

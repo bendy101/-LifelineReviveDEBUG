@@ -100,8 +100,10 @@
 	_player setVariable ["ReviveInProgress",2,true]; 
 	// _player setcaptive true;
 	// _player allowDamage dmg_trig; diag_log format ["%1 | [0127][Lifeline_PlayerRevive.sqf] ALLOWDAMAGE SET: %2", name _player, isDamageAllowed _player];
-	[_player, dmg_trig] remoteExec ["allowDamage",_player];diag_log format ["%1 | [0127][Lifeline_PlayerRevive.sqf] ALLOWDAMAGE SET: %2", name _player, isDamageAllowed _player];
-	[_player, true] remoteExec ["setCaptive",_player];diag_log format ["%1 [0509]!!!!!!!!! change var setcaptive = true !!!!!!!!!!!!!", name _player]; 	
+	if (Lifeline_RevProtect != 3) then {
+		[_player, dmg_trig] remoteExec ["allowDamage",_player];diag_log format ["%1 | [0127][Lifeline_PlayerRevive.sqf] ALLOWDAMAGE SET: %2", name _player, isDamageAllowed _player];
+		[_player, true] remoteExec ["setCaptive",_player];diag_log format ["%1 [0509]!!!!!!!!! change var setcaptive = true !!!!!!!!!!!!!", name _player]; 	
+	};
 
 	//temporarily clear action menu while reviving	
 	if (Lifeline_RevMethod == 2) then {
