@@ -69,6 +69,16 @@ if (isClass (configFile >> "cfgPatches" >> "ace_medical")) then {
 
 diag_log format ["kkkkkkkkkkkkkkkkkkkkkkkkkkkk ACE DECLARED AGAIN var = %1 kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk", oldACE];
 
+taofoldingmap = 0;
+
+if (isClass (configFile >> "cfgPatches" >> "htfm")) then {
+	taofoldingmap = 1;
+};
+
+if (isClass (configFile >> "cfgPatches" >> "tao_rewrite_main")) then {
+	taofoldingmap = 2;
+};
+
 [] execvm "Lifeline_Revive\init.sqf";
 [] execvm "Lifeline_Revive\initserver.sqf";
 

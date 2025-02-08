@@ -104,7 +104,8 @@ diag_log "======================================================================
 			
 			
 			};		
-		};	//	if (_unit in Lifeline_All_Units)					
+		};	//	if (_unit in Lifeline_All_Units)	
+						
 }] call CBA_fnc_addEventHandler; 
 					
 
@@ -1770,4 +1771,60 @@ if (aceversion >= 19) then {
 		_type = selectRandom["BloodIV","PlasmaIV"];
 		[_unit, "RightArm", _type] call ace_medical_treatment_fnc_ivBagLocal;
 	};
+};
+
+
+//====== ACE Blufor Tracking Limit to GPS device ==
+Lifeline_ACE_BluForTrackingLimit = {
+	diag_log ">>>>>>>>>>>>>>> START BLUFOR LIMITING >>>>>>>>>>>>>>>";
+			Include_cTab = false; // temp
+			while {true} do {
+				// if ((["ace_map_BFT_Enabled", "client"] call CBA_settings_fnc_get) == true && Lifeline_ACE_BluFor == true) then {
+				if ((["ace_map_BFT_Enabled", "client"] call CBA_settings_fnc_get) == true && Lifeline_ACE_BluFor != 0) then {
+					diag_log "check GPS";
+					_hasGPS = false; 
+					if (Lifeline_ACE_BluFor == 1) then {
+						{ 
+							if ((toLower _x) find "gps" > -1 || (toLower _x) find "uavterminal" > -1 || (toLower _x) find "itemandroid" > -1 || (toLower _x) find "microdagr" > -1 ) exitWith { 
+								_hasGPS = true; 
+							}; 
+							if (Include_cTab && (toLower _x) find "ctab" > -1) exitWith {
+								_hasGPS = true; 
+							}; 
+						} forEach (assignedItems player + items player);
+
+						_vehicleGPS = getNumber (configFile >> "CfgVehicles" >> (typeOf vehicle player) >> "enableGPS");
+						if (_vehicleGPS == 1) then {
+								_hasGPS = true; 
+						};
+					};
+					if (Lifeline_ACE_BluFor == 2) then {
+						if (visibleGPS || ace_microdagr_currentShowMode > 0) then {
+							_hasGPS = true; 
+						};
+						if (taofoldingmap == 1) then {
+							if (tao_foldmap_wasOpen && tao_foldmap_alternateDrawPaper == false) then {
+								_hasGPS = true;
+							};
+						};					
+						if (taofoldingmap == 2) then {
+							if (tao_rewrite_main_isOpen && tao_rewrite_main_drawPaper == false) then {
+								_hasGPS = true;
+							};
+						};
+					};
+
+					if (_hasGPS == true) then {
+						ace_map_BFT_Enabled = true;
+					} else {
+						ace_map_BFT_Enabled = false;
+					};
+				};
+				sleep 2;
+			};
+};
+
+if (Lifeline_RevMethod == 3 && !isDedicated && hasInterface) then {
+	diag_log ">>>>>>>>>>>>>BO 1828";
+	[] spawn Lifeline_ACE_BluForTrackingLimit;
 };

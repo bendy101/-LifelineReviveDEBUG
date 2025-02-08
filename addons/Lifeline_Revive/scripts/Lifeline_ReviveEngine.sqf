@@ -177,6 +177,19 @@ if (isServer) then {
 		// ALL PLAYABLE (SLOTS)
 		if (Lifeline_Scope == 3) then {Lifeline_All_Units = allunits select {(side (group _x) == Lifeline_Side) && simulationEnabled _x  && (_x in playableUnits) && rating _x > -2000}};
 
+		//WIP
+		playerSide1 = side group player;//this needs to be updated for dedicated servers.
+		if (Lifeline_ACE_CIVILIANlimitbleedtime == false) then {
+			enemyUnitsJa = allUnits select {
+				[playerSide1, side group _x] call BIS_fnc_sideIsEnemy
+			};
+		} else {
+			enemyUnitsJa = allUnits select {
+				[playerSide1, side group _x] call BIS_fnc_sideIsEnemy || side group _x == CIVILIAN 
+			};
+		};
+
+
 		publicVariable "Lifeline_All_Units";
 		waitUntil {count Lifeline_All_Units >0};
 		Lifelineunitscount = (count Lifeline_All_Units); // added to indicate with a hint when all units are processed below	
@@ -1018,6 +1031,8 @@ if (!isServer) then {
 		}; 
 	};
 };
+
+
 
 
 // ===== SELECTION LOOP ==============================================================
