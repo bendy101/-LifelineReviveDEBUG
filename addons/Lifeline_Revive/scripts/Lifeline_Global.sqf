@@ -134,7 +134,7 @@ params ["_x","_diag_text"];
 					_distcalc = "";
 				};
 				if (_x getVariable ["Lifeline_selfheal_progss",false] == true) then {					
-					_colur2 = "#e9f222"; // yellowy
+					_colur2 = "#faefde"; // yellowy
 				};
 				if (isPlayer _x) then {_underline2 = "underline='1'";};
 				// _medics = _medics + (format ["<t color='%1' %2>", _colur2,_underline2]) + name _x + " " + _distcalc + _tme + "</t>   ";

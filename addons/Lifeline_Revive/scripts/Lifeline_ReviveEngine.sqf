@@ -708,7 +708,8 @@ if (isServer) then {
 							sleep (random (Lifeline_ACE_OPFORlimitbleedtime)); 
 							// if (alive _x && lifeState _x == "INCAPACITATED") then {
 							if (alive _x && lifeState _x == "INCAPACITATED" && _x getVariable ["ReviveInProgress",0] != 3) then {
-								[_x, "LifeLine Revive Timer", _x, _x] call ace_common_fnc_setDead;
+								// [_x, "LifeLine Revive Timer", _x, _x] call ace_common_fnc_setDead;
+								_x setDamage 1;
 								diag_log format ["auto kill OPFOR: %1",name _x];
 								diag_log format ["auto kill OPFOR: %1",name _x];
 								diag_log format ["auto kill OPFOR: %1",name _x];

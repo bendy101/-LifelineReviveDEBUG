@@ -285,7 +285,7 @@ params ["_incap", "_medic","_EnemyCloseBy","_voice"];
 				_key1 = "head";
 
 				// while {([_medic, _incap, _key1, "FieldDressing"] call ace_medical_treatment_fnc_canBandage)} do {
-				while {(_incap call ace_medical_blood_fnc_isBleeding)} do {
+				while {(_incap call ace_medical_blood_fnc_isBleeding) && alive _medic && lifestate _medic != "UNCONSCIOUS"} do {
 
 					diag_log format ["%1 [0290 ACE_Functions.sqf]================IS BLEEDING==================", name _incap];
 					if (lifestate _incap != "INCAPACITATED") exitWith {diag_log format ["%1 ==== EXIT BANDAGE LOOP (KEY) 1280 ====", name _incap];};
@@ -293,7 +293,11 @@ params ["_incap", "_medic","_EnemyCloseBy","_voice"];
 					//if ([_incap] call ace_medical_status_fnc_isBeingDragged || [_incap] call ace_medical_status_fnc_isBeingCarried) exitWith {diag_log "1627 xxxxxx DRAGGED CARRIED XXXX";};
 					if ([_incap] call Lifeline_check_carried_dragged) exitWith {diag_log "1627 xxxxxx DRAGGED CARRIED XXXX";};
 
-					if ([_medic, _incap, _key1, "BasicBandage"] call ace_medical_treatment_fnc_canBandage) then {
+					// if ([_medic, _incap, _key1, "BasicBandage"] call ace_medical_treatment_fnc_canBandage) then {  // NO LONGER WORKS
+					if ([_medic, _incap, _key1, "FieldDressing"] call ace_medical_treatment_fnc_canBandage) then {
+
+						// diag_log format ["%1 [0298 ACE_Functions.sqf]================CAN BANDAGE==================", name _incap];
+						diag_log format ["%1 [0298 ACE_Functions.sqf]==============CAN BANDAGE  key %2 =================", name _incap, _key1];
 
 						_bleedingwounds = [];
 						_other = [];
@@ -333,9 +337,9 @@ params ["_incap", "_medic","_EnemyCloseBy","_voice"];
 							} forEach _wounds;
 						};
 
-						diag_log format ["==============CAN BANDAGE  key %1 =================", _key1];
-						diag_log format ["==============CAN BANDAGE  key %1 =================", _key1];
-						diag_log format ["==============CAN BANDAGE  key %1 =================", _key1];
+						// diag_log format ["==============CAN BANDAGE  key %1 =================", _key1];
+						// diag_log format ["==============CAN BANDAGE  key %1 =================", _key1];
+						// diag_log format ["==============CAN BANDAGE  key %1 =================", _key1];
 						diag_log format ["==============BLEEDING %1", _bleedingwounds];
 
 						//HINT	
@@ -398,7 +402,7 @@ params ["_incap", "_medic","_EnemyCloseBy","_voice"];
 						sleep 0.5;
 						// sleep 1;
 						diag_log "                                                                                         ";							// diag_log format ["kkkkkkkkkkkkkkkkkkkkkkkk |%3|%4| ACE BANDAGE IN PROGRESS %1 DMG %2 KEY %5 VALUE %6", count _value1, damage _incap, name _incap,name _medic,_key1,_value1];
-						diag_log format ["kkkkkkkkkkkkkkkkkkkkkkkk |%3|%4| ACE BANDAGE IN PROGRESS %1 DMG %2 KEY %5 VALUE %6", count _bleedingwounds, damage _incap, name _incap,name _medic,_key1];
+						diag_log format ["kkkkkkkkkkkkkkkkkkkkkkkk |%3|%4| ACE BANDAGE IN PROGRESS %1 DMG %2 KEY %5 ", count _bleedingwounds, damage _incap, name _incap,name _medic,_key1];
 						diag_log "                                                                                         ";
 
 						//added to increase revive time limit on each loop pass
@@ -426,6 +430,8 @@ params ["_incap", "_medic","_EnemyCloseBy","_voice"];
 
 					} else {
 
+						diag_log format ["%1 [0431 ACE_Functions.sqf]================CAN'T BANDAGE. KEY: %2 ==================", name _incap, _key1];
+
 						if (_key1 == "head") exitWith {
 						_key1 = "body";
 						};
@@ -441,6 +447,10 @@ params ["_incap", "_medic","_EnemyCloseBy","_voice"];
 						if (_key1 == "leftarm") exitWith {
 						_key1 = "rightarm";
 						};
+						if (_key1 == "rightarm") exitWith {
+						_key1 = "head";
+						};
+						 sleep 0.2;
 					
 					};	// if can bandage			    
 
