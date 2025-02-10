@@ -1827,6 +1827,11 @@ Lifeline_StartRevive = {
 			_medic disableAI "ANIM";
 		// };
 
+		// convert all vanilla FAKs to ACE medical items for AI units (ACE only does players) 2025. FOR LATER when I add function to take items when bandaged.
+		/* if (Lifeline_RevMethod == 3 && !isPlayer _x) then {  
+			[_x] call ace_common_fnc_replaceRegisteredItems;
+		}; */
+
 		_medic setVariable ["ReviveInProgress",2,true];diag_log format ["%1 [0897]!!!!!!!!! [MEDIC] change var ReviveInProgress = 2 !!!!!!!!!!!!!", name _medic];
 		diag_log format ["%1 uuuuuuuuuuuuuu [0898] [FNC Lifeline_StartRevive] 'ReviveInProgress = 2' ADDED TO MEDIC. test, should be two: %2", name _medic, _medic getVariable ["ReviveInProgress",0]];
 
