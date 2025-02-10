@@ -11,5 +11,5 @@ XEH_postInit.sqf			// part of CBA
 				Lifeline_Functions.sqf | Lifeline_ACE_Functions.sqf
 			
 
-//not loaded for now
+//only for embedded in mission version:
 Lifeline_Initialize.sqf

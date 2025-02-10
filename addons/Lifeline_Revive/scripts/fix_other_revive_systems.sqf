@@ -9,16 +9,7 @@ diag_log "====================================== fix_other_revive_systems.sqf ==
 diag_log "============================================================================================================='"; 
 diag_log "============================================================================================================='"; 
 
-/* if (Lifeline_ACEcheck_ == true) then {
 
-	if (Lifeline_ACE_vanillaFAK) then {
-		diag_log "[fix_other_revive_systems.sqf]++++++++++++++++++++ CONVERT VANILLA FAK TO ACE ITEMS INCL. BLOOD AND SPLINTS ++++++++++++++++++++'";
-		diag_log "[fix_other_revive_systems.sqf]++++++++++++++++++++ CONVERT VANILLA FAK TO ACE ITEMS INCL. BLOOD AND SPLINTS ++++++++++++++++++++'";
-		diag_log "[fix_other_revive_systems.sqf]++++++++++++++++++++ CONVERT VANILLA FAK TO ACE ITEMS INCL. BLOOD AND SPLINTS ++++++++++++++++++++'";
-		[401, ["ACE_morphine","ACE_tourniquet","ACE_quikclot","ACE_elasticBandage","ACE_packingBandage","ACE_epinephrine","ACE_adenosine","ACE_splint","ACE_plasmaIV_500","ACE_CableTie"]] call ace_common_fnc_registerItemReplacement;
-	};
-
-}; */
 
 [] execvm "Lifeline_Revive\scripts\Lifeline_Debugging.sqf"; 
 
