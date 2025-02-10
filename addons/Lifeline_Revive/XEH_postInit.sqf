@@ -9,6 +9,7 @@ diag_log "============================================= XEH_postInit.sqf =======
 diag_log "============================================================================================================='";
 diag_log "============================================================================================================='";
 
+//DEBUG
 /* if (Lifeline_ACEcheck_ == true) then {
 
 	if (Lifeline_ACE_vanillaFAK) then {
@@ -19,6 +20,7 @@ diag_log "======================================================================
 	};
 
 }; */
+//ENDDEBUG
 
 if !(Lifeline_revive_enable) exitWith {diag_log "1. nnnnnnnnnnnnnnnnnnnnnn MOD DISABLED. EXIT. nnnnnnnnnnnnnnnnnnnnnnn'";};
 

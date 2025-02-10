@@ -267,6 +267,7 @@ disabledAI = 0;
 
 if (Lifeline_revive_enable) then {
 
+	//DEBUG
 	/* if (Lifeline_ACEcheck_ == true) then {
 
 		if (Lifeline_ACE_vanillaFAK) then {
@@ -277,6 +278,7 @@ if (Lifeline_revive_enable) then {
 		};
 
 	}; */
+	//ENDDEBUG
 
 	Lifeline_RevSmokeOn = true; // fix this later.
 
