@@ -108,7 +108,7 @@ Debug_reviveinprogress1dmgfalse = true;
 		};
 		
 		diag_log format ["!!!! Lifeline_Revive_debug | %1 !!!!'", Lifeline_Revive_debug];
-		diag_log format ["!!!! Lifeline_ACE_Bandage_Method | %1 !!!!'", Lifeline_ACE_Bandage_Method];
+		
 		diag_log format ["!!!! Lifeline_Idle_Medic_Stop | %1 !!!!'", Lifeline_Idle_Medic_Stop];
 		
 		
