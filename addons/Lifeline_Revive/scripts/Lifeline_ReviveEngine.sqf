@@ -53,6 +53,10 @@ waitUntil {count (allPlayers - entities "HeadlessClient_F") >0};
 _players = allPlayers - entities "HeadlessClient_F";
 Lifeline_Side = side (_players select 0);
 
+//added 2025-02-21 17:24:43 WIP for Opfor
+playerSide1 = side group player; //fix for dedicated
+enemyUnitsJa = allUnits select {[playerSide1, side group _x] call BIS_fnc_sideIsEnemy};
+
 
 // if a teamswitch mission
 if (BI_RespawnDetected in [4,5]) then {
@@ -170,6 +174,7 @@ if (isServer) then {
 		//ENDDEBUG
 		
 		if (Lifeline_Scope == 2) then {Lifeline_All_Units = allunits select {(side (group _x) == Lifeline_Side) && simulationEnabled _x && rating _x > -2000}};
+		// if (Lifeline_Scope == 2) then {Lifeline_All_Units = allunits select {(side (group _x) == Lifeline_Side || [playerSide1, side group _x] call BIS_fnc_sideIsEnemy) && simulationEnabled _x && rating _x > -2000}}; // WIP for opfor
 				
 		// if (Lifeline_Scope == 2) then {Lifeline_All_Units = allunits select {(side (group _x) == Lifeline_Side) && simulationEnabled _x && rating _x > -2000 && ((captive _x == false && _x getVariable ["ReviveInProgress",0] == 0) || (_x getVariable ["ReviveInProgress",0] in [1,2,3]))}};
 		// if (Lifeline_Scope == 2) then {Lifeline_All_Units = allunits select {simulationEnabled _x && rating _x > -2000}}; // TEST FOR OPFOR
