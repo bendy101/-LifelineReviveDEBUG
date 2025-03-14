@@ -722,6 +722,7 @@ if (isServer) then {
 					};  
 				} forEach enemyUnitsJa;  
 				sleep 60;  
+				diag_log "==================================================== 60 sec loop for auto kill opfor";
 			}; 
 		};
 	};
