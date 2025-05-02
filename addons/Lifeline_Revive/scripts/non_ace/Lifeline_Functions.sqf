@@ -17,13 +17,19 @@ Lifeline_Incapped = {
 	// _non_handler is a boolean. if true it means incapped function was called NOT through the damage handler.
 	//DEBUG
 	// _unit setCaptive true;diag_log format ["%1 | [0019]!!!!!!!!! change var setCaptive = true !!!!!!!!!!!!!", name _unit];//TEMPCAPTIVEOFF
-	// [_unit, true] remoteExec ["setCaptive",_unit];diag_log format ["%1 | [0020]!!!!!!!!! change var setCaptive = true !!!!!!!!!!!!!", name _unit];	
+	// [_unit, true] remoteExec ["setCaptive",0];diag_log format ["%1 | [0020]!!!!!!!!! change var setCaptive = true !!!!!!!!!!!!!", name _unit];	
 	// diag_log format ["%1 [0022] ~~~ captive %2", name _unit, captive _unit];
 	//ENDDEBUG
 
-	if (captive _unit) then {_unit setVariable ["Lifeline_Captive",true,true]} else {_unit setVariable ["Lifeline_Captive",false,true]}; diag_log format ["%1 | [0024]==== UNCONC captive: %2", name _unit, captive _unit];//2025
-	
-	_unit setCaptive true;diag_log format ["%1 | [0024 FNC \Lifeline_Incapped\ Lifeline_Functions.sqf]!!!!!!!!! change var setCaptive = true !!!!!!!!!!!!!", name _unit];	
+	_unit setUnconscious true; //MOVED TO TOP OF FUNCTION
+	[_unit, true] remoteExec ["setUnconscious",0]; //MOVED TO TOP OF FUNCTION
+
+	// store captive status (for missions with 'undercover' mode). Only if unit is not a medic at ReviveInProgress = 1 or 2 because it will be captive already
+	if (_unit getVariable ["ReviveInProgress",0] == 0 && _unit getVariable ["Lifeline_RevProtect",0] != 3) then { 
+		_unit setVariable ["Lifeline_Captive",(captive _unit),true]; diag_log format ["%1 | [0024 FNC Lifeline_Incapped _Functions.sqf !!!!!!!!! change var Lifeline_Captive = %2 !!!!!!!!!!!!!", name _unit, captive _unit];//2025
+	};
+	// _unit setCaptive true;diag_log format ["%1 | [0024 FNC Lifeline_Incapped _Functions.sqf]!!!!!!!!! change var setCaptive = true !!!!! ReviveInProgress: %2 !!!!!!!!", name _unit, _unit getVariable ["ReviveInProgress",0]];
+	[_unit, true] remoteExec ["setCaptive", 0];	diag_log format ["%1 | [0032 FNC Lifeline_Incapped _Functions.sqf]!!!!!!!!! change var setCaptive = true !!!!! ReviveInProgress: %2 !!!!!!!!", name _unit, _unit getVariable ["ReviveInProgress",0]];
 
 	Lifeline_incapacitated pushBackUnique _unit;
 	publicVariable "Lifeline_incapacitated";
@@ -39,8 +45,8 @@ Lifeline_Incapped = {
 	_unit spawn {
 		params ["_unit"];
 		moveOut _unit;
-		[_unit, "UnconsciousReviveArms_A"] remoteExec ["PlayMoveNow", _unit];
-		[_unit, "Unconscious"] remoteExec ["PlayMove", _unit];
+		[_unit, "UnconsciousReviveArms_A"] remoteExec ["PlayMoveNow", 0];
+		[_unit, "Unconscious"] remoteExec ["PlayMove", 0];
 			// diag_log format ["%1 [0037] ~~~ captive %2", name _unit, captive _unit];
 	};
 	//DEBUG
@@ -56,8 +62,8 @@ Lifeline_Incapped = {
 
 	_unit setVariable ["LifelineBleedOutTime", _BleedOut, true]; diag_log format ["%1 [035 Lifeline_Incapped]!!!!!!!!! change var LifelinePairTimeOut = (time + Lifeline_BleedOutTime) FIRST TIME (%2) !!!!!!!!!!!!!", name _unit,_BleedOut];
 	_unit setVariable ["Lifeline_Down",true,true];
-	// _unit setUnconscious true;
-	[_unit, true] remoteExec ["setUnconscious",0]; //TEMPOFF
+	// _unit setUnconscious true; //MOVED TO TOP OF FUNCTION
+	// [_unit, true] remoteExec ["setUnconscious",0]; //MOVED TO TOP OF FUNCTION
 	_unit setVariable ["Lifeline_selfheal_progss",false,true]; //clear var if it was in middle of self healing
 	
 		// diag_log format ["%1 [0056] ~~~ captive %2", name _unit, captive _unit];
@@ -105,10 +111,10 @@ Lifeline_Incapped = {
 			// moved here, start countdown display, or distance medic.
 			if ((Lifeline_HUD_distance == true || Lifeline_cntdwn_disply != 0) && isPlayer _unit) then {
 				_seconds = Lifeline_cntdwn_disply;
-				if (lifeState _unit == "INCAPACITATED" && !(_unit getVariable ["Lifeline_countdown_start",false]) && Lifeline_cntdwn_disply != 0 && Lifeline_RevMethod != 3 && Lifeline_HUD_distance == false) then {
-					_unit setVariable ["Lifeline_countdown_start",true,true];
-					[[_unit,_seconds], Lifeline_countdown_timer2] remoteExec ["spawn",_unit, true];
-				}; 
+				// if (lifeState _unit == "INCAPACITATED" && !(_unit getVariable ["Lifeline_countdown_start",false]) && Lifeline_cntdwn_disply != 0 && Lifeline_RevMethod != 3 && Lifeline_HUD_distance == false) then {
+				// 	_unit setVariable ["Lifeline_countdown_start",true,true];
+				// 	[[_unit,_seconds], Lifeline_countdown_timer2] remoteExec ["spawn",_unit, true];
+				// }; 
 				if (lifeState _unit == "INCAPACITATED" && !(_unit getVariable ["Lifeline_countdown_start",false])) then {
 					_unit setVariable ["Lifeline_countdown_start",true,true];
 					[[_unit,_seconds], Lifeline_countdown_timer2] remoteExec ["spawn",_unit, true];
@@ -130,8 +136,8 @@ Lifeline_Incapped = {
 		/* _secount = 5;
 		while {_secount > 0} do {
 			if (captive _unit == false) then {
-				_unit setCaptive true;diag_log format ["%1 | [0124 Lifeline_Functions.sqf Lifeline_Incapped SPAWN]!!!!!!!!! change var setCaptive = true !!!!!!!!!!!!!", name _unit];
-				// [_unit, true] remoteExec ["setCaptive",_unit];diag_log format ["%1 | [0127 Lifeline_Functions.sqf Lifeline_Incapped SPAWN]!!!!!!!!! change var setCaptive = true !!!!!!!!!!!!!", name _unit];
+				_unit setCaptive true;diag_log format ["%1 | [0124 _Functions.sqf Lifeline_Incapped SPAWN]!!!!!!!!! change var setCaptive = true !!!!!!!!!!!!!", name _unit];
+				// [_unit, true] remoteExec ["setCaptive",0];diag_log format ["%1 | [0127 _Functions.sqf Lifeline_Incapped SPAWN]!!!!!!!!! change var setCaptive = true !!!!!!!!!!!!!", name _unit];
 			};
 			sleep 1; diag_log format ["%1 [0140 COUNT] ~~~ captive %2 COUNT %3", name _unit, captive _unit,_secount];
 		_secount = _secount - 1;
@@ -147,8 +153,8 @@ Lifeline_Incapped = {
 		if (Lifeline_BandageLimit == 1) then {
 			_randanim = selectRandom["Default_A", "Default_B", "Default_C", "Head_A", "Head_B", "Head_C", "Body_A", "Body_B", "Arms_A", "Arms_B", "Arms_C", "Legs_A", "Legs_B"];
 			_randanim = "UnconsciousRevive" + _randanim;			
-			[_unit, _randanim] remoteExec ["PlayMoveNow", _unit];
-			[_unit, "UnconsciousFaceUp"] remoteExec ["PlayMove", _unit];			
+			[_unit, _randanim] remoteExec ["PlayMoveNow", 0];
+			[_unit, "UnconsciousFaceUp"] remoteExec ["PlayMove", 0];			
 		};		
 		
 			// diag_log format ["%1 [0131] ~~~ captive %2", name _unit, captive _unit];
@@ -163,15 +169,18 @@ Lifeline_Incapped = {
 			// diag_log format ["%1 [0139] ~~~ captive %2", name _unit, captive _unit];
 
 			_quadstored = _unit getVariable ["quadstored",false];
-			
-			diag_log format ["%2 |!!!!!!!!!!!!!! QUAD STORED BABY %1 !!!!!!!!!!!!!!!!", _quadstored,name _unit];
+			if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
+				diag_log format ["%2 |!!!!!!!!!!!!!! QUAD STORED BABY %1 !!!!!!!!!!!!!!!!", _quadstored,name _unit];
+			};
 
 			_unitwounds = _unit getVariable "unitwounds";
 			_bandges = count(_unitwounds);
 			_firstwound = _unitwounds select (_bandges -1) select 0;
 			
-			diag_log format ["%2 |!!!!!!!!!!!!!! UNITWOUNDS BABY %1 !!!!!!!!!!!!!!!!", _unitwounds,name _unit];
-			diag_log format ["%2 |!!!!!!!!!!!!!! FIRST WOUND BABY %1 !!!!!!!!!!!!!!!!", _firstwound,name _unit];
+			if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
+				diag_log format ["%2 |!!!!!!!!!!!!!! UNITWOUNDS BABY %1 !!!!!!!!!!!!!!!!", _unitwounds,name _unit];
+				diag_log format ["%2 |!!!!!!!!!!!!!! FIRST WOUND BABY %1 !!!!!!!!!!!!!!!!", _firstwound,name _unit];
+			};
 
 			if (_quadstored <=2) then {
 				//anim by most damaged body part
@@ -190,8 +199,8 @@ Lifeline_Incapped = {
 		
 		diag_log format ["%1 | !!!!!!!!!!!!!!!!!!!!!!!!!! RAND ANIM %2 !!!!!!!!!!!!!!!", name _unit, _randanim];
 
-		[_unit, _randanim] remoteExec ["PlayMoveNow", _unit];							//HERE
-		[_unit, "UnconsciousFaceUp"] remoteExec ["PlayMove", _unit];
+		[_unit, _randanim] remoteExec ["PlayMoveNow", 0];							//HERE
+		[_unit, "UnconsciousFaceUp"] remoteExec ["PlayMove", 0];
 		
 			// diag_log format ["%1 [0172] ~~~ captive %2", name _unit, captive _unit];
 	
@@ -199,15 +208,32 @@ Lifeline_Incapped = {
 		//DEBUG
 		// [_unit,dmg_trig] remoteExec ["allowDamage",_unit];
 		// waitUntil { isDamageAllowed _unit == dmg_trig};
-		// diag_log format ["%1 | [0839][Lifeline_Functions.sqf] ALLOWDAMAGE SET: %2", name _unit, isDamageAllowed _unit];
+		// diag_log format ["%1 | [0839][_Functions.sqf] ALLOWDAMAGE SET: %2", name _unit, isDamageAllowed _unit];
 		//ENDDEBUG
+
+		// new updated 
+		_dmg_trig = dmg_trig;
+		_opfor_not_pvp = false;
+		// if its only PVE and not PVP, and OPFOR is included, then turn off indestructible for OPFOR while reviving.
+		if (Lifeline_Include_OPFOR && Lifeline_PVPstatus == false && ((side group _unit) in Lifeline_OPFOR_Sides)) then {
+			diag_log "GATELBERYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY";
+			_dmg_trig = true;
+			_opfor_not_pvp = true;
+		};
+
+		diag_log format ["%1 | Lifeline_Include_OPFOR %2 Lifeline_PVPstatus %3 Right Side? %5 Lifeline_OPFOR_Sides %6 !!!!!!!!!!!!!!!!!!!!!!!!!!! DMTG TRIG %4 !!!!!!!!!!!!!!!", 
+		name _unit, Lifeline_Include_OPFOR, Lifeline_PVPstatus, _dmg_trig, (side group _unit) in Lifeline_OPFOR_Sides, Lifeline_OPFOR_Sides];
+
+
+
 		if (Lifeline_RevProtect != 3) then {
-			_unit allowDamage dmg_trig;diag_log format ["%1 | [0170][Lifeline_Functions.sqf] ALLOWDAMAGE SET: %2", name _unit, dmg_trig];
+			_unit allowDamage dmg_trig;//diag_log format ["%1 | [0170][_Functions.sqf] ALLOWDAMAGE SET: %2", name _unit, dmg_trig];
+			[_unit, _dmg_trig] remoteExec ["allowDamage", 0];diag_log format ["%1 | [0170][_Functions.sqf] ALLOWDAMAGE SET: %2", name _unit, _dmg_trig];
 			// _unit setCaptive true;diag_log format ["%1 | [0170]!!!!!!!!! change var setCaptive = true !!!!!!!!!!!!!", name _unit];//TEMPCAPTIVEOFF
 		};		
 			// diag_log format ["%1 [0185] ~~~ captive %2", name _unit, captive _unit];
 		
-		if (Lifeline_RevProtect != 1) then {
+		if (Lifeline_RevProtect != 1 || _opfor_not_pvp) then {
 		_unit setVariable ["Lifeline_allowdeath",true,true];
 		diag_log "!!!!!!!!!!!!!!!! ALLOW DEATH !!!!!!!!!!!!!!!!!";
 		};
@@ -235,7 +261,7 @@ Lifeline_calcbandages = {
 	params ["_unit","_dmg_unit"];
 
 	//DEBUG
-	if (Lifeline_Revive_debug) then {
+	if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
 		// _diagtext = " ";if !(local _unit) then {[_diagtext] remoteExec ["diag_log", 2];} else {diag_log _diagtext};
 		_diagtext = format ["%1 TRACE !!!!!!!!!!!!!!!!!!! [0008] Lifeline_calcbandages !!!!!!!!!!!!!!!!!!!! _dmg_unit %2 captive %3", name _unit, _dmg_unit, captive _unit];if !(local _unit) then {[_diagtext+" REMOTE"] remoteExec ["diag_log", 2];} else {diag_log _diagtext};
 		// _diagtext = " ";if !(local _unit) then {[_diagtext] remoteExec ["diag_log", 2];} else {diag_log _diagtext};
@@ -247,9 +273,11 @@ Lifeline_calcbandages = {
 		// _dmg_unit = selectRandom [0.998,Lifeline_IncapThres + 0.05];
 		// _dmg_unit = Lifeline_IncapThres + 0.05;
 		_dmg_unit = 0.998;
-		diag_log format ["%1 |============================== Lifeline_calcbandages RECTIFY _dmg_unit <= Lifeline_IncapThres | new DMG: %2 ====================================", name _unit, _dmg_unit];
-		diag_log format ["%1 |============================== Lifeline_calcbandages RECTIFY _dmg_unit <= Lifeline_IncapThres | new DMG: %2 ====================================", name _unit, _dmg_unit];
-		diag_log format ["%1 |============================== Lifeline_calcbandages RECTIFY _dmg_unit <= Lifeline_IncapThres | new DMG: %2 ====================================", name _unit, _dmg_unit];
+		if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
+			diag_log format ["%1 |============================== Lifeline_calcbandages RECTIFY _dmg_unit <= Lifeline_IncapThres | new DMG: %2 ====================================", name _unit, _dmg_unit];
+			diag_log format ["%1 |============================== Lifeline_calcbandages RECTIFY _dmg_unit <= Lifeline_IncapThres | new DMG: %2 ====================================", name _unit, _dmg_unit];
+			diag_log format ["%1 |============================== Lifeline_calcbandages RECTIFY _dmg_unit <= Lifeline_IncapThres | new DMG: %2 ====================================", name _unit, _dmg_unit];
+		};
 		//DEBUG
 		if (Lifeline_Revive_debug && Lifeline_debug_soundalert) then {
 			[
@@ -290,31 +318,37 @@ Lifeline_calcbandages = {
 
 	//get damage from body parts for bandage distribution
 	_face = _unit getHitPointDamage "hitface";_neck = _unit getHitPointDamage "hitneck";_head = _unit getHitPointDamage "hithead";_pelvis = _unit getHitPointDamage "hitpelvis";_abdomen = _unit getHitPointDamage "hitabdomen";_diaphrm = _unit getHitPointDamage "hitdiaphragm";_chest = _unit getHitPointDamage "hitchest";_body = _unit getHitPointDamage "hitbody";_arms = _unit getHitPointDamage "hitarms";_hands = _unit getHitPointDamage "hithands";_legs = _unit getHitPointDamage "hitlegs";_incap = _unit getHitPointDamage "incapacitated"; 
-	diag_log " ";
-	diag_log format ["%13 |GETHITPD    ===== FACE %1 NECK %2 HEAD %3 PELVIS %4 ABDOMEN %5 DIAPHRM %6 CHEST %7 BODY %8 ARMS %9 HANDS %10 LEGS %11 INCAP %12",_face,_neck,_head,_pelvis,_abdomen,_diaphrm,_chest,_body,_arms,_hands,_legs,_incap,name _unit];	
-	diag_log " ";
+	if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
+		diag_log " ";
+		diag_log format ["%13 |GETHITPD    ===== FACE %1 NECK %2 HEAD %3 PELVIS %4 ABDOMEN %5 DIAPHRM %6 CHEST %7 BODY %8 ARMS %9 HANDS %10 LEGS %11 INCAP %12",_face,_neck,_head,_pelvis,_abdomen,_diaphrm,_chest,_body,_arms,_hands,_legs,_incap,name _unit];	
+		diag_log " ";
+	};
 
 	_headGHPD = _face max _neck max _head;
 	_torsoGHPD = _pelvis max _abdomen max _diaphrm max _chest max _body;
 	_armsGHPD = _hands max _arms;
 	_legsGHPD = _legs;
-	diag_log format ["%5 |[076] getHitPD      ===== headGHPD %1 torsoGHPD %2 armsGHPD %3 legsGHPD %4", _headGHPD, _torsoGHPD, _armsGHPD, _legsGHPD,name _unit];
-
+	if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
+	  diag_log format ["%5 |[076] getHitPD      ===== headGHPD %1 torsoGHPD %2 armsGHPD %3 legsGHPD %4", _headGHPD, _torsoGHPD, _armsGHPD, _legsGHPD,name _unit];
+	};
 	// TEMP CALULATION. instead of max calc like above, add similar body parts (ie add _pelvis + _abdomen). Might not be accurate, but might be useful.
 	_headGHPDtemp = _face + _neck + _head;
 	_torsoGHPDtemp = _pelvis + _abdomen + _diaphrm + _chest + _body;
 	_armsGHPDtemp = _hands + _arms;
 	_legsGHPDtemp = _legs;
-	diag_log format ["%5 [076]getHitPD ADDED ===== headGHPD %1 torsoGHPD %2 armsGHPD %3 legsGHPD %4", _headGHPDtemp, _torsoGHPDtemp, _armsGHPDtemp, _legsGHPDtemp,name _unit];
-
+	if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
+	 diag_log format ["%5 [076]getHitPD ADDED ===== headGHPD %1 torsoGHPD %2 armsGHPD %3 legsGHPD %4", _headGHPDtemp, _torsoGHPDtemp, _armsGHPDtemp, _legsGHPDtemp,name _unit];
+	};
 	// ========when explosion
 	_otherdamage = _unit getVariable ["otherdamage",0];
 	// _preventdeath = _unit getVariable ["preventdeath",false];
 	_explosion = false;
 	//DEBUG
-	if (_otherdamage > 0) then {
-		diag_log format ["%1 |!!!!!!!!!!!!!!!! CHECK INDIRECT DAMAGE %1 !!!!!!!!!!!!!!!!!!", _otherdamage,name _unit];
-		diag_log format ["%1 |!!!!!!!!!!!!!!!! CHECK INDIRECT DAMAGE %1 !!!!!!!!!!!!!!!!!!", _otherdamage,name _unit];
+	if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
+		if (_otherdamage > 0) then {
+			diag_log format ["%1 |!!!!!!!!!!!!!!!! CHECK INDIRECT DAMAGE %1 !!!!!!!!!!!!!!!!!!", _otherdamage,name _unit];
+			diag_log format ["%1 |!!!!!!!!!!!!!!!! CHECK INDIRECT DAMAGE %1 !!!!!!!!!!!!!!!!!!", _otherdamage,name _unit];
+		};
 	};
 	//ENDDEBUG
 
@@ -335,10 +369,12 @@ Lifeline_calcbandages = {
 		_armsGHPD = _armsGHPD + selectRandom[0,1];
 		_legsGHPD = _legsGHPD + selectRandom[0,1];
 		_explosion = true;
-		diag_log format ["%1 ************** MUST BE EXPLOSION **************. OTHER DAMAGE: %2'", name _unit, _otherdamage];
-		diag_log format ["%1 ************** MUST BE EXPLOSION **************. OTHER DAMAGE: %2", name _unit, _otherdamage];
-		diag_log format ["%1 ************** MUST BE EXPLOSION **************. OTHER DAMAGE: %2", name _unit, _otherdamage];
-		diag_log format ["%1 ************** MUST BE EXPLOSION **************. OTHER DAMAGE: %2", name _unit, _otherdamage];
+		if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
+			diag_log format ["%1 ************** MUST BE EXPLOSION **************. OTHER DAMAGE: %2'", name _unit, _otherdamage];
+			diag_log format ["%1 ************** MUST BE EXPLOSION **************. OTHER DAMAGE: %2", name _unit, _otherdamage];
+			diag_log format ["%1 ************** MUST BE EXPLOSION **************. OTHER DAMAGE: %2", name _unit, _otherdamage];
+			diag_log format ["%1 ************** MUST BE EXPLOSION **************. OTHER DAMAGE: %2", name _unit, _otherdamage];
+		};
 	};
 
 	if (_headGHPD >= .998) then {_headGHPD = 1};
@@ -346,8 +382,10 @@ Lifeline_calcbandages = {
 	if (_armsGHPD >= .998) then {_armsGHPD = 1};
 	if (_legsGHPD >= .998) then {_legsGHPD = 1};
 
-	diag_log format ["%2 | ====TOT %1",(damage _unit), name _unit];
-	diag_log format ["%5 |[115] getHitPD    ===== headGHPD %1 torsoGHPD %2 armsGHPD %3 legsGHPD %4", _headGHPD, _torsoGHPD, _armsGHPD, _legsGHPD,name _unit];
+	if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
+		diag_log format ["%2 | ====TOT %1",(damage _unit), name _unit];
+		diag_log format ["%5 |[115] getHitPD    ===== headGHPD %1 torsoGHPD %2 armsGHPD %3 legsGHPD %4", _headGHPD, _torsoGHPD, _armsGHPD, _legsGHPD,name _unit];
+	};
 
 	//============================================================================================================
 
@@ -357,13 +395,19 @@ Lifeline_calcbandages = {
 	//if only arms and legs are hit then reduce damage
 	// if (_headGHPD < 0.4 && _torsoGHPD < 0.4 && _dmg_unit > 0.9) then {
 	if (_headGHPD < 0.998 && _torsoGHPD < 0.998 && _dmg_unit > 0.9) then {
-		diag_log format ["%1 | ====LEGS OR ARMS ONLY====", name _unit];
+		_armlegswitch = true;
+
+		if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
+		 diag_log format ["%1 | ====LEGS OR ARMS ONLY====", name _unit];
+		 diag_log format ["%1 |================== before limit dmg ====== _dmg_unit %2 ==================",name _unit, _dmg_unit];
+		};
+
 		// _dmg_unit =  _dmg_unit * selectRandom[0.7,0.75,0.8,0.85]; 
 		_dmg_unit = _dmg_unit min ( ((0.998 - Lifeline_IncapThres)/2)+Lifeline_IncapThres); // limit damage to no more than half range above Lifeline_IncapThres
-		diag_log format ["%1 |======================== _dmg_unit %2 ==================",name _unit, _dmg_unit];
 		// _dmg_unit = ( ((0.998 - Lifeline_IncapThres)/3.5)+ Lifeline_IncapThres); // limit damage to no more than half range above Lifeline_IncapThres
-		_armlegswitch = true;
-		diag_log format ["%1 |======================== _dmg_unit %2 ==================",name _unit, _dmg_unit];
+		if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
+		 diag_log format ["%1 |================== after limit dmg ====== _dmg_unit %2 ==================",name _unit, _dmg_unit];
+		};
 	};
 	//============================================================================================================
 
@@ -386,8 +430,9 @@ Lifeline_calcbandages = {
 	_damagesubstr = _damagesubstr + 0.000001; //added a tiny fraction - sometimes the calculation is a fraction off due to rounding errors. This fixes it.
 
 	//=========================================================================================
-
-	diag_log format ["Lifeline_IncapThres %1 _dmg_unit %2 _dmg_uncon %3 _unc_range %4 _per_bandage %5 _bandage_no %6 _damagesubstr %7", Lifeline_IncapThres,_dmg_unit,_dmg_uncon,_unc_range,_per_bandage,_bandage_no,_damagesubstr];
+    if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
+	 diag_log format ["Lifeline_IncapThres %1 _dmg_unit %2 _dmg_uncon %3 _unc_range %4 _per_bandage %5 _bandage_no %6 _damagesubstr %7", Lifeline_IncapThres,_dmg_unit,_dmg_uncon,_unc_range,_per_bandage,_bandage_no,_damagesubstr];
+	};
 
 	//if only arms / legs are hit and bandages calculated are more than bullet hits then reduce bandages to number of bullet hits.
 	//DEBUG
@@ -399,10 +444,14 @@ Lifeline_calcbandages = {
 	if (_headGHPD < 0.998 && _torsoGHPD < 0.998 && _armlegswitch == false && ((_bandage_no > _bullethits && _bullethits > 0)) ) then { // better calculation. e.g. 5 shots sometimes only have 1 bandage, but its still minor damage.
 		if (_bullethits > Lifeline_BandageLimit) then {
 			_bandage_no = Lifeline_BandageLimit;
-			diag_log format ["%1 | ====MATCH TO BULLETS==== bullets: %3 |_bandage_no = Lifeline_BandageLimit| bandage no %2", name _unit,_bandage_no,_bullethits];
+			if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
+			  diag_log format ["%1 | ====MATCH TO BULLETS==== bullets: %3 |_bandage_no = Lifeline_BandageLimit| bandage no %2", name _unit,_bandage_no,_bullethits];
+			};
 		} else {
 			_bandage_no = _bullethits;
-			diag_log format ["%1 | ====MATCH TO BULLETS==== bullets: %3 |_bandage_no = _bullethits| bandage no %2", name _unit,_bandage_no,_bullethits];
+			if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
+			  diag_log format ["%1 | ====MATCH TO BULLETS==== bullets: %3 |_bandage_no = _bullethits| bandage no %2", name _unit,_bandage_no,_bullethits];
+			};
 		};
 	};
 
@@ -436,7 +485,9 @@ Lifeline_calcbandages = {
 	// _dmg_total_array = [[_headGHPD, "head"], [_torsoGHPD, "tors"], [_armsGHPD, "arms"], [_legsGHPD, "legs"]]; 
 	_dmg_total_array = [[_headGHPD, "Head:"], [_torsoGHPD, "Torso:"], [_armsGHPD, "Arm:"], [_legsGHPD, "Leg:"]]; 
 	_dmg_total_array sort false;
-	diag_log format ["%3 | [643]=============== DAMAGE %1 ============= no bandages %2", _dmg_total_array, _bandage_no, name _unit]; 
+	if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
+		diag_log format ["%3 | [643]=============== DAMAGE %1 ============= no bandages %2", _dmg_total_array, _bandage_no, name _unit]; 
+	};
 
 	 // Loop through the array and accumulate the number of bandages
 	_bandg_total = 0;
@@ -444,13 +495,15 @@ Lifeline_calcbandages = {
 
 	//test diff sorting methods
 	_bandg_total_array sort false;
-	diag_log format ["%3 | [651]============= BANDAGES %1 ============= TOTAL %2", _bandg_total_array, _bandg_total, name _unit]; 
+	if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {		
+		diag_log format ["%3 | [651]============= BANDAGES %1 ============= TOTAL %2", _bandg_total_array, _bandg_total, name _unit]; 
+	};
 	// _bandg_total_array = [_bandg_total_array, [], {_x select 2}, "DESCEND"] call BIS_fnc_sortBy;
 	// diag_log format ["============= BANDAGES %1 ============= TOTAL %2", _bandg_total_array, _bandg_total]; 
 
 	//sometimes after distributing bandages, there are fractions and they throw off total number. This checks difference
-	_diff = _bandg_total - _bandage_no; diag_log format ["%2 |====== DIFF %1", _diff, name _unit];
-
+	_diff = _bandg_total - _bandage_no; 
+	if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {diag_log format ["%2 |====== DIFF %1", _diff, name _unit];};
 	//this just checks if there are 3 body parts in a row with same number of bandages, or 2 in a row. This is so distributing bandages can be even.
 	_threeeven = false; _twoeven = false;
 	if (count _bandg_total_array >=2) then {
@@ -493,7 +546,9 @@ Lifeline_calcbandages = {
 	if (_diff !=0 ) then {
 		_bandg_total = 0;
 		{_bandg_total = _bandg_total + (_x select 0);} forEach _bandg_total_array;
-		diag_log format ["%3 |============= BANDAGES %1 ============= TOTAL %2", _bandg_total_array, _bandg_total, name _unit]; 
+		if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
+			diag_log format ["%3 |============= BANDAGES %1 ============= TOTAL %2", _bandg_total_array, _bandg_total, name _unit]; 
+		};
 	};
 	//============================================================
 
@@ -513,15 +568,16 @@ Lifeline_bandage_text = {
 	params ["_bandage_no", "_unit", "_bandg_total_array", "_cpr", "_non_handler"];
 
 	//DEBUG
-	if (Lifeline_Revive_debug) then {
+	if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
 		// _diagtext = " ";if !(local _unit) then {[_diagtext] remoteExec ["diag_log", 2];} else {diag_log _diagtext};
 		_diagtext = format ["%1 TRACE !!!!!!!!!!!!!!!!!!! [0324] Lifeline_bandage_text !!!!!!!!!!!!!!!!!!!! _bandage_no %2 _cpr %3 _non_handler %4 captive %5", name _unit, _bandage_no, _cpr, _non_handler, captive _unit];if !(local _unit) then {[_diagtext+" REMOTE"] remoteExec ["diag_log", 2];} else {diag_log _diagtext};
 		// _diagtext = " ";if !(local _unit) then {[_diagtext] remoteExec ["diag_log", 2];} else {diag_log _diagtext};
 	};
 	//ENDDEBUG
-	
-	diag_log format ["%3 |bandage_text============= BANDAGES %1 ============= TOTAL %2", _bandg_total_array, _bandage_no, name _unit]; 
-//DEBUG
+	if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
+	  diag_log format ["%3 |bandage_text============= BANDAGES %1 ============= TOTAL %2", _bandg_total_array, _bandage_no, name _unit]; 
+	};
+	//DEBUG
 	//choices of colour for revive action menu - TO DECIDE FINAL PALLETE LATER
 	_pallet01 = ["E34234","E6615B","E8816F","E9927A"];
 	_pallet02 = ["F94545","F45F57","EE7868","E9927A"];// red to soft red
@@ -694,7 +750,7 @@ Lifeline_bandage_addAction = {
 	params ["_unit","_non_handler"];
 	
 	//DEBUG
-	if (Lifeline_Revive_debug) then {
+	if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
 		// _diagtext = " ";if !(local _unit) then {[_diagtext] remoteExec ["diag_log", 2];} else {diag_log _diagtext};
 		_diagtext = format ["%1 TRACE !!!!!!!!!!!!!!!!!!! [0499] Lifeline_bandage_addAction !!!!!!!!!!!!!!!!!!!! _non_handler %2 captive %3", name _unit, _non_handler, captive _unit];if !(local _unit) then {[_diagtext+" REMOTE"] remoteExec ["diag_log", 2];} else {diag_log _diagtext};
 		// _diagtext = " ";if !(local _unit) then {[_diagtext] remoteExec ["diag_log", 2];} else {diag_log _diagtext};
@@ -702,17 +758,22 @@ Lifeline_bandage_addAction = {
 	//ENDDEBUG
 
 	_dmgyo = damage _unit;
-	diag_log format ["%1 | 858 ==== Lifeline_bandage_addAction dmg %2", name _unit, _dmgyo];
+	if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
+		diag_log format ["%1 | 858 ==== Lifeline_bandage_addAction dmg %2", name _unit, _dmgyo];
+	};
 	_calcbandages = [_unit,_dmgyo] call Lifeline_calcbandages;
 	_bandageno = _calcbandages select 0;											
 	_damagesubstr = _calcbandages select 2;
 	_bandg_total_array = _calcbandages select 3;
 	_bandage_no = _bandageno; // this is just temp due to laziness 
 
-	diag_log "                                                                                      ";
-	diag_log format ["kkkkkkkkkkkkkkkkkkkk|%1| CALC BANDAGE %2 | DMG UNIT %3 | SUBTR %4 | SUBTR.DEDUCT %6 count %5 kkkkkkkkkkkkkkkkkkkkkkkkkkk", name _unit, _bandageno, damage _unit, _damagesubstr,  _unit getVariable ["DHcount",0], damage _unit / _bandage_no];
-	diag_log format ["kkkkkkkkkkkkkkkkkkkk|%1| CALC BANDAGE %2 | DMG UNIT %3 | SUBTR %4 | SUBTR.DEDUCT %6 count %5 kkkkkkkkkkkkkkkkkkkkkkkkkkk", name _unit, _bandageno, damage _unit, _damagesubstr,  _unit getVariable ["DHcount",0], damage _unit / _bandage_no];
-	diag_log "                                                                                      ";
+	if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
+		diag_log "                                                                                      ";
+		diag_log format ["kkkkkkkkkkkkkkkkkkkk|%1| CALC BANDAGE %2 | DMG UNIT %3 | SUBTR %4 | SUBTR.DEDUCT %6 count %5 kkkkkkkkkkkkkkkkkkkkkkkkkkk", name _unit, _bandageno, damage _unit, _damagesubstr,  _unit getVariable ["DHcount",0], damage _unit / _bandage_no];
+		diag_log format ["kkkkkkkkkkkkkkkkkkkk|%1| CALC BANDAGE %2 | DMG UNIT %3 | SUBTR %4 | SUBTR.DEDUCT %6 count %5 kkkkkkkkkkkkkkkkkkkkkkkkkkk", name _unit, _bandageno, damage _unit, _damagesubstr,  _unit getVariable ["DHcount",0], damage _unit / _bandage_no];
+		diag_log "                                                                                      ";
+	};
+
 	_unit setVariable ["damagesubstr", _damagesubstr, true];
 
 	
@@ -726,7 +787,9 @@ Lifeline_bandage_addAction = {
 		_randomNumber = 100 //save CPU maybe? probably not lol.
 		} else {
 		_randomNumber = floor (random 101);
-		diag_log format ["CPR ROLL DICE random number %1. %2 ", _randomNumber, if (_randomNumber <= Lifeline_CPR_likelihood) then {"SUCCESS"} else {"FAIL"}];
+		if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
+			diag_log format ["CPR ROLL DICE random number %1. %2 ", _randomNumber, if (_randomNumber <= Lifeline_CPR_likelihood) then {"SUCCESS"} else {"FAIL"}];
+		};
 	};		
 	
 	//DEBUG
@@ -738,7 +801,7 @@ Lifeline_bandage_addAction = {
 		// if (damage _unit >= 0.998) then {		// for testing									
 			_cpr = true;
 			//turn of autorevive
-			_unit setVariable ["Lifeline_autoRecover",false,true];	diag_log format ["%1 [0662]!!!!!!!!! change var Lifeline_autoRecover = false !!!!!!!!!!!!!", name _unit];
+			_unit setVariable ["Lifeline_autoRecover",false,true];	diag_log format ["%1 [0801]!!!!!!!!! change var Lifeline_autoRecover = false !!!!!!!!!!!!!", name _unit];
 			if (Lifeline_CPR_less_bleedouttime != 100) then {
 				_bleedouttime = _unit getVariable ["LifelineBleedOutTime", 0];
 				// _bleedouttime = _bleedouttime - (Lifeline_BleedOutTime / 3);
@@ -759,11 +822,11 @@ Lifeline_bandage_addAction = {
 	// moved here, start display
 	if ((Lifeline_HUD_distance == true || Lifeline_cntdwn_disply != 0) && isPlayer _unit) then {
 		_seconds = Lifeline_cntdwn_disply;
-		if (lifeState _unit == "INCAPACITATED" && !(_unit getVariable ["Lifeline_countdown_start",false]) 
-			&& Lifeline_cntdwn_disply != 0 && Lifeline_RevMethod != 3 && Lifeline_HUD_distance == false) then {
-			_unit setVariable ["Lifeline_countdown_start",true,true];
-			[[_unit,_seconds], Lifeline_countdown_timer2] remoteExec ["spawn",_unit, true];
-		}; 
+		// if (lifeState _unit == "INCAPACITATED" && !(_unit getVariable ["Lifeline_countdown_start",false]) 
+		// 	&& Lifeline_cntdwn_disply != 0 && Lifeline_RevMethod != 3 && Lifeline_HUD_distance == false) then {
+		// 	_unit setVariable ["Lifeline_countdown_start",true,true];
+		// 	[[_unit,_seconds], Lifeline_countdown_timer2] remoteExec ["spawn",_unit, true];
+		// }; 
 		if (lifeState _unit == "INCAPACITATED" && !(_unit getVariable ["Lifeline_countdown_start",false])) then {
 			_unit setVariable ["Lifeline_countdown_start",true,true];
 			[[_unit,_seconds], Lifeline_countdown_timer2] remoteExec ["spawn",_unit, true];
@@ -775,13 +838,11 @@ Lifeline_bandage_addAction = {
 
 	[_unit] call Lifeline_text_addAction;
 
-	diag_log format ["%1 |=================================JJ CALC BANDAGES %2 =================================", name _unit, _bandage_no];
+	if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
+		diag_log format ["%1 |=================================JJ CALC BANDAGES %2 =================================", name _unit, _bandage_no];
+		diag_log format ["%1 |===================================JJ BULLET HITS %2 =================================", name _unit, (_unit getVariable ["Lifeline_bullethits",0])];
+	};
 
-	diag_log format ["%1 |===================================JJ BULLET HITS %2 =================================", name _unit, (_unit getVariable ["Lifeline_bullethits",0])];
-	// diag_log " ";
-	// diag_log " ";
-	// diag_log " ";
-	// diag_log " ";
 };
 
 
@@ -790,7 +851,7 @@ Lifeline_text_addAction = {
 	params["_unit"];
 	
 	//DEBUG
-	if (Lifeline_Revive_debug) then {
+	if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
 		// _diagtext = " ";if !(local _unit) then {[_diagtext] remoteExec ["diag_log", 2];} else {diag_log _diagtext};
 		_diagtext = format ["%1 TRACE !!!!!!!!!!!!!!!!!!! [0553] Lifeline_text_addAction !!!!!!!!!!!!!!!!!!!! captive %2", name _unit, captive _unit];if !(local _unit) then {[_diagtext+" REMOTE"] remoteExec ["diag_log", 2];} else {diag_log _diagtext};
 		// _diagtext = " ";if !(local _unit) then {[_diagtext] remoteExec ["diag_log", 2];} else {diag_log _diagtext};
@@ -803,15 +864,19 @@ Lifeline_text_addAction = {
 	_text = _unit getVariable "unitwounds" select (_bandageno -1) select 0;
 	_colour = _unit getVariable "unitwounds" select (_bandageno -1) select 1;
 	
-	diag_log format ["%2 |==== UNIT WOUND ARRAY %1 no wounds %3 ====[361] local: %4", _unitwounds, name _unit, _bandageno, name player];
+	if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
+		diag_log format ["%2 |==== UNIT WOUND ARRAY %1 no wounds %3 ====[361] local: %4", _unitwounds, name _unit, _bandageno, name player];
+	};
 
 	if (_text != "CRITICAL: Perform CPR") then {
 	_text = format ["%1       ..%2", _text, _bandageno];
 	};
 
 	// diag_log format ["500====BANDAGE VAR CHECK _var: %1 setVariable: %2", _bandageno, _unit getVariable ["num_bandages",false]];
-																					
-	diag_log format ["%1 !!!!!!!!!! Lifeline_RevActionAdded %2", name _unit, (_unit getVariable ['Lifeline_RevActionAdded',false])];
+	if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {																				
+		diag_log format ["%1 !!!!!!!!!! Lifeline_RevActionAdded %2", name _unit, (_unit getVariable ['Lifeline_RevActionAdded',false])];
+	};
+
 
 		// === OLD METHOD IF. Using "" to replace action menu when not used.
 	if !(_unit getVariable ["Lifeline_RevActionAdded",false]) then { 
@@ -822,7 +887,7 @@ Lifeline_text_addAction = {
 					_unit setVariable ["Lifeline_ActionMenuWounds",_actionId,true];
 				}] remoteExec ["call", 0, true];
 			//DEBUG
-			if (Lifeline_Revive_debug) then {			
+			if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {				
 				// _diagtext = " ";if !(local _unit) then {[_diagtext] remoteExec ["diag_log", 2];} else {diag_log _diagtext};
 				_diagtext = format ["%1 TRACE !!!!!!!!!!!!!!!!!!! [0590] Lifeline_RevActionAdded [addAction] !!!!!!!!!!!!!!!!!!!! captive %2", name _unit,captive _unit];if !(local _unit) then {[_diagtext] remoteExec ["diag_log", 2];} else {diag_log _diagtext};
 				// _diagtext = " ";if !(local _unit) then {[_diagtext] remoteExec ["diag_log", 2];} else {diag_log _diagtext};
@@ -834,7 +899,7 @@ Lifeline_text_addAction = {
 				_unit setUserActionText [_actionId, format ["<t size='%3' color='#%1'>%2</t>",_colour,_text, Lifeline_textsize]];
 				}] remoteExec ["call", 0, true];
 			//DEBUG
-			if (Lifeline_Revive_debug) then {
+			if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {		
 				// _diagtext = " ";if !(local _unit) then {[_diagtext] remoteExec ["diag_log", 2];} else {diag_log _diagtext};
 				_diagtext = format ["%1 TRACE !!!!!!!!!!!!!!!!!!! [0600] Lifeline_RevActionAdded [setUserActionText] !!!!!!!!!!!!!!!!!!!! captive %2", name _unit, captive _unit];if !(local _unit) then {[_diagtext+" REMOTE"] remoteExec ["diag_log", 2];} else {diag_log _diagtext};
 				// _diagtext = " ";if !(local _unit) then {[_diagtext] remoteExec ["diag_log", 2];} else {diag_log _diagtext};
@@ -873,6 +938,17 @@ Lifeline_Medic_Anim_and_Revive = {
 		_pairtimebaby = "LifelinePairTimeOut";			
 		_exit = false;		
 
+		// too lazt to make this a passed on param
+		_opforpve = false;
+		if (Lifeline_PVPstatus == false && Lifeline_Include_OPFOR == true && (side group _medic) in Lifeline_OPFOR_Sides) then {
+			_opforpve = true;
+		};
+
+		if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {		
+			diag_log format ["%1 | %2 [0900] _Functions.sqf ++++++++++++++++++++++++++++++++++++++++++++++++++++++ _opforpve %3", name _incap, name _medic, _opforpve];
+		};
+
+
 		if (lifestate _incap == "INCAPACITATED") then {
 
 					if (Lifeline_RevMethod == 1 || Lifeline_BandageLimit == 1) then {
@@ -886,7 +962,9 @@ Lifeline_Medic_Anim_and_Revive = {
 					if (_bandages == 0 && Lifeline_RevMethod == 2 && Lifeline_BandageLimit > 1) then {
 						_count = 7;
 						while {_count > 0} do {
-						diag_log format ["%1 | %2 uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu NO BANDAGE WAIT %3 uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu", name _incap, name _medic, _count];	
+						if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {		
+						 diag_log format ["%1 | %2 uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu NO BANDAGE WAIT %3 uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu", name _incap, name _medic, _count];	
+						};
 						_incap setVariable [_pairtimebaby, (_incap getvariable _pairtimebaby) + 1, true]; // add 5 seconds to incap revivetimer
 						_medic setVariable [_pairtimebaby, (_medic getvariable _pairtimebaby) + 1, true]; // add 5 seconds to medic revivetimer
 						_incap setVariable [_bleedoutbaby, (_incap getvariable _bleedoutbaby) + 1, true];  
@@ -900,21 +978,29 @@ Lifeline_Medic_Anim_and_Revive = {
 					if (_exit == true) exitWith {
 						// if (Lifeline_debug_soundalert) then {["siren1"] remoteExec ["playSound",2]};
 						hintsilent format ["NO BANDAGE DATA: %1\nEXIT BEFORE BANDAGE ANIM", name _incap];
-						diag_log format ["%1 | %2 uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu NO BANDAGE DATA: EXIT uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu", name _incap, name _medic];	
+						if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {		
+						 diag_log format ["%1 | %2 uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu NO BANDAGE DATA: EXIT uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu", name _incap, name _medic];	
+						};
 					};
 
 					// _damagesubtract = _incap getVariable "damagesubstr"; // IS THIS FUCKING RIGHT? THE DAMAGE TO SUBRACT SHOULD JUST BE TOTAL DAMAGE DIVIDED BY TOTAL BANDAGES
 					_damagesubtract = damage _incap / _bandages;
 					
-					diag_log format ["%3 | 1371====BANDAGE VAR CHECK _var: %1 setVariable: %2", _bandages, _incap getVariable ["num_bandages",false], name _incap];
+					if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {		
+						diag_log format ["%3 | 1371====BANDAGE VAR CHECK _var: %1 setVariable: %2", _bandages, _incap getVariable ["num_bandages",false], name _incap];
+					};
 
 					_switch = 0;
-					diag_log format ["kkkkkkkkkkkkk|%6|%7|  START- BANDAGE %1 | DMG %2 | SUBTR %3 kkkkkkkkkkkkkkkkkkkkkkkkkkk", _bandages, damage _incap, _damagesubtract, _incap, _medic, name _incap, name _medic];
+					if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {
+						diag_log format ["kkkkkkkkkkkkk|%6|%7|  START- BANDAGE %1 | DMG %2 | SUBTR %3 kkkkkkkkkkkkkkkkkkkkkkkkkkk", _bandages, damage _incap, _damagesubtract, _incap, _medic, name _incap, name _medic];
+					};
 					
 					_unitwounds =  _incap getVariable ["unitwounds",[]];
-					diag_log format ["%2 | TEXT | UNIT WOUND ARRAY %1 count _unitwounds %3 _bandages %4 ====[851]", _unitwounds, name _incap, count _unitwounds, _bandages];
-					// [format ["%2 | TEXT | UNIT WOUND ARRAY %1 count _unitwounds %3 _bandages %4 ====[851]", _unitwounds, name _incap, count _unitwounds, _bandages]] remoteExec ["diag_log", 2];
 
+					if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {
+					 diag_log format ["%2 | TEXT | UNIT WOUND ARRAY %1 count _unitwounds %3 _bandages %4 ====[851]", _unitwounds, name _incap, count _unitwounds, _bandages];
+					 // [format ["%2 | TEXT | UNIT WOUND ARRAY %1 count _unitwounds %3 _bandages %4 ====[851]", _unitwounds, name _incap, count _unitwounds, _bandages]] remoteExec ["diag_log", 2];
+					};
 
 					//=====================================================================================================
 
@@ -933,9 +1019,11 @@ Lifeline_Medic_Anim_and_Revive = {
 
 
 					// ================= BANDAGE ACTION LOOP ===============================================================
-					diag_log format ["%1 | %2 | uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu", name _incap, name _medic];
-					diag_log format ["%1 | %2 | uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu BANDAGE ACTION LOOP uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu", name _incap, name _medic];
-					diag_log format ["%1 | %2 | uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu", name _incap, name _medic];
+					if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {
+					 diag_log format ["%1 | %2 | uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu", name _incap, name _medic];
+					 diag_log format ["%1 | %2 | uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu BANDAGE ACTION LOOP uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu", name _incap, name _medic];
+					 diag_log format ["%1 | %2 | uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu", name _incap, name _medic];
+					};
 					_firstimetrigg = false; // TEMP FOR NEW ANIMATION
 					// _tempswitch = false;
 
@@ -953,9 +1041,11 @@ Lifeline_Medic_Anim_and_Revive = {
 
 						if (lifestate _medic == "INCAPACITATED" || !(alive _medic)) exitWith {diag_log format ["==== 2030 EXIT MEDIC INCAP %1", lifestate _incap];};
 						if (lifestate _incap != "INCAPACITATED" || !(alive _incap)) exitWith {diag_log format ["==== 2031 EXIT INCAP DEAD OR REVIVED %1", lifestate _incap];};
-									
-						diag_log format ["====|%3|%4| BANDAGE IN PROGRESS %1 DMG %2", _bandages, damage _incap, name _incap,name _medic];
-						diag_log format ["====|%2|%3| BANDAGE WOUNDS: %1", _unitwounds, name _incap,name _medic];
+
+						if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {			
+							diag_log format ["====|%3|%4| BANDAGE IN PROGRESS %1 DMG %2", _bandages, damage _incap, name _incap,name _medic];
+							diag_log format ["====|%2|%3| BANDAGE WOUNDS: %1", _unitwounds, name _incap,name _medic];
+						};
 
 						//============== ADD MORE TIMER. added to increase revive time limit on each loop pass ==============================================================================
 						_timelimitincap = (_incap getvariable _pairtimebaby);
@@ -970,7 +1060,9 @@ Lifeline_Medic_Anim_and_Revive = {
 						if (_bandages > 0 && Lifeline_RevMethod == 2 && Lifeline_BandageLimit > 1) then {
 
 							_text = _incap getVariable "unitwounds" select (_bandages -1) select 0;
-							diag_log format ["====|%3|%4| TEXT | %1 no %2", _text,_bandages, name _incap,name _medic];
+							if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {
+								diag_log format ["====|%3|%4| TEXT | %1 no %2", _text,_bandages, name _incap,name _medic];
+							};
 							_colour = _incap getVariable "unitwounds" select (_bandages -1) select 1;
 							_actionId = _incap getVariable ["Lifeline_ActionMenuWounds",0];
 							
@@ -989,17 +1081,23 @@ Lifeline_Medic_Anim_and_Revive = {
 								_textright = format ["<t align='right' size='%3' color='#%1'>%2</t>",_colour,_text, 0.7];
 								[_textright,1.3,5,Lifelinetxt2Layer] remoteExec ["Lifeline_display_textright",_incap];																
 							};
-							
-							diag_log format ["%5|%6|==  | %3 |%4|       NEXT BANDAGE  %1 DMG %2", _bandages, damage _incap, _text, _part_yo,name _incap,name _medic];
+							if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {
+								diag_log format ["%5|%6|==  | %3 |%4|       NEXT BANDAGE  %1 DMG %2", _bandages, damage _incap, _text, _part_yo,name _incap,name _medic];
+								diag_log format ["%1 | %2 [1021] _Functions.sqf ++++++++++++++++++++++++++++++++++++++++++++++++++++++ _opforpve %3", name _incap, name _medic, _opforpve];
+							};
 
-							if (lifestate _medic != "INCAPACITATED" && lifestate _incap == "INCAPACITATED" && (alive _incap) && (alive _medic) && (Lifeline_MedicComments)) then {
-							
-							diag_log format ["%5|%6|==  |       TEMP TEST SAY3D  bandages:%1 | DMG:%2 | %3 | part_yo:%4 | _notrepeat:%7", _bandages, damage _incap, _text, _part_yo,name _incap,name _medic,_notrepeat];
+							if (lifestate _medic != "INCAPACITATED" && lifestate _incap == "INCAPACITATED" && (alive _incap) && (alive _medic) && (Lifeline_MedicComments && !_opforpve)) then {
+
+								if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {
+									diag_log format ["%5|%6|==  |       TEMP TEST SAY3D  bandages:%1 | DMG:%2 | %3 | part_yo:%4 | _notrepeat:%7", _bandages, damage _incap, _text, _part_yo,name _incap,name _medic,_notrepeat];
+								};
 
 								if (_text == "CRITICAL: Perform CPR") then {
 									_part_yo = "CPR";
 									if (_part_yo != _notrepeat) then {
-										diag_log format ["| %1 | %2 | [1074] kkkkkkkkkkkkk SAY3D CPR | voice: %3", name _incap, name _medic, _voice];
+										if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+											diag_log format ["| %1 | %2 | [1074] kkkkkkkkkkkkk SAY3D CPR | voice: %3", name _incap, name _medic, _voice];
+										};
 										[_medic, [_voice+"_CPR1", 20, 1, true]] remoteExec ["say3D", 0];
 									};
 								};
@@ -1008,7 +1106,9 @@ Lifeline_Medic_Anim_and_Revive = {
 									_part_yo = "head";
 									if (_part_yo != _notrepeat) then {
 										[_medic, [_voice+"_head1", 20, 1, true]] remoteExec ["say3D", 0];
-										diag_log format ["| %1 | %2 | [1088] kkkkkkkkkkkkk SAY3D HEAD | voice: %3", name _incap, name _medic, _voice];
+										if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+											diag_log format ["| %1 | %2 | [1088] kkkkkkkkkkkkk SAY3D HEAD | voice: %3", name _incap, name _medic, _voice];
+										};
 									};
 								};		
 								if ((_text find "Torso:") == 0) then {
@@ -1016,21 +1116,27 @@ Lifeline_Medic_Anim_and_Revive = {
 									_part_yo = "torso";
 									if (_part_yo != _notrepeat) then {
 										[_medic, [_voice+"_torso1", 20, 1, true]] remoteExec ["say3D", 0];
-										diag_log format ["| %1 | %2 | [1096] kkkkkkkkkkkkk SAY3D TORSO | voice: %3", name _incap, name _medic, _voice];
+										if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+											diag_log format ["| %1 | %2 | [1096] kkkkkkkkkkkkk SAY3D TORSO | voice: %3", name _incap, name _medic, _voice];
+										};
 									};
 								};	
 								if ((_text find "Arm:") == 0) then {
 									_part_yo = selectRandom["_leftarm1","_rightarm1"];
 									if (_part_yo != _notrepeat && (_text find "Fracture") == -1) then {
 										[_medic, [_voice+_part_yo, 20, 1, true]] remoteExec ["say3D", 0];
-										diag_log format ["| %1 | %2 | [1103] kkkkkkkkkkkkk SAY3D ARM "+_part_yo+" | voice: %3", name _incap, name _medic, _voice];
+										if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+											diag_log format ["| %1 | %2 | [1103] kkkkkkkkkkkkk SAY3D ARM "+_part_yo+" | voice: %3", name _incap, name _medic, _voice];
+										};
 									};									
 								};
 								if ((_text find "Leg:") == 0) then {
 									_part_yo = selectRandom["_leftleg1","_rightleg1"];
 									if (_part_yo != _notrepeat && (_text find "Fracture") == -1) then {
 										[_medic, [_voice+_part_yo, 20, 1, true]] remoteExec ["say3D", 0];
-										diag_log format ["| %1 | %2 | [1110] kkkkkkkkkkkkk SAY3D LEG "+_part_yo+" | voice: %3", name _incap, name _medic, _voice];
+										if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+											diag_log format ["| %1 | %2 | [1110] kkkkkkkkkkkkk SAY3D LEG "+_part_yo+" | voice: %3", name _incap, name _medic, _voice];
+										};
 									};		
 								};
 								if ((_text find "Fracture") != -1 && _part_yo != "torso" && _part_yo != "head") then { // only arms and legs
@@ -1039,28 +1145,36 @@ Lifeline_Medic_Anim_and_Revive = {
 									_part_yo = "fracture";
 									if (_part_yo != _notrepeat) then {
 										[_medic, [_voice+"_fracture1", 20, 1, true]] remoteExec ["say3D", 0];
-										diag_log format ["| %1 | %2 | [1118] kkkkkkkkkkkkk SAY3D FRACTURE | voice: %3", name _incap, name _medic, _voice];
+										if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+											diag_log format ["| %1 | %2 | [1118] kkkkkkkkkkkkk SAY3D FRACTURE | voice: %3", name _incap, name _medic, _voice];
+										};
 									};
 								};
 								if ((_text find "Inject Blood IV") == 0) then {
 									_part_yo = "blood";
 									if (_part_yo != _notrepeat) then {
 										[_medic, [_voice+"_giveblood1", 20, 1, true]] remoteExec ["say3D", 0];
-										diag_log format ["| %1 | %2 | [1125] kkkkkkkkkkkkk SAY3D BLOOD | voice: %3", name _incap, name _medic, _voice];
+										if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+											diag_log format ["| %1 | %2 | [1125] kkkkkkkkkkkkk SAY3D BLOOD | voice: %3", name _incap, name _medic, _voice];
+										};
 									};
 								};
 								if ((_text find "Inject Epinephrine") == 0) then {
 									_part_yo = "Epinephrine";
 									if (_part_yo != _notrepeat) then {
 										[_medic, [_voice+"_giveEpinephrine1", 20, 1, true]] remoteExec ["say3D", 0];
-										diag_log format ["| %1 | %2 | [1132] kkkkkkkkkkkkk SAY3D EPINEPHRINE | voice: %3", name _incap, name _medic, _voice];
+										if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+											diag_log format ["| %1 | %2 | [1132] kkkkkkkkkkkkk SAY3D EPINEPHRINE | voice: %3", name _incap, name _medic, _voice];
+										};
 									};	
 								};
 								if ((_text find "Inject Morphine") == 0) then {
 									_part_yo = "Morphine";
 									if (_part_yo != _notrepeat) then {
 										[_medic, [_voice+"_morphine1", 20, 1, true]] remoteExec ["say3D", 0];
-										diag_log format ["| %1 | %2 | [1139] kkkkkkkkkkkkk SAY3D MORPHINE | voice: %3", name _incap, name _medic, _voice];
+										if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+											diag_log format ["| %1 | %2 | [1139] kkkkkkkkkkkkk SAY3D MORPHINE | voice: %3", name _incap, name _medic, _voice];
+										};
 									};	
 								};
 								// diag_log format ["%2 ==== SAY3D PARTYO %1 ====", _part_yo, name _incap];
@@ -1070,20 +1184,32 @@ Lifeline_Medic_Anim_and_Revive = {
 
 
 						//encouragment or "and again" voice sample when body part is repeated for Lifeline_RevMethod 2. Repeated audio samples are not cool. 
+
+						if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+							diag_log format ["%1 | %2 [1102] _Functions.sqf ++++++++++++++++++++++++++++++++++++++++++++++++++++++ _opforpve %3", name _incap, name _medic, _opforpve];
+						};
 																			
 						// if (Lifeline_RevMethod == 2) then {
-						if (Lifeline_RevMethod == 2 && (Lifeline_MedicComments) && Lifeline_BandageLimit > 1) then {
+						if (Lifeline_RevMethod == 2 && (Lifeline_MedicComments && !_opforpve) && Lifeline_BandageLimit > 1) then {
 							_repeatrandom = selectRandom[1,2];	
-							diag_log format ["==== START ANIM RANDO %1 count %2 VOICE %3", _repeatrandom, _enc_count, _voice];
+							if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+								diag_log format ["==== START ANIM RANDO %1 count %2 VOICE %3", _repeatrandom, _enc_count, _voice];
+							};
 							if (_part_yo == _notrepeat && _enc_count < 4 && _repeatrandom == 1) then { 
 								[_medic, [_voice+(_encourage select _enc_count), 20, 1, true]] remoteExec ["say3D", 0];
-								diag_log format ["| %1 | %2 | [1157] kkkkkkkkkkkkk SAY3D %4 | voice: %3", name _incap, name _medic, _voice, (_encourage select _enc_count)];
+								if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+									diag_log format ["| %1 | %2 | [1157] kkkkkkkkkkkkk SAY3D %4 | voice: %3", name _incap, name _medic, _voice, (_encourage select _enc_count)];
+								};
 								if (_enc_count == 3) then {_enc_count = 0} else {_enc_count = _enc_count + 1};
 							};
 							if (_part_yo == _notrepeat && _repeatrandom == 2) then { 
-								diag_log format ["=====AND AGAIN switch: %1", _againswitch];
+								if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+									diag_log format ["=====AND AGAIN switch: %1", _againswitch];
+								};
 								[_medic, [_voice+"_andagain"+(str _againswitch), 20, 1, true]] remoteExec ["say3D", 0];
-								diag_log format ["| %1 | %2 | [1163] kkkkkkkkkkkkk SAY3D: AND AGAIN | voice: %3", name _incap, name _medic, _voice];
+								if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+									diag_log format ["| %1 | %2 | [1163] kkkkkkkkkkkkk SAY3D: AND AGAIN | voice: %3", name _incap, name _medic, _voice];
+								};
 								if (_againswitch == 1) then { _againswitch = 2; } else { _againswitch = 1; };
 							};	
 							_notrepeat = _part_yo;
@@ -1094,11 +1220,13 @@ Lifeline_Medic_Anim_and_Revive = {
 						// if (lifestate _medic == "INCAPACITATED" || !(alive _medic)) exitWith {diag_log format ["==== 2030 EXIT MEDIC INCAP %1", lifestate _incap];};
 						// if (lifestate _incap != "INCAPACITATED" || !(alive _incap)) exitWith {diag_log format ["==== 2031 EXIT INCAP DEAD OR REVIVED %1", lifestate _incap];};
 						//ENDDEBUG
+						if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {
 						diag_log " ";
 						diag_log format ["%1 | %2 |========================== REVIVE ANIMATION ===========================", name _incap, name _medic];
 						diag_log format ["%1 | %2 |========================== REVIVE ANIMATION ===========================", name _incap, name _medic];
 						diag_log format ["%1 | %2 |========================== REVIVE ANIMATION ===========================", name _incap, name _medic];
 						diag_log " ";
+						};
 
 						//turning off the random choice between two animations. Hard setting it here:
 						_crouchreviveanim = 0;
@@ -1106,20 +1234,20 @@ Lifeline_Medic_Anim_and_Revive = {
 						// if (lifestate _medic != "INCAPACITATED" || (alive _medic) || lifestate _incap == "INCAPACITATED" || (alive _incap)) then { 
 					/* 	if (lifestate _medic != "INCAPACITATED" && alive _medic) then {
 							// _medic setdir (_medic getDir _incap); //TEMPOFF yeha
-							// diag_log format ["%1 | [1105 Lifeline_Functions.sqf] nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn FORCE DIRECTION ===============================", name _medic];playsound "forcedirection";
+							// diag_log format ["%1 | [1105 _Functions.sqf] nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn FORCE DIRECTION ===============================", name _medic];playsound "forcedirection";
 							
 							_checkdegrees = [_incap,_medic,25] call Lifeline_checkdegrees;
 							if (_checkdegrees == false) then {
 								[_medic,_incap] call Lifeline_align_dir;
 								if (Lifeline_debug_soundalert && Lifeline_Revive_debug) then {playsound "adjust_direction"};
 								if (Lifeline_hintsilent && Lifeline_Revive_debug) then {hint format ["%1 ADJUST DIRECTION ", name _medic]};
-								diag_log format ["%1 | [1112 Lifeline_Functions.sqf] nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn ADJUST DIRECTION ===============================", name _medic];
+								diag_log format ["%1 | [1112 _Functions.sqf] nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn ADJUST DIRECTION ===============================", name _medic];
 							};			
 							_medic disableAI "ANIM";
 							_checkdegrees = [_incap,_medic,15] call Lifeline_checkdegrees;
 							 // if (_checkdegrees == false) then {
-								// sleep 3;diag_log format ["%1 | [1116 Lifeline_Functions.sqf SLEEP 3 BEFORE FORCE DIRECTION", name _medic];
-								// _medic setDir (_medic getDir _incap);diag_log format ["%1 | [1116 Lifeline_Functions.sqf] nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn FORCE DIRECTION ===============================", name _medic];playsound "forcedirection";
+								// sleep 3;diag_log format ["%1 | [1116 _Functions.sqf SLEEP 3 BEFORE FORCE DIRECTION", name _medic];
+								// _medic setDir (_medic getDir _incap);diag_log format ["%1 | [1116 _Functions.sqf] nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn FORCE DIRECTION ===============================", name _medic];playsound "forcedirection";
 							// };							
 						}; */
 
@@ -1130,7 +1258,7 @@ Lifeline_Medic_Anim_and_Revive = {
 									// _medic setdir (_medic getDir _incap)+5;/* diag_log "1924 !!!!!!!! SET DIR !!!!!!!!!" ; */ //SETDIRTEMP
 									if (_crouchreviveanim == 0) then {
 										 // [_medic, "AinvPknlMstpSnonWnonDnon_medic4"] remoteExec ["playMoveNow", _medic];
-										 [_medic, "AinvPknlMstpSnonWnonDnon_medic4"] remoteExec ["playMoveNow", _medic, true];
+										 [_medic, "AinvPknlMstpSnonWnonDnon_medic4"] remoteExec ["playMoveNow", 0, true];
 										 _sleeptime = 4;
 									};
 									//DEBUG
@@ -1159,15 +1287,19 @@ Lifeline_Medic_Anim_and_Revive = {
 									if (Lifeline_Anim_Method == 0) then {
 											// _switch = 0; // TEMP - force switch for testing.
 											if (_switch == 0) then {
-												[_medic, "AinvPpneMstpSlayWrflDnon_medicOther"] remoteExec ["playMove", _medic, true]; //CURRENT
-												 diag_log format ["%1 | %2 | PRONE ANIME 1 xxxxxxxxxxxxxxxxxxx ainvppnemstpslaywrfldnon_medicother xxxxxxxxxxxxxxxxxxxxx", name _incap, name _medic];
+												[_medic, "AinvPpneMstpSlayWrflDnon_medicOther"] remoteExec ["playMove", 0, true]; //CURRENT
+												if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+													diag_log format ["%1 | %2 | PRONE ANIME 1 xxxxxxxxxxxxxxxxxxx ainvppnemstpslaywrfldnon_medicother xxxxxxxxxxxxxxxxxxxxx", name _incap, name _medic];
+												};
 												// [_medic, "ainvppnemstpslaywrfldnon_medicother"] remoteExec ["SwitchMove", _medic];
 												_switch = 1;
 												// sleep 9;
 												_sleeptime = 4.5;
 											} else {
 												[_medic, "AinvPpneMstpSlayWrflDnon_medicOther"] remoteExec ["SwitchMove", 0, true]; //CURRENT
-												 diag_log format ["%1 | %2 | PRONE ANIM 2 xxxxxxxxxxxxxxxxxxx ainvppnemstpslaywrfldnon_medicother xxxxxxxxxxxxxxxxxxxxx", name _incap, name _medic];
+												if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+													diag_log format ["%1 | %2 | PRONE ANIM 2 xxxxxxxxxxxxxxxxxxx ainvppnemstpslaywrfldnon_medicother xxxxxxxxxxxxxxxxxxxxx", name _incap, name _medic];
+												};
 												_sleeptime = 4.75;
 												// sleep 9.5;
 											}; 
@@ -1200,9 +1332,11 @@ Lifeline_Medic_Anim_and_Revive = {
 								// _medic setdir (_medic getDir _incap)+5; diag_log "1964 !!!!!!!! SET DIR !!!!!!!!!";//SETDIRTEMP
 								// [_medic, (_medic getDir _incap)+5] remoteExec ["setdir", _medic];
 								// [_medic, "AinvPknlMstpSnonWnonDr_medic0"] remoteExec ["playMoveNow", _medic];
-								[_medic, "AinvPknlMstpSnonWnonDr_medic0"] remoteExec ["playMoveNow", _medic, true];
+								[_medic, "AinvPknlMstpSnonWnonDr_medic0"] remoteExec ["playMoveNow", 0, true];
 								_cprcheck = true;
+								if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
 								 diag_log format ["%1 | %2 |xxxxxxxxxxxxxxxxxxx CPR AinvPknlMstpSnonWnonDr_medic0 xxxxxxxxxxxxxxxxxxxxx", name _incap, name _medic];
+								};
 								_sleeptime = 4;
 							};
 						};
@@ -1217,36 +1351,58 @@ Lifeline_Medic_Anim_and_Revive = {
 
 						sleep _sleeptime;
 
+						if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+							diag_log format ["%1 | %2 [1250] _Functions.sqf ++++++++++++++++++++++++++++++++++++++++++++++++++++++ _opforpve %3", name _incap, name _medic, _opforpve];
+						};
+
 						// random verbal encouragement halfway through playMove, for both Lifeline_RevMethod 1 & 2. There is a sample repeat blocker for Lifeline_RevMethod 1.
-						if (Lifeline_MedicComments) then {	
+						if (Lifeline_MedicComments && !_opforpve) then {	
 							_rando = selectRandom[1,2,3,4];
 							if (Lifeline_RevMethod == 1 || Lifeline_BandageLimit == 1) then {
 								_rando = selectRandom[1,2];
 								_enc_count = selectRandom[0,1,2,3];
-								diag_log format ["0862 !!!! == _enc count %1 _B %2",_enc_count,_B]; 
+								if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+									diag_log format ["0862 !!!! == _enc count %1 _B %2",_enc_count,_B]; 
+								};
 								//this will stop a repeated sample from the greeting (some shared samples in arrival greeting)
 								while {(_enc_count == 0 && _B == "5") || (_enc_count == 1 && _B == "2")} do {
-									diag_log format ["==== STOP REPEATED SAMPLE _enc_count %1 _B %2 ====", _enc_count, _B];
+									if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+										diag_log format ["==== STOP REPEATED SAMPLE _enc_count %1 _B %2 ====", _enc_count, _B];
+									};
 									_enc_count = selectRandom[0,1,2,3];
 								};
-								diag_log format ["0868 !!!! == _enc count %1 _B",_enc_count,_B]; 
+								if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+									diag_log format ["0868 !!!! == _enc count %1 _B",_enc_count,_B]; 
+								};
 							};
 
-							diag_log format ["==== MID ANIM RANDO %1 count %2 VOICE %3", _rando, _enc_count, _voice];
+							if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+								diag_log format ["==== MID ANIM RANDO %1 count %2 VOICE %3", _rando, _enc_count, _voice];
+							};
 							if (_rando == 1) then { 
 								[_medic, [_voice+(_encourage select _enc_count), 20, 1, true]] remoteExec ["say3D", 0];
-								diag_log format ["| %1 | %2 | 1959 kkkkkkkkkkkkk SAY3D MID ANIM | voice: %3", name _incap, name _medic, str (_voice+(_encourage select _enc_count))];
+								if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+									diag_log format ["| %1 | %2 | 1959 kkkkkkkkkkkkk SAY3D MID ANIM | voice: %3", name _incap, name _medic, str (_voice+(_encourage select _enc_count))];
+								};
 								if (_enc_count == 3) then {_enc_count = 0} else {_enc_count = _enc_count + 1};
-								diag_log "====1926 half anim encouragment voice====";
+								if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+									diag_log "====1926 half anim encouragment voice====";
+								};
 							};
 						};
 
 						sleep _sleeptime;
 
+						if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+							diag_log format ["%1 | %2 [1278] _Functions.sqf ++++++++++++++++++++++++++++++++++++++++++++++++++++++ _opforpve %3", name _incap, name _medic, _opforpve];
+						};
+
 						if (_part_yo == "CPR") then {	
 							sleep 4;
-							if (Lifeline_MedicComments) then {	
-								diag_log format ["| %1 | %2 | [1330] kkkkkkkkkkkkk SAY3D PULSE | voice: %3", name _incap, name _medic, _voice];
+							if (Lifeline_MedicComments && !_opforpve) then {	
+								if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+									diag_log format ["| %1 | %2 | [1330] kkkkkkkkkkkkk SAY3D PULSE | voice: %3", name _incap, name _medic, _voice];
+								};
 								[_medic, [_voice+"_pulse1", 20, 1, true]] remoteExec ["say3D", 0];
 							};							
 							// take incap out of CPR animation (dead still)
@@ -1254,17 +1410,21 @@ Lifeline_Medic_Anim_and_Revive = {
 								params ["_incap"];
 								sleep 5;
 								[_incap, "UnconsciousReviveDefault_C"] remoteExec ["PlayMoveNow", _incap];	   
-								[_incap, "UnconsciousFaceUp"] remoteExec ["PlayMove", _incap];	
+								[_incap, "UnconsciousFaceUp"] remoteExec ["PlayMove", 0];	
 								//local anim 
 								// _incap playMoveNow "UnconsciousReviveDefault_C";
 								// _incap playMove "UnconsciousFaceUp";
 							};
 						};
 
+						if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+							diag_log format ["%1 | %2 [1298] _Functions.sqf ++++++++++++++++++++++++++++++++++++++++++++++++++++++ _opforpve %3", name _incap, name _medic, _opforpve];
+						};
+
 						// THIS IS HACKED ON MORPHINE AT END 
 						if (_part_yo == "Epinephrine" && _bandages == 1) then {
-							[_incap,_medic,_voice,_colour] spawn {
-							params ["_incap","_medic","_voice","_colour"];
+							[_incap,_medic,_voice,_colour,_opforpve] spawn {
+							params ["_incap","_medic","_voice","_colour","_opforpve"];
 							sleep 2;
 								if (isPlayer _incap && Lifeline_HUD_medical) then {
 									_text = "Inject Morphine       ..extra";
@@ -1272,9 +1432,11 @@ Lifeline_Medic_Anim_and_Revive = {
 									_textright = format ["<t align='right' size='%3' color='#%1'>%2</t>",_colour,_text, 0.7];
 									[_textright,1.3,5,Lifelinetxt2Layer] remoteExec ["Lifeline_display_textright",_incap];									
 								};
-								if (Lifeline_MedicComments) then {
+								if (Lifeline_MedicComments && !_opforpve) then {
 									[_medic, [_voice+"_morphine1", 20, 1, true]] remoteExec ["say3D", 0];
-									diag_log format ["| %1 | %2 | [1153] kkkkkkkkkkkkk SAY3D MORPHINE ADDED SPAWN | voice: %3", name _incap, name _medic, _voice];
+									if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+									 diag_log format ["| %1 | %2 | [1153] kkkkkkkkkkkkk SAY3D MORPHINE ADDED SPAWN | voice: %3", name _incap, name _medic, _voice];
+									};
 								};
 							};	
 							sleep 2;
@@ -1286,7 +1448,9 @@ Lifeline_Medic_Anim_and_Revive = {
 
 						_newdamage = damage _incap - _damagesubtract;
 						if (_newdamage < 0.2) then {
-							diag_log format ["%1 kkkkkkkkkkkkkkkkkkkk DAMAGE UNDER: %2", name _incap, _newdamage];
+							if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+								diag_log format ["%1 kkkkkkkkkkkkkkkkkkkk DAMAGE UNDER: %2", name _incap, _newdamage];
+							};
 							// _incap setDamage 0.2;
 							_newdamage = 0.2;						
 						};
@@ -1296,14 +1460,18 @@ Lifeline_Medic_Anim_and_Revive = {
 						_incap setVariable ["num_bandages",_bandages,true];	
 
 						// NEW TEST for deleting from array
-						diag_log format ["%2 | %3 kkkkkkkk BOO MINUS: %1 ", _unitwounds, name _incap, name _medic];
+						if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+							diag_log format ["%2 | %3 kkkkkkkk BOO MINUS: %1 ", _unitwounds, name _incap, name _medic];
+						};
 						// _unitwounds = _unitwounds - [(_unitwounds select (_bandages))]; // WRONGGG
 						_unitwounds deleteAt _bandages;
-						diag_log format ["%2 | %3 kkkkkkkk BOO MINUS: %1 ", _unitwounds, name _incap, name _medic];
+						if (Lifeline_Revive_debug && Lifeline_logs_reviveanim) then {	
+							diag_log format ["%2 | %3 kkkkkkkk BOO MINUS: %1 ", _unitwounds, name _incap, name _medic];
+						};
 						_incap setVariable ["unitwounds",_unitwounds,true];
 
 						//DEBUG
-						// if (Lifeline_RevMethod == 2 && (Lifeline_MedicComments) && Lifeline_BandageLimit > 1) then {_notrepeat = _part_yo}; // maybe this move to here?
+						// if (Lifeline_RevMethod == 2 && (Lifeline_MedicComments && !_opforpve) && Lifeline_BandageLimit > 1) then {_notrepeat = _part_yo}; // maybe this move to here?
 									
 						//moved to front now
 						
@@ -1390,23 +1558,23 @@ Lifeline_Medic_Anim_and_Revive = {
 
 			//DEBUG
 			//reset damage and captive states (double check)
-					// [_incap,true] remoteExec ["allowDamage",_incap]; diag_log format ["%1 | [1302][Lifeline_Functions.sqf] ALLOWDAMAGE SET: %2", name _incap, "true"];
-					// [_incap,false] remoteExec ["setCaptive",_incap];diag_log format ["%1 | [1305]!!!!!!!!! change var setCaptive = false !!!!!!!!!!!!!", name _incap];
-					// _incap allowDamage true;diag_log format ["%1 | [1302][Lifeline_Functions.sqf] ALLOWDAMAGE SET: %2", name _incap, isDamageAllowed _incap];
+					// [_incap,true] remoteExec ["allowDamage",0]; diag_log format ["%1 | [1302][_Functions.sqf] ALLOWDAMAGE SET: %2", name _incap, "true"];
+					// [_incap,false] remoteExec ["setCaptive",0];diag_log format ["%1 | [1305]!!!!!!!!! change var setCaptive = false !!!!!!!!!!!!!", name _incap];
+					// _incap allowDamage true;diag_log format ["%1 | [1302][_Functions.sqf] ALLOWDAMAGE SET: %2", name _incap, isDamageAllowed _incap];
 					// _incap setCaptive false;diag_log format ["%1 | [1305]!!!!!!!!! change var setCaptive = false !!!!!!!!!!!!!", name _incap];					
-					// [_incap, true] remoteExec ["allowDamage",_incap];diag_log format ["%1 | [1302][Lifeline_Functions.sqf] ALLOWDAMAGE SET: %2", name _incap, "true"];
-					// [_incap, false] remoteExec ["setCaptive",_incap];diag_log format ["%1 | [1305]!!!!!!!!! change var setCaptive = false !!!!!!!!!!!!!", name _incap];	
+					// [_incap, true] remoteExec ["allowDamage",0];diag_log format ["%1 | [1302][_Functions.sqf] ALLOWDAMAGE SET: %2", name _incap, "true"];
+					// [_incap, false] remoteExec ["setCaptive",0];diag_log format ["%1 | [1305]!!!!!!!!! change var setCaptive = false !!!!!!!!!!!!!", name _incap];	
 			//ENDDEBUG
 				_captive = _incap getVariable ["Lifeline_Captive", false];
-				if !(local _incap) then {
-					[_incap, true] remoteExec ["allowDamage",_incap];diag_log format ["%1 | [1336][Lifeline_Functions.sqf] ALLOWDAMAGE SET: %2", name _incap, "true"];
+				// if !(local _incap) then {
+					[_incap, true] remoteExec ["allowDamage",0];diag_log format ["%1 | [1336][_Functions.sqf] ALLOWDAMAGE SET: %2", name _incap, "true"];
 					// [_incap, false] remoteExec ["setCaptive",_incap];diag_log format ["%1 | [1336]!!!!!!!!! change var setCaptive = false !!!!!!!!!!!!!", name _incap];	
-					[_incap, _captive] remoteExec ["setCaptive",_incap];diag_log format ["%1 | [1336]!!!!!!!!! change var setCaptive = %2 !!!!!!!!!!!!!", name _incap, _captive];	
-				} else {
-					_incap allowDamage true;diag_log format ["%1 | [1340][Lifeline_Functions.sqf] ALLOWDAMAGE SET: %2", name _incap, isDamageAllowed _incap];
+					[_incap, _captive] remoteExec ["setCaptive",0];diag_log format ["%1 | [1336]!!!!!!!!! change var setCaptive = %2 !!!!!! ReviveInProgress: %3 !!!!!!!", name _incap, _captive, _incap getVariable ["ReviveInProgress",0]];	
+				/* } else {
+					_incap allowDamage true;diag_log format ["%1 | [1340][_Functions.sqf] ALLOWDAMAGE SET: %2", name _incap, isDamageAllowed _incap];
 					// _incap setCaptive false;diag_log format ["%1 | [1340]!!!!!!!!! change var setCaptive = false !!!!!!!!!!!!!", name _incap];		
 					_incap setCaptive _captive;diag_log format ["%1 | [1340]!!!!!!!!! change var setCaptive = %2 !!!!!!!!!!!!!", name _incap, _captive];		
-				};
+				}; */
 
 
 					

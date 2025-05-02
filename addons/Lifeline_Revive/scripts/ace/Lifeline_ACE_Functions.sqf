@@ -20,9 +20,10 @@ ace_medical_ai_enabledFor = 0; // disable the ACE medical ai
 				diag_log format ["%1 =========++++++++++ ace_unconscious TRUE ==============", name _unit];
 				diag_log _unit;
 
-				if (captive _unit) then {_unit setVariable ["Lifeline_Captive",true,true]} else {_unit setVariable ["Lifeline_Captive",false,true]}; diag_log format ["%1 | [0021]==== UNCONC captive: %2", name _unit, captive _unit];//2025
-
-				
+				// store captive status (for missions with 'undercover' mode). Only if unit is not a medic at ReviveInProgress = 1 or 2 because it will be captive already
+				if (_unit getVariable ["ReviveInProgress",0] == 0 && _unit getVariable ["Lifeline_RevProtect",0] != 3) then { 
+					_unit setVariable ["Lifeline_Captive",(captive _unit),true]; diag_log format ["%1 [0024] ACE_Functions.sqf !!!!!!!!! change var Lifeline_Captive = %2 !!!!!!!!!!!!!", name _unit, captive _unit];//2025
+				};
 				_unit setVariable ["Lifeline_selfheal_progss",false,true]; //clear var if it was in middle of self healing
 
 				// diag_log _status;						
@@ -51,7 +52,8 @@ ace_medical_ai_enabledFor = 0; // disable the ACE medical ai
 								moveOut _unit;
 								_unit setPosATL _pos
 							};
-							_unit setcaptive true;diag_log format ["%1 [049 Lifeline_ACE_Functions.sqf]!!!!!!!!! change var setcaptive = true !!!!!!!!!!!!!", name _unit]; 
+							_unit setcaptive true;diag_log format ["%1 [049 Lifeline_ACE_Functions.sqf]!!!!!!!!! change var setcaptive = true !!!!! ReviveInProgress: %2 !!!!!!!!", name _unit, _unit getVariable ["ReviveInProgress",0]]; 
+							[_unit, true] remoteExec ["setCaptive", 0];
 							// _unit allowdamage false; //zdo
 
 							diag_log "==_unit setVariable [ace_medical_injury, false] [219]";
@@ -134,7 +136,7 @@ params ["_incap", "_medic","_EnemyCloseBy","_voice","_switch", "_againswitch", "
 
 		// Kneeling revive - no near enemy
 		if (isNull _EnemyCloseBy) then {
-		[_medic, "AinvPknlMstpSnonWnonDnon_medic4"] remoteExec ["playMove", _medic]; // ORIGNAL
+		[_medic, "AinvPknlMstpSnonWnonDnon_medic4"] remoteExec ["playMove", 0]; // ORIGNAL
 			diag_log "2264 ==== ANIMATION AinvPknlMstpSnonWnonDnon_medic4";
 			 // sleep 8;
 					sleep 4;
@@ -152,7 +154,7 @@ params ["_incap", "_medic","_EnemyCloseBy","_voice","_switch", "_againswitch", "
 		// Lying down revive - near enemy. Alternating between two anims to fix an Arma bug
 		if (!isNull _EnemyCloseBy) then {
 					if (_switch == 0) then {
-						[_medic, "ainvppnemstpslaywrfldnon_medicother"] remoteExec ["playMove", _medic];
+						[_medic, "ainvppnemstpslaywrfldnon_medicother"] remoteExec ["playMove", 0];
 			diag_log "2271 ==== ANIMATION ainvppnemstpslaywrfldnon_medicother";
 						_switch = 1;
 						// sleep 9;
@@ -167,7 +169,7 @@ params ["_incap", "_medic","_EnemyCloseBy","_voice","_switch", "_againswitch", "
 							};
 						sleep 4.5;
 					} else {
-						[_medic, "AinvPpneMstpSlayWpstDnon_medicOther"] remoteExec ["playMove", _medic];
+						[_medic, "AinvPpneMstpSlayWpstDnon_medicOther"] remoteExec ["playMove", 0];
 			diag_log "2285 ==== ANIMATION AinvPpneMstpSlayWpstDnon_medicOther";
 						_switch = 0;
 						// sleep 9.5;
@@ -210,7 +212,7 @@ params ["_incap", "_medic","_EnemyCloseBy","_voice"];
 					if (_cprcount == 1) then {
 						//DEBUG // [_medic, "UnconsciousReviveMedic_B"] remoteExec ["playMove", _medic];
 						// [_medic, "AinvPknlMstpSnonWrflDnon_medic5"] remoteExec ["playMove", _medic]; //kind of press, but static //ENDDEBUG
-						[_medic, "AinvPknlMstpSnonWnonDr_medic0"] remoteExec ["playMove", _medic]; //kind of press, but static
+						[_medic, "AinvPknlMstpSnonWnonDr_medic0"] remoteExec ["playMove", 0]; //kind of press, but static
 						//DEBUG // [_medic, "UnconsciousReviveMedic_B"] remoteExec ["switchMove", _medic]; //ENDDEBUG
 						diag_log "1662 ==== ANIMATION AinvPknlMstpSnonWrflDnon_medic5";
 					};
@@ -1099,7 +1101,7 @@ params ["_incap", "_medic","_EnemyCloseBy","_voice"];
 
 				// Kneeling revive - no near enemy
 				if (isNull _EnemyCloseBy) then {
-					[_medic,  "AinvPknlMstpSnonWnonDnon_medic1" ] remoteExec ["playMove", _medic];
+					[_medic,  "AinvPknlMstpSnonWnonDnon_medic1" ] remoteExec ["playMove", 0];
 					diag_log "2293 ==== ANIMATION AinvPknlMstpSnonWnonDnon_medic1";
 					 // [_medic, SelectRandom ["AinvPknlMstpSnonWnonDnon_medic1", "AinvPknlMstpSnonWnonDnon_medic2"]] remoteExec ["playMove", _medic];
 					 sleep 8;  
@@ -1108,11 +1110,11 @@ params ["_incap", "_medic","_EnemyCloseBy","_voice"];
 				// Lying down revive - near enemy. Alternating between two anims to fix an Arma bug
 				if (!isNull _EnemyCloseBy) then {
 					if (_switch == 0) then {
-							[_medic, "ainvppnemstpslaywrfldnon_medicother"] remoteExec ["playMove", _medic];
+							[_medic, "ainvppnemstpslaywrfldnon_medicother"] remoteExec ["playMove", 0];
 							diag_log "2399 ==== ANIMATION ainvppnemstpslaywrfldnon_medicother";
 							_switch = 1; 
 							sleep 9;
-						 } else { [_medic, "AinvPpneMstpSlayWpstDnon_medicOther"] remoteExec ["playMove", _medic];
+						 } else { [_medic, "AinvPpneMstpSlayWpstDnon_medicOther"] remoteExec ["playMove", 0];
 							diag_log "2403 ==== ANIMATION AinvPpneMstpSlayWpstDnon_medicOther";
 							// [_medic, "AinvPpneMstpSlayWnonDnon_medicOther"] remoteExec ["playMove", _medic]; //sometimes looks missing arm 
 							_switch = 0;
@@ -1390,8 +1392,10 @@ params ["_incap", "_medic","_EnemyCloseBy","_voice"];
 							};														
 					} else {
 						// [_medic, [_voice+"_givingmore"+str (_counter - 1), 50, 1, true]] remoteExec ["say3D", 0];
-						[_medic, [_voice+"_givingmore"+str (_counter - 1), 20, 1, true]] remoteExec ["say3D", 0];
-						diag_log format ["| %1 | %2 | 1475 kkkkkkkkkkkkk SAY3D EPI MORE | voice: %3 | counter: %4", name _incap, name _medic, _voice, _counter];
+						if (lifestate _medic != "INCAPACITATED") then {
+							[_medic, [_voice+"_givingmore"+str (_counter - 1), 20, 1, true]] remoteExec ["say3D", 0];
+							diag_log format ["| %1 | %2 | 1475 kkkkkkkkkkkkk SAY3D EPI MORE | voice: %3 | counter: %4", name _incap, name _medic, _voice, _counter];
+						};
 					};
 
 					//added to increase revive time limit on each loop pass					
@@ -1402,7 +1406,7 @@ params ["_incap", "_medic","_EnemyCloseBy","_voice"];
 
 					// Kneeling revive - no near enemy
 					if (isNull _EnemyCloseBy) then {
-						[_medic,  "AinvPknlMstpSnonWrflDnon_medic1" ] remoteExec ["playMove", _medic];
+						[_medic,  "AinvPknlMstpSnonWrflDnon_medic1" ] remoteExec ["playMove", 0];
 						diag_log "2636 ==== ANIMATION AinvPknlMstpSnonWrflDnon_medic1";
 						//DEBUG // [_medic, SelectRandom ["AinvPknlMstpSnonWnonDnon_medic1","AinvPknlMstpSnonWnonDnon_medic2"]] remoteExec ["playMove", _medic];  //ENDDEBUG
 						sleep 8;
@@ -1410,12 +1414,12 @@ params ["_incap", "_medic","_EnemyCloseBy","_voice"];
 					// Lying down revive - near enemy. Alternating between two anims to fix an Arma bug
 					if (!isNull _EnemyCloseBy) then {
 						if (_switch == 0) then {
-							[_medic, "ainvppnemstpslaywrfldnon_medicother"] remoteExec ["playMove", _medic];
+							[_medic, "ainvppnemstpslaywrfldnon_medicother"] remoteExec ["playMove", 0];
 							diag_log "2644 ==== ANIMATION ainvppnemstpslaywrfldnon_medicother";
 							_switch = 1;
 							sleep 9;
 						} else {
-							[_medic, "AinvPpneMstpSlayWpstDnon_medicOther"] remoteExec ["playMove", _medic];
+							[_medic, "AinvPpneMstpSlayWpstDnon_medicOther"] remoteExec ["playMove", 0];
 							diag_log "2649 ==== ANIMATION AinvPpneMstpSlayWpstDnon_medicOther";
 							//DEBUG // [_medic, "AinvPpneMstpSlayWnonDnon_medicOther"] remoteExec ["playMove", _medic]; //sometimes looks missing arm //ENDDEBUG
 							_switch = 0;
@@ -1521,13 +1525,13 @@ params ["_unit"];
 							// [_unit,"AinvPknlMstpSlayWrflDnon_medic"] remoteExec ["playMoveNow", _unit];
 							// diag_log "== 1";
 							diag_log format ["== ANIMATION SELFHEAL %1 ==", name _unit];
-							[_unit,"AinvPknlMstpSlayWrflDnon_medic"] remoteExec ["playMoveNow",_unit];
+							[_unit,"AinvPknlMstpSlayWrflDnon_medic"] remoteExec ["playMoveNow",0];
 							sleep 5;			
 						} else {
 							// [_unit,"ainvppnemstpslaywrfldnon_medic"] remoteExec ["playMoveNow",_unit];
 							 // diag_log "== 2";
 							 diag_log format ["== ANIMATION SELFHEAL %1 ==", name _unit];
-							[_unit,"AinvPpneMstpSlayWnonDnon_medicIn"] remoteExec ["playMoveNow",_unit];
+							[_unit,"AinvPpneMstpSlayWnonDnon_medicIn"] remoteExec ["playMoveNow",0];
 							sleep 5;	
 						};
 
@@ -1575,13 +1579,13 @@ params ["_unit"];
 							// [_unit,"AinvPknlMstpSlayWrflDnon_medic"] remoteExec ["playMoveNow", _unit];
 							// diag_log "== 1";
 							diag_log format ["== ANIMATION SELFHEAL %1 ==", name _unit];
-							[_unit,"AinvPknlMstpSlayWrflDnon_medic"] remoteExec ["playMoveNow",_unit];
+							[_unit,"AinvPknlMstpSlayWrflDnon_medic"] remoteExec ["playMoveNow",0];
 							sleep 5;			
 						} else {
 							// [_unit,"ainvppnemstpslaywrfldnon_medic"] remoteExec ["playMoveNow",_unit];
 							 // diag_log "== 2";
 							 diag_log format ["== ANIMATION SELFHEAL %1 ==", name _unit];
-							[_unit,"AinvPpneMstpSlayWnonDnon_medicIn"] remoteExec ["playMoveNow",_unit];
+							[_unit,"AinvPpneMstpSlayWnonDnon_medicIn"] remoteExec ["playMoveNow",0];
 							sleep 5;	
 						};
 
@@ -1828,8 +1832,10 @@ Lifeline_ACE_BluForTrackingLimit = {
 
 					if (_hasGPS == true) then {
 						ace_map_BFT_Enabled = true;
+						Lifeline_hasGPS = true;
 					} else {
 						ace_map_BFT_Enabled = false;
+						Lifeline_hasGPS = false;
 					};
 				};
 				sleep 2;

@@ -2,7 +2,7 @@
 
 	params ["_player","_actionId"];
 
-	if (captive _player) then {_player setVariable ["Lifeline_Captive",true,true]} else {_player setVariable ["Lifeline_Captive",false,true]}; diag_log format ["%1 | [0005]==== UNCONC captive: %2 [_PlayerRevive.sqf]", name _player, captive _player];//2025
+	if (captive _player && !(_player getVariable ["Lifeline_Captive_Delay",false])) then {_player setVariable ["Lifeline_Captive",true,true]} else {_player setVariable ["Lifeline_Captive",false,true]}; diag_log format ["%1 [0005] _PlayerRevive.sqf !!!!!!!!! change var Lifeline_Captive = %2 !!!!!!!!!!!!!", name _player, captive _player];//2025
 
 
 	//DEBUG
@@ -46,9 +46,9 @@
 	_captive = _player getVariable ["Lifeline_Captive", false];//2025
 
 	if (_bandages == 0) exitWith {		
-		[_player, true] remoteExec ["allowDamage",_player];diag_log format ["%1 | [0044][Lifeline_PlayerRevive.sqf] ALLOWDAMAGE SET: %2", name _player, isDamageAllowed _player];
+		[_player, true] remoteExec ["allowDamage",0];diag_log format ["%1 | [0044][Lifeline_PlayerRevive.sqf] ALLOWDAMAGE SET: %2", name _player, isDamageAllowed _player];
 		// [_player, false] remoteExec ["setCaptive",_player];diag_log format ["%1 [0044]!!!!!!!!! change var setcaptive = false !!!!!!!!!!!!!", name _player]; 
-		[_player, _captive] remoteExec ["setCaptive",_player];diag_log format ["%1 [0044]!!!!!!!!! change var setcaptive = %2 !!!!!!!!!!!!!", name _player, _captive]; 
+		[_player, _captive] remoteExec ["setCaptive",0];diag_log format ["%1 [0044]!!!!!!!!! change var setcaptive = %2 !!!!! ReviveInProgress: %3 !!!!!!!!", name _player, _captive, _player getVariable ["ReviveInProgress",0]]; 
 		// _player setcaptive false;_player allowDamage true; diag_log format ["%1 | [0072][Lifeline_PlayerRevive.sqf] ALLOWDAMAGE SET: %2", name _player, isDamageAllowed _player];
 		//DEBUG
 		_diag_text = format ["Lifeline_PlayerRevive |%4|%5|kkkkkkkkkkkkkkkkkkkk 1 EXIT PLAYER BANDAGE %1 | DMG %2 | SUBTR %3 kkkkkkkkkkkkkkkkkkkkkkkkkkk", _bandages, damage _incap, _damagesubtract, name _incap, name _player];
@@ -58,9 +58,9 @@
 
 
 	if (Lifeline_RevMethod == 2 && !(_incap getVariable ["Lifeline_Down",false])) exitWith {
-		[_player, true] remoteExec ["allowDamage",_player];diag_log format ["%1 | [0054][Lifeline_PlayerRevive.sqf] ALLOWDAMAGE SET: %2", name _player, isDamageAllowed _player];
+		[_player, true] remoteExec ["allowDamage",0];diag_log format ["%1 | [0054][Lifeline_PlayerRevive.sqf] ALLOWDAMAGE SET: %2", name _player, isDamageAllowed _player];
 		// [_player, false] remoteExec ["setCaptive",_player];diag_log format ["%1 [0054]!!!!!!!!! change var setcaptive = false !!!!!!!!!!!!!", name _player]; 
-		[_player, _captive] remoteExec ["setCaptive",_player];diag_log format ["%1 [0054]!!!!!!!!! change var setcaptive = %2 !!!!!!!!!!!!!", name _player, _captive]; 
+		[_player, _captive] remoteExec ["setCaptive",0];diag_log format ["%1 [0054]!!!!!!!!! change var setcaptive = %2 !!!!! ReviveInProgress: %3 !!!!!!!!", name _player, _captive, _player getVariable ["ReviveInProgress",0]]; 
 		// _player setcaptive false;_player allowDamage true; diag_log format ["%1 | [0078][Lifeline_PlayerRevive.sqf] ALLOWDAMAGE SET: %2", name _player, isDamageAllowed _player];
 		//DEBUG
 		_diag_text = format ["Lifeline_PlayerRevive |%4|%5|kkkkkkkkkkkkkkkkkkkk 1.5 EXIT PLAYER BANDAGE %1 | DMG %2 | SUBTR %3 kkkkkkkkkkkkkkkkkkkkkkkkkkk", _bandages, damage _incap, _damagesubtract, name _incap, name _player];
@@ -70,9 +70,9 @@
 
 
 	if (_bandages == 0 or (lifestate _incap !="INCAPACITATED")) exitWith {
-		[_player, true] remoteExec ["allowDamage",_player];diag_log format ["%1 | [0064][Lifeline_PlayerRevive.sqf] ALLOWDAMAGE SET: %2", name _player, isDamageAllowed _player];
+		[_player, true] remoteExec ["allowDamage",0];diag_log format ["%1 | [0064][Lifeline_PlayerRevive.sqf] ALLOWDAMAGE SET: %2", name _player, isDamageAllowed _player];
 		// [_player, false] remoteExec ["setCaptive",_player];diag_log format ["%1 [0064]!!!!!!!!! change var setcaptive = false !!!!!!!!!!!!!", name _player]; 
-		[_player, _captive] remoteExec ["setCaptive",_player];diag_log format ["%1 [0064]!!!!!!!!! change var setcaptive = %2 !!!!!!!!!!!!!", name _player, _captive]; 
+		[_player, _captive] remoteExec ["setCaptive",0];diag_log format ["%1 [0064]!!!!!!!!! change var setcaptive = %2 !!!!! ReviveInProgress: %3 !!!!!!!!", name _player, _captive, _player getVariable ["ReviveInProgress",0]]; 
 		// _player setcaptive false;_player allowDamage true; diag_log format ["%1 | [0084][Lifeline_PlayerRevive.sqf] ALLOWDAMAGE SET: %2", name _player, isDamageAllowed _player];
 		//DEBUG
 		_diag_text = format ["Lifeline_PlayerRevive |%4|%5|kkkkkkkkkkkkkkkkkkkk 2 EXIT PLAYER BANDAGE %1 | DMG %2 | SUBTR %3 kkkkkkkkkkkkkkkkkkkkkkkkkkk", _bandages, damage _incap, _damagesubtract, name _incap, name _player];
@@ -101,8 +101,8 @@
 	// _player setcaptive true;
 	// _player allowDamage dmg_trig; diag_log format ["%1 | [0127][Lifeline_PlayerRevive.sqf] ALLOWDAMAGE SET: %2", name _player, isDamageAllowed _player];
 	if (Lifeline_RevProtect != 3) then {
-		[_player, dmg_trig] remoteExec ["allowDamage",_player];diag_log format ["%1 | [0127][Lifeline_PlayerRevive.sqf] ALLOWDAMAGE SET: %2", name _player, isDamageAllowed _player];
-		[_player, true] remoteExec ["setCaptive",_player];diag_log format ["%1 [0509]!!!!!!!!! change var setcaptive = true !!!!!!!!!!!!!", name _player]; 	
+		[_player, dmg_trig] remoteExec ["allowDamage",0];diag_log format ["%1 | [0127][Lifeline_PlayerRevive.sqf] ALLOWDAMAGE SET: %2", name _player, isDamageAllowed _player];
+		[_player, true] remoteExec ["setCaptive",0];diag_log format ["%1 [0509]!!!!!!!!! change var setcaptive = true !!!!! ReviveInProgress: %2 !!!!!!!!", name _player, _player getVariable ["ReviveInProgress",0]]; 	
 	};
 
 	//temporarily clear action menu while reviving	
@@ -144,13 +144,13 @@
 		// if (_incap distance _EnemyCloseBy < 100 ||  animationState _player find "ppn" == 4 ) then {
 		if (animationState _player find "ppn" == 4 ) then {
 			_waituntilHack = true;	
-			[_player,"ainvppnemstpslaywrfldnon_medicother"] remoteExec ["playMove", _player]; // ORIGINAL
+			[_player,"ainvppnemstpslaywrfldnon_medicother"] remoteExec ["playMove", 0]; // ORIGINAL
 			if (_bandages == 1) then {
 				sleep 8;
 			};
 		} else { 
 			_player setAnimSpeedCoef 1.5;
-			[_player,"AinvPknlMstpSnonWnonDnon_medic4"] remoteExec ["playMoveNow", _player]; //ORIGINAL
+			[_player,"AinvPknlMstpSnonWnonDnon_medic4"] remoteExec ["playMoveNow", 0]; //ORIGINAL
 			sleep 8.6; // HERE
 		};
 
@@ -178,9 +178,10 @@
 			_diag_text = format ["Lifeline_PlayerRevive |%4|%5|kkkkkkkkkkkkkkkkkkkk 3 EXIT PLAYER BANDAGE %1 | DMG %2 | SUBTR %3 kkkkkkkkkkkkkkkkkkkkkkkkkkk", _bandages, damage _incap, _damagesubtract, name _incap, name _player]; 
 			//ENDDEBUG
 
+			//remotecheck
 			if (_bandages == 0 or (lifestate _incap !="INCAPACITATED")) exitWith {
 				// _player setcaptive false; diag_log format ["%1 [0509]!!!!!!!!! change var setcaptive = false !!!!!!!!!!!!!", name _player]; 
-				_player setcaptive _captive; diag_log format ["%1 [0509]!!!!!!!!! change var setcaptive = %2 !!!!!!!!!!!!!", name _player, _captive]; 
+				_player setcaptive _captive; diag_log format ["%1 [0509]!!!!!!!!! change var setcaptive = %2 !!!!! ReviveInProgress: %3 !!!!!!!!", name _player, _captive, _player getVariable ["ReviveInProgress",0]]; 
 				_player allowDamage true; diag_log format ["%1 [0298][Lifeline_PlayerRevive.sqf] ALLOWDAMAGE SET: %2", name _player, isDamageAllowed _player];
 				_exit = true;
 				//DEBUG
@@ -262,7 +263,7 @@
 
 		if (_bandages > 1) then {
 			// _player setcaptive false;diag_log format ["%1 [0240]!!!!!!!!! change var setcaptive = false !!!!!!!!!!!!!", name _player]; 
-			_player setcaptive _captive;diag_log format ["%1 [0240]!!!!!!!!! change var setcaptive = %2 !!!!!!!!!!!!!", name _player, _captive]; 
+			_player setcaptive _captive;diag_log format ["%1 [0240]!!!!!!!!! change var setcaptive = %2 !!!!! ReviveInProgress: %3 !!!!!!!!", name _player, _captive, _player getVariable ["ReviveInProgress",0]]; 
 		};
 		
 		// ============ WAKE UP, FINISHED
@@ -280,8 +281,8 @@
 			_teamcolour = assignedTeam _incap;diag_log format ["%1 PLAYER REVIVE ASSIGNED TEAM %2", name _incap, _teamcolour];
 			[_incap] joinSilent _goupI;
 			_incap assignTeam _teamcolour;
-			[_incap, (leader _goupI)] remoteExec ["doFollow", _incap];
-			[_incap, false] remoteExec ["setUnconscious",_incap];
+			[_incap, (leader _goupI)] remoteExec ["doFollow", 0];
+			[_incap, false] remoteExec ["setUnconscious",0];
 			// Reset bleedout time var
 			_incap setVariable ["LifelineBleedOutTime", 0, true];diag_log format ["%1 [240]!!!!!!!!! change var LifelinePairTimeOut = 0 !!!!!!!!!!!!!", name _incap];
 			
@@ -292,9 +293,9 @@
 				_captivei = _incap getVariable ["Lifeline_Captive", false];
 				// _incap setCaptive false;	
 				// _incap allowdamage true; diag_log format ["%1 | [0431][Lifeline_PlayerRevive.sqf] ALLOWDAMAGE SET: %2", name _incap, isDamageAllowed _incap];
-				[_incap, true] remoteExec ["allowDamage",_incap];diag_log format ["%1 | [0267][Lifeline_PlayerRevive.sqf] ALLOWDAMAGE SET: %2", name _incap, isDamageAllowed _incap];
+				[_incap, true] remoteExec ["allowDamage",0];diag_log format ["%1 | [0267][Lifeline_PlayerRevive.sqf] ALLOWDAMAGE SET: %2", name _incap, isDamageAllowed _incap];
 				// [_incap, false] remoteExec ["setCaptive",_incap];diag_log format ["%1 [0268]!!!!!!!!! change var setcaptive = false !!!!!!!!!!!!!", name _incap]; 	
-				[_incap, _captivei] remoteExec ["setCaptive",_incap];diag_log format ["%1 [0268]!!!!!!!!! change var setcaptive = %2 !!!!!!!!!!!!!", name _incap, _captivei]; 	
+				[_incap, _captivei] remoteExec ["setCaptive",0];diag_log format ["%1 [0268]!!!!!!!!! change var setcaptive = %2 !!!!! ReviveInProgress: %3 !!!!!!!!", name _incap, _captivei, _incap getVariable ["ReviveInProgress",0]]; 	
 			};
 		
 
@@ -416,15 +417,19 @@
 
 	[_player,_incap,_captive] spawn {
 		params ["_player","_incap","_captive"];	
+		_player setVariable ["Lifeline_Captive_Delay",true,true];
 		sleep 5;
 		if (_player getVariable ["ReviveInProgress",0] != 2) then { 
 		// _player allowdamage true; diag_log format ["%1 | [0388][Lifeline_PlayerRevive.sqf] ALLOWDAMAGE SET: %2", name _player, isDamageAllowed _player];
 		// _player setCaptive false; diag_log format ["%1 | [0389]!!!!!!!!! change var setCaptive = false !!!!!!!!!!!!!", name _incap];
-		[_player, true] remoteExec ["allowDamage",_player]; diag_log format ["%1 | [0390][Lifeline_PlayerRevive.sqf] ALLOWDAMAGE SET: %2", name _player, isDamageAllowed _player];
+		[_player, true] remoteExec ["allowDamage",0]; diag_log format ["%1 | [0390][Lifeline_PlayerRevive.sqf] ALLOWDAMAGE SET: %2", name _player, isDamageAllowed _player];
 		// [_player, false] remoteExec ["setCaptive",_player];	 diag_log format ["%1 | [0391]!!!!!!!!! change var setCaptive = false !!!!!!!!!!!!!", name _player];
-		[_player, _captive] remoteExec ["setCaptive",_player];	 diag_log format ["%1 | [0391]!!!!!!!!! change var setCaptive = %2 !!!!!!!!!!!!!", name _player, _captive];
+		[_player, _captive] remoteExec ["setCaptive",0];	 diag_log format ["%1 | [0391]!!!!!!!!! change var setCaptive = %2 !!!!! ReviveInProgress: %3 !!!!!!!!", name _player, _captive, _player getVariable ["ReviveInProgress",0]];
+		_player setVariable ["Lifeline_Captive_Delay",false,true];
 		};
 	};
+
+	
 
 	//DEBUG
 	// diag_log format ["uuuuuuuuuuuuuuuu TIME TOOK FOR BANDAGE: %1 uuuuuuuuuuuuuuuuuu", time - _timestamp];

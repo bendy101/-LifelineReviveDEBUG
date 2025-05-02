@@ -17,7 +17,7 @@ if (Lifeline_Voices == 3) then { Lifeline_UnitVoices = ["Adam", "Antoni", "Arnol
 
 if (Lifeline_RevProtect == 1) then {dmg_trig=false; cptv_trig=true};
 if (Lifeline_RevProtect == 2) then {dmg_trig=true; cptv_trig=true};
-//if (Lifeline_RevProtect == 3) then {dmg_trig=true; cptv_trig=true};//changed for antistasi
+if (Lifeline_RevProtect == 3) then {dmg_trig=true};//changed for antistasi
 
 if (Lifeline_Revive_debug) then {
 	[] call serverSide_MissionSettings;//just diaglogs
@@ -34,12 +34,16 @@ publicVariable "Lifeline_incapacitated";
 Lifeline_Process = [];
 publicVariable "Lifeline_Process";
 Lifeline_medics = [];
-Lifeline_LimitDist = 1000;
+// Lifeline_LimitDist = 4000;
 Lifeline_textsize = str 1.5;
 Lifeline_players_autorev = [];
 Lifeline_UnitVoices = Lifeline_UnitVoices call BIS_fnc_arrayShuffle;
 Lifeline_UnitVoicesCount = count Lifeline_UnitVoices;
 Lifeline_mascas = false;
+// Lifeline_PVPstatus = false;
+// publicVariable "Lifeline_PVPstatus";
+
+
 
 // RadioPartA = ["_hangtight1","_greetA1","_greetA2","_greetA3","_greetB2","_greetB3","_hanginthere1","_staybuddy1"];
 RadioPartA = ["_hangtight1"];
@@ -47,11 +51,47 @@ RadioPartB = ["_coming1","_comingtogetyou1","_onmyway1","_theresoon1"];
 
 if (Lifeline_Revive_debug) then {{[_x, 100000] remoteExec ["addRating", _x]} foreach allplayers;};
 
-// wait for players 
+
+
+
+
+// PVP check
+/* if (hasInterface) then {
+	playerSide1 = side group player; 
+	_currentSides = missionNamespace getVariable ["Lifeline_PVPcheckSides", []];
+	_currentSides pushBackUnique playerSide1;
+	missionNamespace setVariable ["Lifeline_PVPcheckSides", _currentSides, true];
+	enemyUnitsJa = allUnits select {[playerSide1, side group _x] call BIS_fnc_sideIsEnemy};
+	publicVariable "enemyUnitsJa";
+};
+_playersides = missionNamespace getVariable ["Lifeline_PVPcheckSides", []];
+if (count _playersides > 1) then {
+	Lifeline_PVPstatus = true;
+};
+if (count _playersides == 1) then {
+	Lifeline_PVPstatus = false;
+};
+publicVariable "Lifeline_PVPstatus";
+
+ */
+
+
+
+/* // wait for players 
 waitUntil {count (allPlayers - entities "HeadlessClient_F") >0};
 
 _players = allPlayers - entities "HeadlessClient_F";
-Lifeline_Side = side (_players select 0);
+
+// if there are only players on one side, then set the side to that side. If its PVP
+// Needs updating to include allies.
+Lifeline_Side = side (_players select 0); //
+publicVariable "Lifeline_Side"; // THIS IS A SINGLE SIDE. NEED TO UPDATE TO ARRAY VERSION  FOR ALLIES.
+Lifeline_OPFOR_Sides = Lifeline_Side call BIS_fnc_enemySides;
+publicVariable "Lifeline_OPFOR_Sides"; // THIS IS AN ARRAY OF ENEMY SIDES */
+
+//added 2025-02-21 17:24:43 WIP for Opfor
+playerSide1 = side group player; //fix for dedicated
+enemyUnitsJa = allUnits select {[playerSide1, side group _x] call BIS_fnc_sideIsEnemy};
 
 //added 2025-02-21 17:24:43 WIP for Opfor
 playerSide1 = side group player; //fix for dedicated
@@ -59,82 +99,110 @@ enemyUnitsJa = allUnits select {[playerSide1, side group _x] call BIS_fnc_sideIs
 
 
 // if a teamswitch mission
-if (BI_RespawnDetected in [4,5]) then {
-
+if (teamSwitchEnabled) then {
+	
+	
 	addMissionEventHandler ["TeamSwitch", {
 		params ["_previousUnit", "_newUnit"];
-		diag_log format ["xxxxxxxxxxxxxxxxxxxxxxxxx TEAM SWITCH prev %1 new %2 xxxxxxxxxxxxxxxxxxxxxxxx", name _previousUnit, name _newUnit];
+		diag_log format ["xxxxxxxxxxxxxxxxxxxxxxxxx TEAM SWITCH baby prev %1 new %2 xxxxxxxxxxxxxxxxxxxxxxxx", name _previousUnit, name _newUnit];
+		// diag_log format ["alldisplays %1", allDisplays];
+		// playsound "siren1";
 		onTeamSwitch { 
-		_previousUnit enableAI "TeamSwitch";
-		
+			_previousUnit enableAI "TeamSwitch";		
 		};
-		_newUnit addEventHandler ["Respawn", {
-			params ["_unit", "_corpse"];
-			diag_log format ["%1 | %2 | [161]===================== RESPAWN +++++++++++++++++++++++++++++++", name _unit, name _corpse];
-		}];
+
+		// _newUnit addEventHandler ["Respawn", { // do I need this?
+		// 	params ["_unit", "_corpse"];
+		// 	diag_log format ["%1 | %2 | [161]===================== RESPAWN +++++++++++++++++++++++++++++++", name _unit, name _corpse];
+		// }];
+		if (lifeState _newUnit == "INCAPACITATED" && Lifeline_RevMethod == 2) then { 
+			if ((Lifeline_HUD_distance == true || Lifeline_cntdwn_disply != 0) && isPlayer _newUnit) then {
+				_seconds = Lifeline_cntdwn_disply;
+				// if (!(_newUnit getVariable ["Lifeline_countdown_start",false]) && Lifeline_cntdwn_disply != 0 && Lifeline_RevMethod != 3 && Lifeline_HUD_distance == false) then {
+				// 	_newUnit setVariable ["Lifeline_countdown_start",true,true];
+				// 	[[_newUnit,_seconds], Lifeline_countdown_timer2] remoteExec ["spawn",_newUnit, true];
+				// }; 
+				if (!(_newUnit getVariable ["Lifeline_countdown_start",false])) then {
+					_newUnit setVariable ["Lifeline_countdown_start",true,true];
+					[[_newUnit,_seconds], Lifeline_countdown_timer2] remoteExec ["spawn",_newUnit, true];
+				};
+				if ((_previousUnit getVariable ["Lifeline_countdown_start",false])) then {
+					_previousUnit setVariable ["Lifeline_countdown_start",false,true];
+				};
+			};	
+		};
 	}];
 
 	//change font colour in teamswitch pop-up for incap units
-	fnc_teamSwitch = { 
-	  disableSerialization; 
-	  params ["_type","_ctrlDispl"]; 
-	  private _idc = ctrlIDC (_ctrlDispl select 0); 
-	  private _selectedIndex = _ctrlDispl param [1]; 
-	  _displ = findDisplay 632; 
-	  _ctrl101 = _displ displayCtrl 101; 
-	  _cnt = (lbsize 101) -1; 
-	  for "_i" from 0 to _cnt do { 
-		_selectedUnit = switchableUnits param [_i,objNull]; 
-		_unit = vehicle _selectedUnit; 
-		/* if (lifeState _unit == "incapacitated") then { 
-		  //lbSetText [_idc,_i,"unconscious unit"]; 
-		  //lbSetTooltip [_idc, _i, "unconscious unit"]; 
-		  lbSetColor [_idc, _i,[1,0,0,1]];	// CHANGE COLOR HERE (R,G,B,A) 
-		};  */
-		if (_unit getVariable ["ReviveInProgress",0] == 0 && lifestate _unit == "INCAPACITATED") then {
-			// lbSetColor [_idc, _i,[255,191,167,1]];	// CHANGE COLOR HERE (R,G,B,A) 
-			lbSetColor [_idc, _i,[1,0,0,1]];	// CHANGE COLOR HERE (R,G,B,A) //RED
-		};		
-		if (_unit getVariable ["ReviveInProgress",0] == 3 && lifestate _unit == "INCAPACITATED") then {
-			_medic = (_unit getVariable ["Lifeline_AssignedMedic", []]) select 0;
-			if (_medic getVariable ["ReviveInProgress",0] == 1) then {
-				// lbSetColor [_idc, _i,[0.98, 0.67, 0.23, 1]];	// CHANGE COLOR HERE (R,G,B,A) //ORANGE
-				lbSetColor [_idc, _i,[0.996, 0.48, 0.48, 1]];	// CHANGE COLOR HERE (R,G,B,A) //LIGHT RED
-			};			
-			if (_medic getVariable ["ReviveInProgress",0] == 2) then {
-				lbSetColor [_idc, _i,[0.98, 0.67, 0.23, 1]];	// CHANGE COLOR HERE (R,G,B,A) //ORANGE
-				// lbSetColor [_idc, _i,[0.99, 0.84, 0.63, 1]];	// CHANGE COLOR HERE (R,G,B,A) //LIGHT ORANGE
+	if (hasInterface) then {
+		fnc_teamSwitch = { 
+		disableSerialization; 
+		params ["_type","_ctrlDispl"]; 
+		private _idc = ctrlIDC (_ctrlDispl select 0); 
+		private _selectedIndex = _ctrlDispl param [1]; 
+		_displ = findDisplay 632; 
+		_ctrl101 = _displ displayCtrl 101; 
+		_cnt = (lbsize 101) -1; 
+		for "_i" from 0 to _cnt do { 
+			_selectedUnit = switchableUnits param [_i,objNull]; 
+			_unit = vehicle _selectedUnit; 
+			/* if (lifeState _unit == "incapacitated") then { 
+			//lbSetText [_idc,_i,"unconscious unit"]; 
+			//lbSetTooltip [_idc, _i, "unconscious unit"]; 
+			lbSetColor [_idc, _i,[1,0,0,1]];	// CHANGE COLOR HERE (R,G,B,A) 
+			};  */
+			if (_unit getVariable ["ReviveInProgress",0] == 0 && lifestate _unit == "INCAPACITATED") then {
+				// lbSetColor [_idc, _i,[255,191,167,1]];	// CHANGE COLOR HERE (R,G,B,A) 
+				lbSetColor [_idc, _i,[1,0,0,1]];	// CHANGE COLOR HERE (R,G,B,A) //RED
+			};		
+			if (_unit getVariable ["ReviveInProgress",0] == 3 && lifestate _unit == "INCAPACITATED") then {
+				_medic = (_unit getVariable ["Lifeline_AssignedMedic", []]) select 0;
+				if (_medic getVariable ["ReviveInProgress",0] == 1) then {
+					// lbSetColor [_idc, _i,[0.98, 0.67, 0.23, 1]];	// CHANGE COLOR HERE (R,G,B,A) //ORANGE
+					lbSetColor [_idc, _i,[0.996, 0.48, 0.48, 1]];	// CHANGE COLOR HERE (R,G,B,A) //LIGHT RED
+					lbSetText [_idc, _i, format ["%1 ← ", lbText [_idc, _i]]]; 
+				};			
+				if (_medic getVariable ["ReviveInProgress",0] == 2) then {
+					lbSetColor [_idc, _i,[0.345, 0.839, 0.553, 1]];	// CHANGE COLOR HERE (R,G,B,A) //GREEN
+					// lbSetColor [_idc, _i,[0.99, 0.84, 0.63, 1]];	// CHANGE COLOR HERE (R,G,B,A) //LIGHT ORANGE
+					lbSetText [_idc, _i, format ["%1 ↑ ", lbText [_idc, _i]]]; 
+				};
 			};
-		};
-		if (_unit getVariable ["ReviveInProgress",0] == 1) then {
-		  lbSetColor [_idc, _i,[0.71, 1, 0.34, 1]];	// CHANGE COLOR HERE (R,G,B,A) // LIGHT GREEN
-		}; 		
-		if (_unit getVariable ["ReviveInProgress",0] == 2) then {
-		  // lbSetColor [_idc, _i,[0.39, 1, 0.43, 1]];	// CHANGE COLOR HERE (R,G,B,A) // GREEN
-		  lbSetColor [_idc, _i,[0.13, 0.76, 0.24, 1]];	// CHANGE COLOR HERE (R,G,B,A) // GREEN
+			if (_unit getVariable ["ReviveInProgress",0] == 1) then {
+				// lbSetColor [_idc, _i,[0.39, 1, 0.43, 1]];
+				lbSetColor [_idc, _i,[0.98, 0.94, 0.87, 1]];	// CHANGE COLOR HERE (R,G,B,A) //  light beige/cream color.
+				lbSetText [_idc, _i, format ["%1 → ", lbText [_idc, _i]]]; // Add plus symbol to name
+			}; 		
+			if (_unit getVariable ["ReviveInProgress",0] == 2) then {
+				// lbSetColor [_idc, _i,[0.39, 1, 0.43, 1]];	// CHANGE COLOR HERE (R,G,B,A) // GREEN
+				lbSetColor [_idc, _i,[0.98, 0.94, 0.87, 1]];	// CHANGE COLOR HERE (R,G,B,A) // light beige/cream color.
+				lbSetText [_idc, _i, format ["%1 + + +", lbText [_idc, _i]]]; // Add plus symbol to name
+			}; 
 		}; 
-	  }; 
-	  if (_type == 1) then {true}; 
-	  //this turns of the button to switch into unit
-	  /* if (lifeState (vehicle (switchableUnits param [_selectedIndex,objNull])) == "incapacitated") then { 
-		(_displ displayCtrl 1) ctrlShow false 
-	  } else { 
-		(_displ displayCtrl 1) ctrlShow true 
-	  }  */
-	}; 
+		if (_type == 1) then {true}; 
+		//this turns of the button to switch into unit
+		/* if (lifeState (vehicle (switchableUnits param [_selectedIndex,objNull])) == "incapacitated") then { 
+			(_displ displayCtrl 1) ctrlShow false 
+		} else { 
+			(_displ displayCtrl 1) ctrlShow true 
+		}  */
+		}; 
 
-	[] spawn { 
-	  while {true} do { 
-		waituntil {sleep 0.2; !isnull findDisplay 632}; 
-		(findDisplay 632 displayCtrl 101) ctrlAddEventHandler ["LBSelChanged", 
-		  "[0,_this] call fnc_teamSwitch" 
-		]; 
-		(findDisplay 632 displayCtrl 101) ctrlsetEventHandler ["LBDblClick", 
-		  "[1,_this] call fnc_teamSwitch" 
-		]; 
-		waitUntil {sleep 0.2; isNull findDisplay 632}; 
-	  }; 
-	};
+
+
+		[] spawn { 
+		while {true} do { 
+			waituntil {sleep 0.2; !isnull findDisplay 632}; 
+			(findDisplay 632 displayCtrl 101) ctrlAddEventHandler ["LBSelChanged", 
+			"[0,_this] call fnc_teamSwitch" 
+			]; 
+			(findDisplay 632 displayCtrl 101) ctrlsetEventHandler ["LBDblClick", 
+			"[1,_this] call fnc_teamSwitch" 
+			]; 
+			waitUntil {sleep 0.2; isNull findDisplay 632}; 
+		}; 
+		};
+	}; // if (hasInterface) then {	
 
 
 }; // if (BI_RespawnDetected in [4,5]) then {
@@ -151,6 +219,11 @@ if (Lifeline_RevMethod == 3) then {
 
 // Add data to all units in scope - Damage Handler for non-ace version and settings for both
 
+
+
+
+
+
 if (isServer) then {
 
 	Lifeline_All_Units = [];
@@ -164,6 +237,52 @@ if (isServer) then {
 			Lifelineunitscount_pre = (count Lifeline_All_Units);
 		};
 
+<<<<<<< HEAD
+		if (Lifeline_PVPstatus) then {
+				// GROUP
+				if (Lifeline_Scope == 1) then {_groupsWPlayers = allGroups select {{isPlayer _x} count (units _x) > 0 }; Lifeline_All_Units = allunits select {(group _x) in _groupsWPlayers && simulationEnabled _x && isDamageAllowed _x && rating _x > -2000}};
+				// PLAYABLE SLOTS
+				if (Lifeline_Scope == 2) then {Lifeline_All_Units = allunits select {simulationEnabled _x && isDamageAllowed _x && ((_x in playableUnits) || (_x in switchableUnits)) && rating _x > -2000}};
+				// SIDE	
+				if (Lifeline_Scope == 3) then {Lifeline_All_Units = allunits select {simulationEnabled _x && isDamageAllowed _x && rating _x > -2000}};
+		};
+
+		if (!Lifeline_PVPstatus) then {
+			if (Lifeline_Include_OPFOR) then {
+				// GROUP
+				if (Lifeline_Scope == 1) then {_groupsWPlayers = allGroups select {{isPlayer _x} count (units _x) > 0 }; Lifeline_All_UnitBluFor = allunits select {(group _x) in _groupsWPlayers && side (group _x) == Lifeline_Side && simulationEnabled _x && isDamageAllowed _x && rating _x > -2000}};
+				// PLAYABLE SLOTS
+				if (Lifeline_Scope == 2) then {Lifeline_All_UnitBluFor = allunits select {side (group _x) == Lifeline_Side && simulationEnabled _x && isDamageAllowed _x && ((_x in playableUnits) || (_x in switchableUnits)) && rating _x > -2000}};
+				// SIDE	
+				if (Lifeline_Scope == 3) then {Lifeline_All_UnitBluFor = allunits select {side (group _x) == Lifeline_Side && simulationEnabled _x && isDamageAllowed _x && rating _x > -2000}};
+				// OPFOR
+				Lifeline_All_UnitOpFor = allunits select {(side (group _x) in Lifeline_OPFOR_Sides && simulationEnabled _x && isDamageAllowed _x)};
+				// ALL UNITS
+				Lifeline_All_Units = Lifeline_All_UnitBluFor + Lifeline_All_UnitOpFor;
+			};
+			if (!Lifeline_Include_OPFOR) then {
+				// GROUP
+				if (Lifeline_Scope == 1) then {_groupsWPlayers = allGroups select {{isPlayer _x} count (units _x) > 0 }; Lifeline_All_Units = allunits select {side (group _x) == Lifeline_Side && (group _x) in _groupsWPlayers && simulationEnabled _x && isDamageAllowed _x && rating _x > -2000}};
+				// PLAYABLE SLOTS
+				if (Lifeline_Scope == 2) then {Lifeline_All_Units = allunits select {side (group _x) == Lifeline_Side && simulationEnabled _x && isDamageAllowed _x && ((_x in playableUnits) || (_x in switchableUnits)) && rating _x > -2000}};				
+				// SIDE	
+				if (Lifeline_Scope == 3) then {Lifeline_All_Units = allunits select {side (group _x) == Lifeline_Side && simulationEnabled _x && isDamageAllowed _x && rating _x > -2000}};
+			};	
+		};
+
+		
+		/* if (Lifeline_Scope != 1) then {
+			if (Lifeline_PVPstatus) then {			        
+				// Lifeline_All_Units = Lifeline_All_Units select {(side (group _x) == Lifeline_Side) || (side (group _x) in Lifeline_OPFOR_Sides)};
+				Lifeline_All_UnitBluFor = Lifeline_All_Units select {(side (group _x) == Lifeline_Side)};
+				Lifeline_All_UnitOpFor = Lifeline_All_Units select {(side (group _x) in Lifeline_OPFOR_Sides)};
+				Lifeline_All_Units = Lifeline_All_UnitBluFor + Lifeline_All_UnitOpFor;
+			} else {
+				Lifeline_All_Units = Lifeline_All_Units select {(side (group _x) == Lifeline_Side)};
+			};
+		}; */
+
+=======
 		// GROUP
 		if (Lifeline_Scope == 1 && isDedicated) then {_groupsWPlayers = allGroups select {{isPlayer _x} count (units _x) > 0 }; Lifeline_All_Units = allunits select {(group _x) in _groupsWPlayers && simulationEnabled _x && rating _x > -2000}};
 		if (Lifeline_Scope == 1 && !isDedicated) then {Lifeline_All_Units = allunits select {group _x == group player && simulationEnabled _x && rating _x > -2000}};
@@ -196,6 +315,7 @@ if (isServer) then {
 			};
 		};
 
+>>>>>>> 587abbfd0679f8fd5647207d0d9400494fa562ac
 		publicVariable "Lifeline_All_Units";
 		waitUntil {count Lifeline_All_Units >0};
 		Lifelineunitscount = (count Lifeline_All_Units); // added to indicate with a hint when all units are processed below	
@@ -213,7 +333,7 @@ if (isServer) then {
 					// add voice identifiers (the orignal voiceover artists name)	
 					if ((teamSwitchEnabled == false && !(isPlayer _x)) || teamSwitchEnabled == true) then {
 						_x setVariable ["Lifeline_Voice", Lifeline_UnitVoices select (Lifeline_UnitVoicesCount - 1), true];
-						diag_log format ["kkkkkkkkkkkkkkkkk VOICE PAIRING. UNIT: %1 VOICE: %3", name _x, _x, Lifeline_UnitVoices select (Lifeline_UnitVoicesCount - 1)];
+						// diag_log format ["kkkkkkkkkkkkkkkkk VOICE PAIRING. UNIT: %1 VOICE: %3", name _x, _x, Lifeline_UnitVoices select (Lifeline_UnitVoicesCount - 1)];
 							if (Lifeline_UnitVoicesCount == 0) then {
 							Lifeline_UnitVoicesCount = count Lifeline_UnitVoices;
 							};
@@ -222,7 +342,13 @@ if (isServer) then {
 
 				//set skill for your AI Units	
 				if (Lifeline_AI_skill > 0) then {
-					_x setSkill Lifeline_AI_skill;
+                    if (!Lifeline_Include_OPFOR || Lifeline_PVPstatus) then {
+						_x setSkill Lifeline_AI_skill;
+					} else {
+						if (side group _x == Lifeline_Side) then {
+							_x setSkill Lifeline_AI_skill;
+						};
+					};
 				};
 
 				//set Fatigue for all units non-ACE. Bypass if 0
@@ -238,10 +364,13 @@ if (isServer) then {
 
 				//make units "explosivespecialists" trait. Its annoying not being able to unset a bomb when accidently set. 
 				if (Lifeline_ExplSpec) then {
-					if (local _x) then {
-						_x setUnitTrait ["ExplosiveSpecialist", true];
+					if (!Lifeline_Include_OPFOR || Lifeline_PVPstatus) then {
+						if (local _x) then {_x setUnitTrait ["ExplosiveSpecialist", true];} else {[_x, ["ExplosiveSpecialist", true]] remoteExec ["setUnitTrait", _x]}
 					} else {
-						[_x, ["ExplosiveSpecialist", true]] remoteExec ["setUnitTrait", _x]}
+						if (side group _x == Lifeline_Side) then {
+							if (local _x) then {_x setUnitTrait ["ExplosiveSpecialist", true];} else {[_x, ["ExplosiveSpecialist", true]] remoteExec ["setUnitTrait", _x]}
+						};
+					};				
 				};
 
 				if (Lifeline_RevMethod == 2) then { 
@@ -250,14 +379,18 @@ if (isServer) then {
 
 				// add Damage Handler for non-ace version
 				if (Lifeline_RevMethod == 2) then {  
-					[_x] execvm "Lifeline_Revive\scripts\non_ace\Lifeline_DamageHandler.sqf";
+					if (Lifeline_PVPstatus == false && Lifeline_Include_OPFOR == true && (side group _X) in Lifeline_OPFOR_Sides) then {
+						[_x] execvm "Lifeline_Revive\scripts\non_ace\Lifeline_DamageHandlerOPFOR.sqf";
+					} else {
+						[_x] execvm "Lifeline_Revive\scripts\non_ace\Lifeline_DamageHandler.sqf";
+					};
 				}; 
 
 				// add groups 
 				if ((_x getVariable ["Lifeline_Grp",""]) == "") then {
 					_goup = group _x;
 					_x setVariable ["Lifeline_Grp", _goup, true];
-					_x setVariable ["LifelinePairTimeOut",0,true];diag_log format ["%1 [304]!!!!!!!!! change var LifelinePairTimeOut = 0 !!!!!!!!!!!!!", name _x];
+					_x setVariable ["LifelinePairTimeOut",0,true];//diag_log format ["%1 [304]!!!!!!!!! change var LifelinePairTimeOut = 0 !!!!!!!!!!!!!", name _x];
 				};
 
 				// Add vehicle to Lifeline_All_Units
@@ -266,29 +399,32 @@ if (isServer) then {
 					_x setVariable ["AssignedVeh", _vehicle, true];
 				};
 
-				// add death event handler for debugging
-				if (Lifeline_Revive_debug) then {
-					_x addMPEventHandler ["MPKilled", {
-							params ["_unit", "_killer", "_instigator", "_useEffects"];	
-								if (Lifeline_RevProtect == 1) then {
-									if (Lifeline_debug_soundalert) then {["siren1"] remoteExec ["playSound",2];[selectRandom["memberdied1","memberdied2","memberdied3","memberdied4","memberdied5"]] remoteExec ["playSound",2];};
-								};
-								if (isNull (findDisplay 49)) then {
-									[_unit,"KILLED"] remoteExec ["serverSide_unitstate", 2];
-									["KILLED"] remoteExec ["serverSide_Globals", 2]
-								};
-					}];
-				};
+				// add death event handler 
+				_x addMPEventHandler ["MPKilled", {
+						params ["_unit", "_killer", "_instigator", "_useEffects"];	
+						[[_unit],"killed EH [320] _Global.sqf"] call Lifeline_reset2;
+						if (Lifeline_Revive_debug && Lifeline_PVPstatus == false && Lifeline_Include_OPFOR == true && (side group _X) in Lifeline_OPFOR_Sides) then {
+							if (Lifeline_RevProtect == 1) then {
+								if (Lifeline_debug_soundalert && Lifeline_soundalert_died) then {["memberdied1"] remoteExec ["playSound",0];};
+							};
+							if (isNull (findDisplay 49)) then {
+								[_unit,"KILLED"] remoteExec ["serverSide_unitstate", 2];
+								["KILLED"] remoteExec ["serverSide_Globals", 2]
+							};
+						};
+				}];
 
 
 				// set "added" trigger 
 				_x setVariable ["LifelineDHadded",true,true];
 
-				sleep 0.5;
+				// sleep 0.1;
+				sleep 0.05;
 
 			}; // end (_x getVariable ["LifelineDHadded",false]
 
 		} foreach Lifeline_All_Units;
+
 
 		publicVariable "Lifeline_All_Units";
 
@@ -296,7 +432,8 @@ if (isServer) then {
 
 	}; // end Lifeline_DH_update
 
-	[] call Lifeline_DH_update; diag_log "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk [251] [] call Lifeline_DH_update ";
+	[] call Lifeline_DH_update; diag_log "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk [330] [] call Lifeline_DH_update ";
+	
 
 	//DEBUG
 	//====== BI REVIVE ADJUST
@@ -330,12 +467,23 @@ if (isServer) then {
 
 if (isServer) then {
 	[] spawn {
+
+		//hackfix spawn switches
+		hackfix_invincible_units = true; // fix bugged invincible units
+		hackfix_captive_units = true; // fix bugged captive units
+		hackfix_bleedout_time = true; // fix bugged bleedout time
+		hackfix_captive_incap = true; // captive when incapitated, force it.
+		
+
+
+
+
 				
 		while {true} do {
-			_alldown = true;
-			_autorevive = false;
+			// _alldown = true;  // no longer needed. was for old method MASCAL
+			// _autorevive = false; // no longer needed. was for old method MASCAL
 			_crouchtrig = false;
-			_incappos = nil;
+			// _incappos = nil;  // no idea what this was for
 
 			{
 				if (Lifeline_Idle_Crouch) then {
@@ -457,15 +605,15 @@ if (isServer) then {
 								// [_x, true] remoteExec ["allowDamage",_x];diag_log format ["%1 | [0340][Lifeline_ReviveEngine.sqf] ALLOWDAMAGE SET: %2", name _x, isDamageAllowed _x];
 								// [_x, false] remoteExec ["setCaptive",_x];diag_log format ["%1 | [0340]!!!!!!!!! change var setCaptive = false !!!!!!!!!!!!!", name _x];
 								_captive = _x getVariable ["Lifeline_Captive", false];
-								if !(local _x) then {
-									[_x, true] remoteExec ["allowDamage",_x];diag_log format ["%1 | [0412][Lifeline_ReviveEngine.sqf] ALLOWDAMAGE SET: %2", name _x, isDamageAllowed _x];
+								// if !(local _x) then {
+									[_x, true] remoteExec ["allowDamage",0];diag_log format ["%1 | [0412][Lifeline_ReviveEngine.sqf] ALLOWDAMAGE SET: %2", name _x, isDamageAllowed _x];
 									// [_x, false] remoteExec ["setCaptive",_x];diag_log format ["%1 | [0413]!!!!!!!!! change var setCaptive = false !!!!!!!!!!!!!", name _x];
-									[_x, _captive] remoteExec ["setCaptive",_x];diag_log format ["%1 | [0413]!!!!!!!!! change var setCaptive = %2 !!!!!!!!!!!!!", name _x, _captive];
-								} else {
+									[_x, _captive] remoteExec ["setCaptive",0];diag_log format ["%1 | [0413]!!!!!!!!! change var setCaptive = %2 !!!!!! ReviveInProgress: %3 !!!!!!!", name _x, _captive, _x getVariable ["ReviveInProgress",0]];
+							/* 	} else {
 									_x allowDamage true; diag_log format ["%1 | [0415][Lifeline_ReviveEngine.sqf] ALLOWDAMAGE SET: %2", name _x, "true"];
 									// _x setCaptive false; diag_log format ["%1 | [0416]!!!!!!!!! change var setCaptive = false !!!!!!!!!!!!!", name _x];								
 									_x setCaptive _captive; diag_log format ["%1 | [0416]!!!!!!!!! change var setCaptive = %2 !!!!!!!!!!!!!", name _x, _captive];								
-								};
+								}; */
 						}; // if
 					}; //spawn
 				};					
@@ -492,10 +640,9 @@ if (isServer) then {
 							_x setVariable ["LifelineBleedOutTime", 0, true];diag_log format ["%1 [365]!!!!!!!!! change var LifelinePairTimeOut = 0 !!!!!!!!!!!!!", name _x];
 							_x call Lifeline_reset_variables;
 							// diag_log format ["%1| _x [2003] !!!!!!!!!!!!!! Lifeline_RESET CALL FUNCTION. Lifeline_reset_trig: %2", name _x, (_x getVariable ["Lifeline_reset_trig",false])];
-									if (_x getVariable ["ReviveInProgress",0] == 3) then {
-									// if !(_x getVariable ["Lifeline_reset_trig",false]) then {
-											// _x setVariable ["Lifeline_reset_trig", true, true]; diag_log format ["%1 | [0369]!!!!!!!!! change var Lifeline_reset_trig = true !!!!!!!!!!!!!", name _x]; // to stop double reset.			
-										[[_x],"373"] call Lifeline_reset2;														
+									if (_x getVariable ["ReviveInProgress",0] in [0,3]) then {
+												
+										[[_x],"ZEUS, CONSOLE or 3RD PARTY SCRIPT HEAL"] call Lifeline_reset2;														
 									};	
 						}; // if ((
 					}; //spawn
@@ -531,24 +678,37 @@ if (isServer) then {
 				// ========================= CROUCH SCRIPT. MAKE UNIT CROUCH WHEN STANDING AND IDLE. MORE IMMERSIVE. (ONLY IN "AWARE" BEHAVIOUR MODE) ============================
 
 				if (Lifeline_Idle_Crouch) then {
-					if (speed _x <= Lifeline_Idle_Crouch_Speed && stance _x == "STAND" && _crouchtrig == false && behaviour _x == "AWARE" && _x getVariable ["ReviveInProgress",0] == 0) then {
+
+					if (Lifeline_PVPstatus == false && Lifeline_Include_OPFOR == true && (side group _X) in Lifeline_OPFOR_Sides && !Lifeline_Idle_CrouchOPFOR) exitWith {};
+
+					
+				/* 	if (speed _x <= Lifeline_Idle_Crouch_Speed && stance _x == "STAND" && _crouchtrig == false && behaviour _x == "AWARE" && _x getVariable ["ReviveInProgress",0] == 0) then {
 						_crouchtrig = true; 
 					   _x setUnitPos "MIDDLE";
+					   [_x, "MIDDLE"] remoteExec ["setUnitPos", 0];
 					   diag_log format ["%1 | Set to crouch", name _x];
 					};
 					if ((speed _x > Lifeline_Idle_Crouch_Speed && _crouchtrig == true) || behaviour _x != "AWARE") then {
-						_crouchtrig = false;
-						diag_log format ["%1 | Return to previous stance", name _x];
+						_crouchtrig = false;						
 						if (unitPos _x != "DOWN") then {
 							_x setUnitPos "AUTO";
+							[_x, "AUTO"] remoteExec ["setUnitPos", 0];
 						};
+						diag_log format ["%1 | Return to previous stance: %2", name _x, unitPos _x];
 					}; 
 					if (speed _x == 0 && _crouchtrig == true && (behaviour _x == "COMBAT" || behaviour _x == "STEALTH" || (isPlayer (leader group _x) && stance (leader group _x) == "PRONE" && behaviour _x == "AWARE"))) then {
 						_crouchtrig = false;
-						_x setUnitPos "DOWN";
-						_x setUnitPos "AUTO";  
+						// _x setUnitPos "DOWN";
+						// _x setUnitPos "AUTO";  
+						// [_x, "DOWN"] remoteExec ["setUnitPos", 0];
+						// [_x, "AUTO"] remoteExec ["setUnitPos", 0];
+						// [_x] call Lifeline_PostureHack;
+						[_x] remoteExec ["Lifeline_PostureHack", 0];
 					};
-					 _x setVariable ["Lifeline_crouchtrig",_crouchtrig, true];
+					 _x setVariable ["Lifeline_crouchtrig",_crouchtrig, true]; */
+					//  [_x] remoteExec ["Lifeline_AutoCrouch", 0];
+					//[_x, _crouchtrig] call Lifeline_AutoCrouch;
+					 [_x, _crouchtrig] remoteExec ["Lifeline_AutoCrouch", 0];
 				};	
 
 
@@ -557,17 +717,21 @@ if (isServer) then {
 
 				if (Lifeline_Revive_debug == false) then {
 
-					_captive = _x getVariable ["Lifeline_Captive", true];//changed to true for testing
+					
 			
 					// if (alive _x && lifestate _x == "INCAPACITATED" && captive _x == false && Lifeline_RevProtect != 3) then {
 					if (alive _x && lifestate _x == "INCAPACITATED" && captive _x == false && Lifeline_RevProtect != 3) then {
 						// if (Lifeline_debug_soundalert) then {["hackfix"] remoteExec ["playSound",2]};
-						// [_x,true] remoteExec ["setCaptive", _x];diag_log format ["%1 [0484 Lifeline_Debugging.sqf HACKFIX]!!!!!!!!! change var setcaptive = true !!!!!!!!!!!!!", name _x]; 
-						_x setCaptive true;diag_log format ["%1 [0485 Lifeline_ReviveEngine.sqf HACKFIX]!!!!!!!!! change var setcaptive = true !!!!!!!!!!!!!", name _x]; 				
+						[_x,true] remoteExec ["setCaptive", 0];diag_log format ["%1 [0484 Lifeline_Debugging.sqf HACKFIX]!!!!!!!!! change var setcaptive = true !!!!! ReviveInProgress: %2 !!!!!!!!", name _x, _x getVariable ["ReviveInProgress",0]]; 
+						_x setCaptive true;diag_log format ["%1 [0485 Lifeline_ReviveEngine.sqf HACKFIX]!!!!!!!!! change var setcaptive = true !!!!! ReviveInProgress: %2 !!!!!!!!", name _x, _x getVariable ["ReviveInProgress",0]]; 				
 					};
 
 					// if ((isDamageAllowed _x == false || captive _x == true) && alive _x && lifestate _x != "INCAPACITATED" &&  _x getVariable ["ReviveInProgress",0] == 0 && !(_x in Lifeline_Process) // deleted _x getVariable ["LifelineBleedOutTime",0] (unlike line above)
+<<<<<<< HEAD
+			      /*   if ((isDamageAllowed _x == false || (captive _x == true && _captive == false)) && alive _x && lifestate _x != "INCAPACITATED" &&  _x getVariable ["ReviveInProgress",0] == 0 && !(_x in Lifeline_Process) // deleted _x getVariable ["LifelineBleedOutTime",0] (unlike line above)
+=======
 /* 					if ((isDamageAllowed _x == false || (captive _x == true && _captive == false)) && alive _x && lifestate _x != "INCAPACITATED" &&  _x getVariable ["ReviveInProgress",0] == 0 && !(_x in Lifeline_Process) // deleted _x getVariable ["LifelineBleedOutTime",0] (unlike line above)
+>>>>>>> 587abbfd0679f8fd5647207d0d9400494fa562ac
 						&& (isNull findDisplay 60492) && (isNull findDisplay 47) && (isNull findDisplay 48) && (isNull findDisplay 50) && (isNull findDisplay 51) && (isNull findDisplay 58) && (isNull findDisplay 61) && (isNull findDisplay 312) && (isNull findDisplay 314)) then {
 						[_x] spawn {
 							params ["_x"];
@@ -579,8 +743,8 @@ if (isServer) then {
 									// if (Lifeline_debug_soundalert) then {["hackfix"] remoteExec ["playSound",2]};									
 									if !(local _x) then {
 										[_x, true] remoteExec ["allowDamage",_x];diag_log format ["%1 | [0496 HACKFIX][Lifeline_ReviveEngine.sqf] ALLOWDAMAGE SET: %2", name _x, "true"];
-										// [_x, false] remoteExec ["setCaptive",_x];diag_log format ["%1 | [0497 HACKFIX][Lifeline_ReviveEngine.sqf]!!!!!!!!! change var setCaptive = false !!!!!!!!!!!!!", name _x];	
-										[_x, _captive] remoteExec ["setCaptive",_x];diag_log format ["%1 | [0497 HACKFIX][Lifeline_ReviveEngine.sqf]!!!!!!!!! change var setCaptive = %2 !!!!!!!!!!!!!", name _x, _captive];	
+										// [_x, false] remoteExec ["setCaptive",0];diag_log format ["%1 | [0497 HACKFIX][Lifeline_ReviveEngine.sqf]!!!!!!!!! change var setCaptive = false !!!!!!!!!!!!!", name _x];	
+										[_x, _captive] remoteExec ["setCaptive",0];diag_log format ["%1 | [0497 HACKFIX][Lifeline_ReviveEngine.sqf]!!!!!!!!! change var setCaptive = %2 !!!!!!!!!!!!!", name _x, _captive];	
 									} else {
 										_x allowDamage true;diag_log format ["%1 | [0499 HACKFIX][Lifeline_ReviveEngine.sqf] ALLOWDAMAGE SET: %2", name _x, isDamageAllowed _x];
 										// _x setCaptive false;diag_log format ["%1 | [0500 HACKFIX][Lifeline_ReviveEngine.sqf]!!!!!!!!! change var setCaptive = false !!!!!!!!!!!!!", name _x];		
@@ -588,12 +752,66 @@ if (isServer) then {
 									};			
 							};									
 						};
+<<<<<<< HEAD
+					}; */	
+=======
 					};		 */			
+>>>>>>> 587abbfd0679f8fd5647207d0d9400494fa562ac
 
-					if (lifestate _x != "INCAPACITATED" && alive _x && (_x getVariable ["LifelineBleedOutTime",0]) != 0 && !(_x in Lifeline_Process)) then {
+					_captive = _x getVariable ["Lifeline_Captive", false];		
+					
+						    
+					
+					if (hackfix_captive_units && captive _x == true && _captive == false && alive _x && lifestate _x != "INCAPACITATED" &&  _x getVariable ["ReviveInProgress",0] == 0 && !(_x in Lifeline_Process) // deleted _x getVariable ["LifelineBleedOutTime",0] (unlike line above)
+						&& (!isPlayer _x || (isPlayer _x && (isNull findDisplay 60492) && (isNull findDisplay 47) && (isNull findDisplay 48) && (isNull findDisplay 50) && (isNull findDisplay 51) && (isNull findDisplay 58) && (isNull findDisplay 61) && (isNull findDisplay 312) && (isNull findDisplay 314)))) then {
+						hackfix_captive_units = false;
 						[_x] spawn {
 							params ["_x"];
 							sleep 7;
+							hackfix_captive_units = true;
+							_captive = _x getVariable ["Lifeline_Captive", false];
+							// if ((isDamageAllowed _x == false || captive _x == true) && alive _x && lifestate _x != "INCAPACITATED" && !(_x getVariable ["Lifeline_Down",false]) && _x getVariable ["ReviveInProgress",0] == 0 && (_x getVariable ["LifelineBleedOutTime",0]) == 0 && !(_x in Lifeline_Process)
+							if (captive _x == true && _captive == false && alive _x && lifestate _x != "INCAPACITATED" && _x getVariable ["ReviveInProgress",0] == 0 && !(_x in Lifeline_Process)  // deleted _x getVariable ["LifelineBleedOutTime",0] (unlike line above)
+								&& (!isPlayer _x || (isPlayer _x && (isNull findDisplay 60492) && (isNull findDisplay 47) && (isNull findDisplay 48) && (isNull findDisplay 50) && (isNull findDisplay 51) && (isNull findDisplay 58) && (isNull findDisplay 61) && (isNull findDisplay 312) && (isNull findDisplay 314)))) then {
+									// if (Lifeline_debug_soundalert) then {["hackfix"] remoteExec ["playSound",2]};									
+									// if !(local _x) then {	
+									// 	[_x, _captive] remoteExec ["setCaptive",0];diag_log format ["%1 | [0497 HACKFIX][Lifeline_ReviveEngine.sqf]!!!!!!!!! change var setCaptive = %2 !!!!!!!!!!!!!", name _x, _captive];	
+									// } else {	
+									// 	_x setCaptive _captive;diag_log format ["%1 | [0500 HACKFIX][Lifeline_ReviveEngine.sqf]!!!!!!!!! change var setCaptive = %2 !!!!!!!!!!!!!", name _x, _captive];		
+									// };
+									
+									[format["Bug: Unit %1 is captive", name _x]] remoteExec ["hint", 0];												
+							};									
+						};
+					}; 	
+
+					// FIX bugged invincible units.
+			        if (hackfix_invincible_units && isDamageAllowed _x == false && alive _x && lifestate _x != "INCAPACITATED" &&  _x getVariable ["ReviveInProgress",0] == 0 && !(_x in Lifeline_Process) // deleted _x getVariable ["LifelineBleedOutTime",0] (unlike line above)
+						&& (!isPlayer _x || (isPlayer _x && (isNull findDisplay 60492) && (isNull findDisplay 47) && (isNull findDisplay 48) && (isNull findDisplay 50) && (isNull findDisplay 51) && (isNull findDisplay 58) && (isNull findDisplay 61) && (isNull findDisplay 312) && (isNull findDisplay 314)))) then {
+						hackfix_invincible_units = false;
+						[_x] spawn {
+							params ["_x"];
+							sleep 7;
+							hackfix_invincible_units = true;
+							if (isDamageAllowed _x == false && alive _x && lifestate _x != "INCAPACITATED" && _x getVariable ["ReviveInProgress",0] == 0 && !(_x in Lifeline_Process)  // deleted _x getVariable ["LifelineBleedOutTime",0] (unlike line above)
+								&& (!isPlayer _x || (isPlayer _x && (isNull findDisplay 60492) && (isNull findDisplay 47) && (isNull findDisplay 48) && (isNull findDisplay 50) && (isNull findDisplay 51) && (isNull findDisplay 58) && (isNull findDisplay 61) && (isNull findDisplay 312) && (isNull findDisplay 314)))) then {
+									// if (Lifeline_debug_soundalert) then {["hackfix"] remoteExec ["playSound",2]};									
+									if !(local _x) then {
+										[_x, true] remoteExec ["allowDamage",_x];diag_log format ["%1 | [0496 HACKFIX][Lifeline_ReviveEngine.sqf] ALLOWDAMAGE SET: %2", name _x, "true"];											
+									} else {
+										_x allowDamage true;diag_log format ["%1 | [0499 HACKFIX][Lifeline_ReviveEngine.sqf] ALLOWDAMAGE SET: %2", name _x, isDamageAllowed _x];		
+									};			
+							};									
+						};
+					};		 		
+
+					// FIX bugged bleedout times
+					if (hackfix_bleedout_time && lifestate _x != "INCAPACITATED" && alive _x && (_x getVariable ["LifelineBleedOutTime",0]) != 0 && !(_x in Lifeline_Process)) then {
+						hackfix_bleedout_time = false;
+						[_x] spawn {
+							params ["_x"];
+							sleep 7;
+							hackfix_bleedout_time = true;
 							if (lifestate _x != "INCAPACITATED" && alive _x && (_x getVariable ["LifelineBleedOutTime",0]) != 0 && !(_x in Lifeline_Process) ) then {
 								// if (Lifeline_debug_soundalert) then {["hackfix"] remoteExec ["playSound",2]};							
 								_x setVariable ["LifelineBleedOutTime",0,true];diag_log format ["%1 | [0491 HACKFIX][Lifeline_ReviveEngine.sqf]!!!!!!!!! change var LifelineBleedOutTime = 0 !!!!!!!!!!!!!", name _x];									
@@ -601,16 +819,16 @@ if (isServer) then {
 						};
 					};	
 					
-					// Captive state not staying true when down. 				
-					if (alive _x && lifestate _x == "INCAPACITATED" && captive _x == false && Lifeline_RevProtect != 3) then {
+					// Captive state not staying true when down. Only for dedicated servers. But might need to be added to other servers.				
+					if (hackfix_captive_incap && isDedicated && alive _x && lifestate _x == "INCAPACITATED" && captive _x == false && Lifeline_RevProtect != 3) then {
+						hackfix_captive_incap = false;
 						[_x] spawn {
 								params ["_x"];
 								sleep 5;
+								hackfix_captive_incap = true;
 								if (alive _x && lifestate _x == "INCAPACITATED" && captive _x == false && Lifeline_RevProtect != 3) then {
-									//hackfix here...
-									if (isDedicated) then {
-									 [_x,true] remoteExec ["setCaptive", _x];diag_log format ["%1 [0537 Lifeline_ReviveEngine.sqf HACKFIX]!!!!!!!!! change var setcaptive = true !!!!!!!!!!!!!", name _x]; 
-									};								
+									//hackfix here...								
+									 [_x,true] remoteExec ["setCaptive", 0];diag_log format ["%1 [0537 Lifeline_ReviveEngine.sqf HACKFIX]!!!!!!!!! change var setcaptive = true !!!!!! ReviveInProgress: %2 !!!!!!!", name _x, _x getVariable ["ReviveInProgress",0]]; 																
 								};
 						};
 					};	
@@ -622,7 +840,7 @@ if (isServer) then {
 				//========================== MASCAS =========================	
 
 				//check if all units are incapacitated or dead for the hint text "MASCAS / MASCAL allunits are down"
-				if (lifestate _x != "INCAPACITATED" && lifestate _x != "DEAD" && lifestate _x != "DEAD-RESPAWN" && lifestate _x != "DEAD-SWITCHING") then {
+				/* if (lifestate _x != "INCAPACITATED" && lifestate _x != "DEAD" && lifestate _x != "DEAD-RESPAWN" && lifestate _x != "DEAD-SWITCHING") then {
 					_alldown = false;
 				};	
 				if (lifestate _x == "INCAPACITATED" && (_x getVariable ["Lifeline_autoRecover",false])) then {
@@ -630,13 +848,13 @@ if (isServer) then {
 					if (isPlayer _x) then {
 						Lifeline_players_autorev pushBackUnique _x;
 					};
-				};	
+				};	 */
 
 			} foreach Lifeline_All_Units;
 
 
 			// MASCAS Hint text for when all units are down.
-			if (_alldown == false) then {
+		/* 	if (_alldown == false) then {
 				Lifeline_mascastxt_trig = false;
 				Lifeline_mascastxt_timer = 0;
 				Lifeline_players_autorev = [];
@@ -675,7 +893,7 @@ if (isServer) then {
 						[_textright,1.15,5] remoteExec ["Lifeline_display_textright2",Lifeline_players_autorev];
 					};
 				// };
-			};
+			}; */
 
 			sleep 2;
 		}; // end while
@@ -690,7 +908,9 @@ if (isServer) then {
 	This setting limits bleedout time for enemy with ACE medical.
 	Set to zero to disable.
 	If the mission is PVP, this is bypassed.*/
-	if (Lifeline_RevMethod == 3) then {
+
+	//method 1
+	/* if (Lifeline_RevMethod == 3) then {
 		[] spawn { 
 			while {Lifeline_ACE_OPFORlimitbleedtime != 0} do {  
 				playerSide1 = side group player;//this needs to be updated for dedicated servers.
@@ -728,6 +948,51 @@ if (isServer) then {
 				} forEach enemyUnitsJa;  
 				sleep 60;  
 				diag_log "==================================================== 60 sec loop for auto kill opfor";
+<<<<<<< HEAD
+			}; 
+		};
+	}; */
+
+
+	//method 2
+	if (Lifeline_RevMethod == 3 && !Lifeline_PVPstatus) then {
+		diag_log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!gate 1 apples";
+		[] spawn { 
+			while {Lifeline_ACE_OPFORlimitbleedtime != 0 && !Lifeline_PVPstatus} do { 
+				diag_log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!gate 2 apples"; 
+				// Filter allUnits to only include enemies
+				if (Lifeline_ACE_CIVILIANlimitbleedtime == false) then {
+					enemyUnitsJa = allUnits select {
+						[Lifeline_Side, side group _x] call BIS_fnc_sideIsEnemy
+					};
+				} else {
+					enemyUnitsJa = allUnits select {
+						[Lifeline_Side, side group _x] call BIS_fnc_sideIsEnemy || side group _x == CIVILIAN 
+					};
+				};
+
+				{  
+					// Check if unit is incapacitated  
+					if (lifeState _x == "INCAPACITATED" && !Lifeline_PVPstatus) then {  
+						[_x] spawn { 
+							params ["_x"];
+							diag_log format ["trigger first gate autokill OPFOR: %1", name _x];
+							sleep (random (Lifeline_ACE_OPFORlimitbleedtime)); 
+							// if (alive _x && lifeState _x == "INCAPACITATED") then {
+							if (alive _x && lifeState _x == "INCAPACITATED" && _x getVariable ["ReviveInProgress",0] != 3) then {
+								// [_x, "LifeLine Revive Timer", _x, _x] call ace_common_fnc_setDead;
+								_x setDamage 1;
+								diag_log format ["auto kill OPFOR: %1",name _x];
+								diag_log format ["auto kill OPFOR: %1",name _x];
+								diag_log format ["auto kill OPFOR: %1",name _x];
+							};
+						};  
+					};  
+				} forEach enemyUnitsJa;  
+				sleep 60;  
+				diag_log "============================ 60 sec loop for auto kill opfor";
+=======
+>>>>>>> 587abbfd0679f8fd5647207d0d9400494fa562ac
 			}; 
 		};
 	};
@@ -750,6 +1015,7 @@ if (isServer) then {
 	[] spawn {
 	
 		_freq = 1; //frequency counter. Some functions we want less frequent than others
+		_sizetext = str 0.4;
 	
 		while {true} do {		
 
@@ -829,7 +1095,7 @@ if (isServer) then {
 											if (_autoRecover == false) then {
 												_x setDamage 1; diag_log format ["%1 [0509]!!!!!!!!! change var setdamage = 1 !!!!!!!!!!!!!", name _x];
 												if (Lifeline_Revive_debug && Lifeline_hintsilent) then {[format ["%1 bled out. Dead.", name _x]] remoteExec ["hintSilent",2]};
-												if (Lifeline_Revive_debug && Lifeline_hintsilent) then {[selectRandom["diedbleedout1","diedbleedout2","diedbleedout3","diedbleedout4","diedbleedout5"]] remoteExec ["playSound",2]};
+												if (Lifeline_Revive_debug && Lifeline_hintsilent) then {["diedbleedout1"] remoteExec ["playSound",2]};
 												diag_log " ";
 												diag_log format ["[0496] !!!!!!!!!!!! %1 BLED OUT !!!!!!!!!!!!!!'", name _x];
 												diag_log " ";
@@ -840,7 +1106,7 @@ if (isServer) then {
 												_bullethits = (_x getVariable ["Lifeline_bullethits",0]);
 												_countdowntimer = (_x getVariable ["countdowntimer",false]);
 												_ReviveInProgress = (_x getVariable ["ReviveInProgress",0]);
-												diag_log format ["%1 [523]====// !!!!!!!!!!!!!!!! //==== %2|%3|%4|%5|%6|%7|", name _x, _Lifeline_Down, _allowdeath, _bullethits, _countdowntimer, _ReviveInProgress]; //ENDDEBUG
+												diag_log format ["%1 [523]====// !!!!!!!!!!!!!!!! //==== %2|%3|%4|%5|%6|", name _x, _Lifeline_Down, _allowdeath, _bullethits, _countdowntimer, _ReviveInProgress]; //ENDDEBUG
 											} else {
 											// AUTORECOVERS	
 												// _x setUnconscious false;
@@ -868,9 +1134,9 @@ if (isServer) then {
 												};
 
 												_captive = _x getVariable ["Lifeline_Captive", false];
-												[_x, true] remoteExec ["allowDamage",_x]; diag_log format ["%1 | [0662][Lifeline_ReviveEngine.sqf] ALLOWDAMAGE SET: %2", name _x, "true"];//added 
+												[_x, true] remoteExec ["allowDamage",0]; diag_log format ["%1 | [0662][Lifeline_ReviveEngine.sqf] ALLOWDAMAGE SET: %2", name _x, "true"];//added 
 												// [_x, false] remoteExec ["setCaptive",_x]; diag_log format ["%1 | [0662]!!!!!!!!! change var setCaptive = false !!!!!!!!!!!!!", name _x];
-												[_x, _captive] remoteExec ["setCaptive",_x]; diag_log format ["%1 | [0662]!!!!!!!!! change var setCaptive = %2 !!!!!!!!!!!!!", name _x, _captive];
+												[_x, _captive] remoteExec ["setCaptive",0]; diag_log format ["%1 | [0662]!!!!!!!!! change var setCaptive = %2 !!!!! ReviveInProgress: %3 !!!!!!!!", name _x, _captive, _x getVariable ["ReviveInProgress",0]];
 												//_x allowDamage true; diag_log format ["%1 | [573][Lifeline_ReviveEngine.sqf] ALLOWDAMAGE SET: %2", name _x, isDamageAllowed _x];//added 
 
 												//added
@@ -920,16 +1186,18 @@ if (isServer) then {
 											_bullethits = (_x getVariable ["Lifeline_bullethits",0]);
 											_countdowntimer = (_x getVariable ["countdowntimer",false]);
 											_ReviveInProgress = (_x getVariable ["ReviveInProgress",0]);
-											diag_log format ["%1 [596]====// !!!!!!!!!!!!!!!! //==== %2|%3|%4|%5|%6|%7|%8", name _x, _Lifeline_Down, _allowdeath, _bullethits, _countdowntimer, _ReviveInProgress];
+											diag_log format ["%1 [596]====// !!!!!!!!!!!!!!!! //==== %2|%3|%4|%5|%6|", name _x, _Lifeline_Down, _allowdeath, _bullethits, _countdowntimer, _ReviveInProgress];
 										};
 								};
 							}; // if (Lifeline_RevMethod != 3) then {	
 
-
+							if (Lifeline_HUD_names > 0 && hasInterface) then {
 						
-							// list of incaps and medics in realtime on HUD
-							if (Lifeline_HUD_names > 0) then {
-								_diag_text = [_x,_diag_text] call Lifeline_incap_list_HUD;
+								// if (!Lifeline_Include_OPFOR || (side group _x == Lifeline_Side && (!Lifeline_Revive_debug || !Lifeline_ShowOpfor_HUDlist))) then {
+								if ((side group _x == Lifeline_Side || (Lifeline_Revive_debug && Lifeline_ShowOpfor_HUDlist)) && (alive _x)) then {
+									_diag_text = [_x,_diag_text] call Lifeline_incap_list_HUD;
+								};
+
 							};
 
 							//DEBUG
@@ -995,12 +1263,17 @@ if (isServer) then {
 												
 
 						} foreach Lifeline_incapacitated;
+			//checkthis
+			if (Lifeline_HUD_namesize == 1) then {_sizetext = str 0.4;};
+			if (Lifeline_HUD_namesize == 2) then {_sizetext = str 0.36;};
+			if (Lifeline_HUD_namesize == 3) then {_sizetext = str 0.3;};
 
-			[format ["<t align='right' size='0.4'>%1</t>",_diag_text],((safeZoneW - 1) * 0.48),-0.03,3,0,0,LifelinetxtdebugLayer1] spawn BIS_fnc_dynamicText;	
+			[format ["<t align='right' size='%2'>%1</t>",_diag_text,_sizetext],((safeZoneW - 1) * 0.48),-0.03,3,0,0,LifelinetxtdebugLayer1] spawn BIS_fnc_dynamicText;	
 
 			//adds units to Lifeline_DH_update
 			if (_freq == 1) then {
-				[] call Lifeline_DH_update; diag_log "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk [790] [] call Lifeline_DH_update ";
+				[] call Lifeline_DH_update; diag_log "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk [1097] [] call Lifeline_DH_update ";
+				diag_log format ["+++++++++++++++++ alldisplays %1", allDisplays];
 				// allows proximity for revive when vehicles there
 				Lifeline_deadVehicle = [];
 				{if (damage _x == 1 && simulationEnabled _x && isTouchingGround _x) then {Lifeline_deadVehicle pushBackUnique _x}} forEach vehicles;
@@ -1032,7 +1305,11 @@ if (!isServer) then {
 			_diag_textp = "";
 			if (Lifeline_HUD_names != 0) then {
 				{
-					_diag_textp = [_x,_diag_textp] call Lifeline_incap_list_HUD;
+					// _diag_textp = [_x,_diag_textp] call Lifeline_incap_list_HUD; // ORIGINAL
+					if ((side group _x == Lifeline_Side || (Lifeline_Revive_debug && Lifeline_ShowOpfor_HUDlist)) && (alive _x)) then {
+						_diag_textp = [_x,_diag_textp] call Lifeline_incap_list_HUD;
+					};
+			
 				} foreach Lifeline_incapacitated;			
 				
 				[format ["<t align='right' size='0.4'>%1</t>",_diag_textp],((safeZoneW - 1) * 0.48),-0.03,3,0,0,LifelinetxtdebugLayer3] spawn BIS_fnc_dynamicText;
@@ -1061,10 +1338,22 @@ if (isServer) then {
 
 	Lifeline_incaps2choose = [];
 	Lifeline_medics2choose = [];
+	Lifeline_side_switch = 0; // side switch will be used to determine which sides incapacitated units are processed to find a medic. We need to 'unblock' the process queue getting stuck when a side runs out of medics and switch to other side.
+	_opforUnits = []; 
+	_bluforUnits = [];
+	_check_both_sides = [];
+	_incap_side = [];
+	
+
+
+	Lifeline_mascal_autorevive_timer = 0; // when all units are down (MASCAL) but a unit has the auto-revive flag, then a timer will start before player is informed a unit is recovering.
 
 	["Lifeline Revive initialized"] remoteExec ["hintsilent", allplayers];
 
 	while {true} do {
+
+		// sound alert for scope update loop
+		// if (Lifeline_debug_soundalert && Lifeline_Revive_debug && Lifeline_soundalert_updatescope) then {playsound "updatescope";};
 
 		scopeName "main";
 
@@ -1074,8 +1363,54 @@ if (isServer) then {
 		Lifeline_medics = [];
 		_incap = objNull;
 		_medic = objNull;
+		_sleep = 3;
+
+		
+
+
+
+		[3] call Lifeline_sort_order_incapacitated;
+
 
 		Lifeline_incaps2choose = Lifeline_incapacitated select {!(_x in Lifeline_Process) && (lifestate _x == "INCAPACITATED") && (rating _x > -2000)};
+
+
+
+		// ======= SORT ALL INCAPACITATED ON SAME SIDE ARE GROUPED TOGETHER. ALSO PLAYERS ALWAYS FIRST.
+
+		// Method 1
+		/* _Lifeline_incap_blufor = [];
+		_Lifeline_incap_opfor = [];
+
+		// 1) Players (highest priority)
+		_Lifeline_incap_players = Lifeline_incaps2choose select {isPlayer _x}; 
+		// 2) AI units (subtract players from total)
+		_Lifeline_incap_AI = Lifeline_incaps2choose - _Lifeline_incap_players;
+		// 3) AI in player groups - simplified select approach
+		_playerGroups = [];
+		{_playerGroups pushBackUnique (group _x);} forEach allPlayers;
+		_Lifeline_incap_PG = _Lifeline_incap_AI select {(group _x) in _playerGroups}; 
+		// 4) AI not in player groups (remaining AI)
+		_Lifeline_incap_nonPG = _Lifeline_incap_AI - _Lifeline_incap_PG;
+			
+		if (!Lifeline_PVPstatus && Lifeline_Include_OPFOR) then {
+			// 5) BLUFOR units from non-player group AI
+			_Lifeline_incap_blufor = _Lifeline_incap_nonPG select {side group _x == Lifeline_Side};
+			// 6) OPFOR units from non-player group AI
+			_Lifeline_incap_opfor = _Lifeline_incap_nonPG select {side group _x in Lifeline_OPFOR_Sides};
+			// Combine in priority order while preserving original order within groups
+			Lifeline_incaps2choose = _Lifeline_incap_players + _Lifeline_incap_PG + _Lifeline_incap_blufor + _Lifeline_incap_opfor;
+			// publicVariable "Lifeline_incaps2choose";
+		};
+		if (Lifeline_PVPstatus || (!Lifeline_PVPstatus && !Lifeline_Include_OPFOR)) then {
+			Lifeline_incaps2choose = _Lifeline_incap_players + _Lifeline_incap_PG + _Lifeline_incap_nonPG;
+			// publicVariable "Lifeline_incaps2choose";
+		};	
+
+		_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach _Lifeline_incap_blufor; diag_log format ["====== [1218] PRIMARY LOOP || _Lifeline_incap_blufor: %1",_diag_array];
+		_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach _Lifeline_incap_opfor; diag_log format ["====== [1218] PRIMARY LOOP || _Lifeline_incap_opfor: %1",_diag_array]; */
+		// end Method 1
+
 		
 		//DEBUG // JUST FOR DIAGLOG  
 		if (count Lifeline_incaps2choose > 0) then {diag_log format ["uuuuuuuuuuuuuu [2931] PRIMARY LOOP Lifeline_incaps2choose: %1",Lifeline_incaps2choose];}; //ENDDEBUG
@@ -1083,9 +1418,86 @@ if (isServer) then {
 		if (count Lifeline_incaps2choose > 0 ) then {
 
 			// ======================== SELECT INCAP UNIT ==========================
-			_incap = (Lifeline_incaps2choose select 0);
 
-			diag_log format ["PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuu SELECTED INCAP %1  uuuuuuuuuuuuuuuuuuuuuuuuuuuuu ReviveInProgress %2 Lifeline_AssignedMedic %3", name _incap, _incap getVariable ["ReviveInProgress",0], (_incap getVariable ["Lifeline_AssignedMedic",[]])];
+			if (Lifeline_side_switch == 0) then {
+			 _incap = (Lifeline_incaps2choose select 0);
+			 _incaptemp = _incap;
+			 _incap_side = side group _incap; // even though this is declared again below, it is need for the conditionals here.
+			};
+
+
+
+		    /// =============== ALL NEW HERE
+			// Method 1       
+			// if (((!Lifeline_PVPstatus && Lifeline_Include_OPFOR) || Lifeline_PVPstatus) && Lifeline_side_switch > 0) then {
+			// 	diag_log format ["PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuu SWITCH %1  uuuuuuuuuuuuuuuuuuuuuuuuuuuuu ReviveInProgress %2 Lifeline_AssignedMedic %3", name _incap, _incap getVariable ["ReviveInProgress",0], (_incap getVariable ["Lifeline_AssignedMedic",[]])];
+			// 	if (_incap_sidetemp == Lifeline_Side && count _Lifeline_incap_opfor > 0) then {
+			// 		diag_log "PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuu CHOOSE OPFOR";				
+
+			// 		_incap = (_Lifeline_incap_opfor select 0);				
+			// 	};
+			// 	if (_incap_sidetemp in Lifeline_OPFOR_Sides && count _Lifeline_incap_blufor > 0) then {
+			// 		diag_log "PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuu CHOOSE BLUFOR";
+			// 		_incap = (_Lifeline_incap_blufor select 0);
+			// 	};
+			// 	Lifeline_side_switch = Lifeline_side_switch - 1;				
+			// };		
+			// Method 2
+
+			
+
+
+			diag_log format ["PRIMARY LOOP [1253] uuuuuuuuuuuuuuuuuuuuuuuuuu BEFORE SWITCH incap: %1 side: %2 Lifeline_side_switch %3", name _incap, _incap_side, Lifeline_side_switch];
+			
+			/* if (((!Lifeline_PVPstatus && Lifeline_Include_OPFOR) || Lifeline_PVPstatus) && Lifeline_side_switch > 0) then {
+				
+				diag_log format ["PRIMARY LOOP [1253] uuuuuuuuuuuuuuuuuuuuuuuuuu SWITCH incap: %1 side: %2 Lifeline_side_switch %3", name _incap, _incap_side, Lifeline_side_switch];
+				if (_incap_side == Lifeline_Side) then {
+					// Find first unit from OPFOR side
+					private _opforUnits = Lifeline_incaps2choose select {side group _x in Lifeline_OPFOR_Sides};
+					if (count _opforUnits > 0) then {
+						_incap = _opforUnits select 0;
+						diag_log "PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuu CHOOSE OPFOR";
+					};
+				} else {
+					// Find first unit from BLUFOR side
+					private _bluforUnits = Lifeline_incaps2choose select {side group _x == Lifeline_Side};
+					if (count _bluforUnits > 0) then {
+						_incap = _bluforUnits select 0;
+						diag_log "PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuu CHOOSE BLUFOR";
+					};
+				};
+				Lifeline_side_switch = Lifeline_side_switch - 1;
+				diag_log format ["PRIMARY LOOP [1270] uuuuuuuuuuuuuuuuuuuuuuuuuu incap: %1 side: %2 Lifeline_side_switch %3", name _incap, _incap_side, Lifeline_side_switch];
+			}; */
+
+			//=================================================
+
+			
+
+			if (Lifeline_side_switch > 0) then {
+				if (_incap_side == Lifeline_Side) then {
+						// Find first unit from OPFOR side
+						if (count _opforUnits > 0) then {
+							_incap = _opforUnits select 0;
+							diag_log format ["PRIMARY LOOP %2 uuuuuuuuuuuuuuuuuuuuuuuuuu CHOOSE OPFOR %1", side group _incap, name _incap];
+						};
+				};
+				if (_incap_side in Lifeline_OPFOR_Sides) then {
+					// Find first unit from BLUFOR side
+					if (count _bluforUnits > 0) then {
+						_incap = _bluforUnits select 0;
+						diag_log format ["PRIMARY LOOP %2 uuuuuuuuuuuuuuuuuuuuuuuuuu CHOOSE BLUFOR %1", side group _incap, name _incap];
+					};
+				};
+				Lifeline_side_switch = 0;
+			};
+
+
+			_incap_side = side group _incap; 
+
+
+			diag_log format ["PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuu SELECTED INCAP %1  uuuuuuuuuuuuuuuuuuuuuuuuuuuuu ReviveInProgress %2 Lifeline_AssignedMedic %3 SIDE %4", name _incap, _incap getVariable ["ReviveInProgress",0], (_incap getVariable ["Lifeline_AssignedMedic",[]]), _incap_side];
 			if (Lifeline_Revive_debug) then {[_incap,"SELECTED INCAP"] call serverSide_unitstate};
 			// _incap setVariable ["ReviveInProgress",3,true]; // added
 			
@@ -1096,53 +1508,83 @@ if (isServer) then {
 			
 			Lifeline_healthy_units = Lifeline_All_Units - Lifeline_incapacitated;
 			sleep 0.2;
+			// Lifeline_medics2chooseSIDE = Lifeline_healthy_units select {(side group _x) == (_incap_side)}; //added to only select units on the same side as the incap
+			// Lifeline_medics2chooseSIDE = Lifeline_healthy_units select {(side group _x) == (_incap_side) && [_x,_incap] call Lifeline_check_available_medic};
 	
 			//DEBUG
-			_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_All_Units; diag_log format ["====== [2926] PRIMARY LOOP || Lifeline_All_Units: %1",_diag_array];
-			_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_incapacitated; diag_log format ["====== [2926] PRIMARY LOOP || Lifeline_incapacitated: %1",_diag_array];
-			_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_healthy_units; diag_log format ["====== [2926] PRIMARY LOOP || Lifeline_healthy_units: %1",_diag_array];
-			_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_Process; diag_log format ["====== [2926] PRIMARY LOOP || Lifeline_Process: %1",_diag_array];
+			// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_All_Units; diag_log format ["====== [1202] PRIMARY LOOP || Lifeline_All_Units: %1",_diag_array];
+			// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_incapacitated; diag_log format ["====== [1203] PRIMARY LOOP || Lifeline_incapacitated: %1",_diag_array];
+			// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_healthy_units; diag_log format ["====== [1204] PRIMARY LOOP || Lifeline_healthy_units: %1",_diag_array];
+			// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_Process; diag_log format ["====== [1205] PRIMARY LOOP || Lifeline_Process: %1",_diag_array];
 			//ENDDEBUG
 
 			_AssignedMedic = (_incap getVariable ["Lifeline_AssignedMedic",[]]);
 			// diag_log format ["=========================== INCAP'S ASSIGNED Lifeline_AssignedMedic %1 =============================", _AssignedMedic];
+
+
+
+
 			// CONDITIONS FOR CHOOSING MEDIC:
 			{
+				// _blacklist = _x call Lifeline_Blacklist_Check;
 				if (
-					!(side group _x == civilian) 
-					&& !isPlayer _x 
-					&& !(_x in Lifeline_Process) 
-					&& ((_x distance _incap) < Lifeline_LimitDist) 
-					&& !(currentWeapon _x == secondaryWeapon _x && currentWeapon _x != "") //make sure unit is not about to fire launcher. This comes first.
-					&& !(((assignedTarget _x) isKindOf "Tank") && secondaryWeapon _x != "") //check unit did not get order to hunt tank
-					&& !(((getAttackTarget _x) isKindOf "Tank") && secondaryWeapon _x != "") //check unit is not hunting a tank
-					&& (_x getVariable ["ReviveInProgress",0]) == 0 
-					&& _x getVariable ["Lifeline_AssignedMedic",[]] isEqualTo []
-					&& (_x getVariable ["LifelinePairTimeOut", 0]) == 0
-					&& (lifestate _x != "INCAPACITATED")
-					&& _x getVariable ["Lifeline_ExitTravel", false] == false
-					&& (side (group _x) == side (group _incap)) // TEST FOR OPFOR
+					// !(side group _x == civilian) 
+					// && !isPlayer _x 
+					// && !([_x] call Lifeline_Blacklist_Check)
+					// && !(_x in Lifeline_Process) 
+					// && ((_x distance _incap) < Lifeline_LimitDist) 
+					// && !(currentWeapon _x == secondaryWeapon _x && currentWeapon _x != "") //make sure unit is not about to fire launcher. This comes first.
+					// && !(((assignedTarget _x) isKindOf "Tank") && secondaryWeapon _x != "") //check unit did not get order to hunt tank
+					// && !(((getAttackTarget _x) isKindOf "Tank") && secondaryWeapon _x != "") //check unit is not hunting a tank
+					// && (_x getVariable ["ReviveInProgress",0]) == 0 
+					// && _x getVariable ["Lifeline_AssignedMedic",[]] isEqualTo []
+					// && (_x getVariable ["LifelinePairTimeOut", 0]) == 0
+					// && (lifestate _x != "INCAPACITATED")
+					// && _x getVariable ["Lifeline_ExitTravel", false] == false
+					// && (side (group _x) == side (group _incap)) // TEST FOR OPFOR
+					[_x,_incap] call Lifeline_check_available_medic
+
 				) then {
 					Lifeline_medics2choose pushBackUnique _x;
 				};
 			} foreach Lifeline_healthy_units;
+			// } foreach Lifeline_medics2chooseSIDE;
 			
-			_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_medics2choose; diag_log format ["====== [2926] PRIMARY LOOP || Lifeline_medics2choose: %1",_diag_array];
+			// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_medics2choose; diag_log format ["====== [1240] PRIMARY LOOP || Lifeline_medics2choose: %1",_diag_array];
+
 			
+           	// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_medics2chooseSIDE; diag_log format ["====== [1241] PRIMARY LOOP || Lifeline_medics2chooseSIDE: %1",_diag_array];
+            // _Lifeline_medics2chooseSIDE = Lifeline_medics2chooseSIDE select {(side group _x) == (_incap_side)};
+			// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach _Lifeline_medics2chooseSIDE; diag_log format ["====== [1242] PRIMARY LOOP || _Lifeline_medics2chooseSIDE: %1",_diag_array];
+
+            //DEBUG
+			// CONSOLEincap = str format ["%1|%2",name _incap, _incap_side];		// console debugging temp	
+			//ENDDEBUG
 
 			// diag_log format ["uuuuuuuuuuuuuu [2963] PRIMARY LOOP || Lifeline_medics2choose: %1",Lifeline_medics2choose];
 
 			_voice = "";
 
 			diag_log format ["%1 PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu COUNT Lifeline_medics2choose: %2 uuuuuuuuuuuuuuuuuuuuuuu", name _incap, count Lifeline_medics2choose];
-			
-			if (alive _incap && count Lifeline_medics2choose >0) then {
+
+
+
+
+
+			if (alive _incap && count Lifeline_medics2choose >0) then { // medic available
 
 				Lifeline_medics = [Lifeline_medics2choose, [], {_incap distance _x}, "ASCEND"] call BIS_fnc_sortBy;
 				_arraynum = 0;
 				_numMedics = count Lifeline_medics;
 				_arraynum = [0]; // MAKE IT ALWAYS CLOSEST
 				_medic = Lifeline_medics select (selectRandom _arraynum);
+				_check_both_sides = [];
+
+				_sleep = 1; // faster queue when found medic
+				// _sleep = 0.5; // faster queue when found medic
+				// _sleep = 0.2; // faster queue when found medic
+				
+				
 				sleep 0.2;
 
 				diag_log format ["PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuu SELECTED MEDIC %1  uuuuuuuuuuuuuuuuuuuuuuuuuuuuu ReviveInProgress %2 Lifeline_AssignedMedic %3", name _medic, _medic getVariable ["ReviveInProgress",0], (_medic getVariable ["Lifeline_AssignedMedic",[]])];
@@ -1175,10 +1617,196 @@ if (isServer) then {
 				
 				_voice = _medic getVariable "Lifeline_Voice";
 
+		
+			} else { // no medic available
+				// =======  'ELSE' REJECTED NO MEDIC
+				diag_log format ["%1 ", name _incap];
+				diag_log format ["%1 [3089] PRIMARY LOOP 'ELSE' REJECTED NO MEDIC (incap is %1) !!!!!!!!!!!! PRIMARY LOOP [ELSE] //if (alive _incap && count Lifeline_medics2choose >0) ", name _incap];
+				diag_log format ["%1 ", name _incap];
+
+
+				// ================ CHECK FOR MASCAL (Mass Casualty Event) ================================
+
+				Lifeline_medics2chooseSIDE = Lifeline_healthy_units select {(side group _x) == (_incap_side) && [_x,_incap] call Lifeline_check_medics_MASCAL};
 				
-			} else {
-				diag_log format ["[3089] PRIMARY LOOP 'ELSE' REJECTED NO MEDIC (incap is %1) !!!!!!!!!!!! PRIMARY LOOP [ELSE] //if (alive _incap && count Lifeline_medics2choose >0) ", name _incap];
+				// ================ METHOD 1. WITH AUTO RECOVER TEXT CHANGE ================================
+
+				/* if (count Lifeline_medics2chooseSIDE == 0) then {
+					// Determine if this side matters for MASCAL notification
+					private _isRelevantSide = false;
+					
+					// In PVP, we care about any side that has players
+					if (Lifeline_PVPstatus) then {
+						// _isRelevantSide = ({isPlayer _x && side group _x == _incap_side} count allUnits) > 0;
+						_isRelevantSide = true;
+					} else {
+						// In PVE with OPFOR included, we care about player side and possibly OPFOR
+						if (Lifeline_Include_OPFOR) then {
+							// Check if this is the player side or if we should notify about OPFOR too
+							_isRelevantSide = (_incap_side == Lifeline_Side);
+						} else {
+							// In PVE without OPFOR included, we only care about player side
+							// _isRelevantSide = (_incap_side == Lifeline_Side);
+							_isRelevantSide = true;
+						};
+					};
+					
+					// If this is a side we care about, check for MASCAL
+					if (_isRelevantSide) then {
+						// Filter incapacitated units on this side
+						private _sideIncaps = Lifeline_incapacitated select {side group _x == _incap_side};
+						private _sideIncapsPlayers = _sideIncaps select {isPlayer _x};
+						private _hasAutoRecover = ({_x getVariable ["Lifeline_autoRecover", false]} count _sideIncaps) > 0;
+						diag_log format ["==============================================================================MASCAL: Side %1 - %2", _incap_side,  _hasAutoRecover];
+
+							{						
+								// Create a hash map for side-specific timers if it doesn't exist yet
+								if (isNil "Lifeline_mascal_side_timers") then {
+									Lifeline_mascal_side_timers = createHashMap;
+								};
+								// Check if this side wasn't in MASCAL in the last loop (timer is negative)
+								// If timer doesn't exist or is negative, this is a new MASCAL event
+								if ((Lifeline_mascal_side_timers getOrDefault [_incap_side, -1]) < 0) then {
+									// Reset timer at start of a new MASCAL event
+									Lifeline_mascal_side_timers set [_incap_side, 0];
+									diag_log format ["MASCAL: New MASCAL event for side %1 - Resetting timer", _incap_side];
+								};
+								// Determine message based on auto-recover status
+								_statusText = "all units down";
+								if (_hasAutoRecover) then {
+									// Increment the timer for this specific side
+									private _sideTimer = Lifeline_mascal_side_timers get _incap_side;
+									_sideTimer = _sideTimer + 1;
+									Lifeline_mascal_side_timers set [_incap_side, _sideTimer];
+									
+									// Show recovery message after delay threshold
+									if (_sideTimer >= 15) then {
+										_statusText = "a unit is recovering...";
+									};
+								} else {
+									// Reset timer if no auto-recover
+									Lifeline_mascal_side_timers set [_incap_side, 0];
+									_statusText = "all units down";
+								};								
+								// Create formatted text for right-aligned message
+								private _colour = "EF5736"; // Your existing red color
+								private _textright = format ["<t align='right' size='%3' color='#%1'>MASCAL</t><br /><t align='right' size='%4' color='#%1'>%2</t>", _colour, _statusText, 0.7, 0.5 ];								
+								// Call your existing display function for this specific player
+								[_textright, 1.15, 5] remoteExec ["Lifeline_display_textright2", _x];
+								
+								// Play sound for this specific player
+								["siren1"] remoteExec ["playSound", _x];
+								
+								// Log each player notification
+								diag_log format ["MASCAL: Notified player %1, Side %2 - %3", name _x, _incap_side, _statusText];
+
+							} forEach _sideIncapsPlayers;
+					};
+				} else {
+					// No MASCAL active for this side, set timer to -1 to indicate MASCAL not active
+					if (!isNil "Lifeline_mascal_side_timers") then {
+						Lifeline_mascal_side_timers set [_incap_side, -1];
+					};
+				}; */
+
+
+
+				// ================ METHOD 2. SIMPLE METHOD WITHOUT AUTO RECOVER TEXT CHANGE ================================
+
+
+				if (count Lifeline_medics2chooseSIDE == 0) then {
+					// Determine if this side matters for MASCAL notification
+					private _isRelevantSide = false;					
+					// In PVP, we care about any side that has players
+					if (Lifeline_PVPstatus) then {
+						_isRelevantSide = true;
+					} else {
+						// In PVE with OPFOR included, we care about player side and possibly OPFOR
+						if (Lifeline_Include_OPFOR) then {
+							// Check if this is the player side or if we should notify about OPFOR too
+							_isRelevantSide = (_incap_side == Lifeline_Side);
+						} else {
+							// In PVE without OPFOR included, we only care about player side
+							_isRelevantSide = true;
+						};
+					};
+					
+					// If this is a side we care about, check for MASCAL
+					if (_isRelevantSide) then {
+						// Filter incapacitated units on this side
+						private _sideIncaps = Lifeline_incapacitated select {side group _x == _incap_side};
+						private _sideIncapsPlayers = _sideIncaps select {isPlayer _x};
+    					{							       
+							   _statusText = "all units down";							   
+							    // Create formatted text for right-aligned message
+								private _colour = "EF5736"; // Your existing red color
+								// private _textright = format ["<t align='right' size='%3' color='#%1'>MASCAL</t><br /><t align='right' size='%4' color='#%1'>%2</t>", _colour, _statusText,0.7,0.4];								
+								// private _textright = format ["<t align='right' size='%3' color='#%1'>MASCAL</t><br /><t align='right' size='%4' color='#%1'>%2</t>", _colour, _statusText,0.75,0.55];
+								private _textright = format ["<t align='right' size='%3' color='#%1'>MASCAL</t><br/><t align='right' size='%4' color='#%1'>%2 </t>", _colour, _statusText,0.85,0.52]; 								
+								// Call your existing display function for this specific player
+								[_textright, 1.15, 7] remoteExec ["Lifeline_display_textright2", _x];						
+								// Play sound for this specific player
+								// ["siren1"] remoteExec ["playSound", _x];								
+								// Log each player notification
+								diag_log format ["MASCAL: Notified player %1, Side %2 - %3", name _x, _incap_side, _statusText];
+
+						} forEach _sideIncapsPlayers;
+					};
+				};
+
+				// =========================== END OF MASCAL NOTIFICATION METHODS ================================
+
+
+                
+				if (Lifeline_Revive_debug && Lifeline_debug_soundalert) then {
+					// ["no_medic"] remoteExec ["playSound", 0];
+					if (_incap_side == WEST) then {["west_no_medic"] remoteExec ["playSound", 0];};
+					if (_incap_side == EAST) then {["east_no_medic"] remoteExec ["playSound", 0];};
+					if (_incap_side == RESISTANCE) then {["ind_no_medic"] remoteExec ["playSound", 0];};
+				};
+
 				_incap setVariable ["ReviveInProgress",0,true];diag_log format ["%1 [3140]!!!!!!!!! [INCAP] change var ReviveInProgress = 0 !!!!!!!!!!!!!", name _incap];
+				
+				// if (_incap_side == Lifeline_Side && Lifeline_side_switch == 0) then {
+				// 	Lifeline_side_switch = 3; // 3 times we try the other side if no medic is available for Lifeline_Side (player side in PVE)
+				// } else {
+				// 	Lifeline_side_switch = 0; // reset the counter for the other side
+				// };
+                // switch logic Lifeline_side_switch
+                // if (Lifeline_side_switch == 0 && _incap_side == Lifeline_Side) then {
+				// 	Lifeline_side_switch = 3; 
+				// };
+
+				diag_log format ["%1 | %2 | [1607] !!!!!!!!!!!! PRIMARY LOOP. JUST BEFORE SWITCH IN REJECT MEDIC Lifeline_side_switch %3 _incap_side %4", name _incap, name _medic, Lifeline_side_switch, _incap_side];
+
+				// SWITCH LOGIC IN REJECT MEDIC 
+
+				if ((!Lifeline_PVPstatus && Lifeline_Include_OPFOR) || Lifeline_PVPstatus) then {
+					
+					if (_incap_side == Lifeline_Side) then {
+						_check_both_sides pushBackUnique 1;
+						// Find first unit from OPFOR side
+						_opforUnits = Lifeline_incaps2choose select {side group _x in Lifeline_OPFOR_Sides};
+						if (count _opforUnits > 0) then {
+							Lifeline_side_switch = 2;
+							// _sleep = 0.2;
+							_sleep = 1;
+						};
+					};
+					if (_incap_side in Lifeline_OPFOR_Sides) then {
+						_check_both_sides pushBackUnique 2;
+						// Find first unit from BLUFOR side
+						_bluforUnits = Lifeline_incaps2choose select {side group _x == Lifeline_Side};
+						if (count _bluforUnits > 0) then {
+							Lifeline_side_switch = 1;
+							// _sleep = 0.2;
+							_sleep = 1;
+						};
+					};
+				};
+
+				
+
 				_medic = objNull;
 			};
 
@@ -1254,8 +1882,12 @@ if (isServer) then {
 				Lifeline_Process pushBackUnique _incap;
 				Lifeline_Process pushBackUnique _medic;
 				publicVariable "Lifeline_Process";
-				_incap setVariable ["ReviveInProgress",3,true]; diag_log format ["%1 [983]!!!!!!!!! [INCAP] change var ReviveInProgress = 3 !!!!!!!!!!!!!", name _incap];
-				_medic setVariable ["ReviveInProgress",1,true]; diag_log format ["%1 [983]!!!!!!!!! [MEDIC] change var ReviveInProgress = 1 !!!!!!!!!!!!!", name _medic];
+				_incap setVariable ["ReviveInProgress",3,true]; diag_log format ["%1 [1773]!!!!!!!!! [INCAP] change var ReviveInProgress = 3 !!!!!!!!!!!!!", name _incap];
+				_medic setVariable ["ReviveInProgress",1,true]; diag_log format ["%1 [1774]!!!!!!!!! [MEDIC] change var ReviveInProgress = 1 !!!!!!!!!!!!!", name _medic];
+				if (lifestate _medic != "INCAPACITATED") then {
+					_medic setVariable ["Lifeline_Captive",(captive _medic),true]; diag_log format ["%1 [1775]!!!!!!!!! [MEDIC] change var Lifeline_Captive = %2 !!!!!!!!!!!!!", name _medic, captive _medic];//2025
+				};
+
 				// _medic setVariable ["Lifeline_reset_trig",false,true]; diag_log format ["%1 [983]!!!!!!!!! [MEDIC] change var Lifeline_reset_trig = false !!!!!!!!!!!!!", name _medic];
 				_incap setVariable ["Lifeline_AssignedMedic", [_medic], true];	diag_log format ["%1 [983]!!!!!!!!! [INCAP] change var Lifeline_AssignedMedic = %2 !!!!!!!!!!!!!", name _incap, name _medic];			
 				diag_log format ["%1 uuuuuuuuuuuuuu [3057] PRIMARY LOOP 'ReviveInProgress = 1'     ADDED TO MEDIC. test, should be one: %2", name _medic, _medic getVariable ["ReviveInProgress",0]];
@@ -1263,13 +1895,31 @@ if (isServer) then {
 
 				// Call Functions. Start revive travel and incap / medic pair monitoring loop
 				[_medic, _incap] spawn Lifeline_PairLoop; diag_log format ["%1 | %2 [3217] !!!!!!!!!!! spawn Lifeline_PairLoop !!!!!!!!!!!", name _incap, name _medic];
-				[_medic, _incap] spawn Lifeline_StartRevive; diag_log format ["%1 | %2 [3217] !!!!!!!!!!! spawn Lifeline_StartRevive !!!!!!!!!!!", name _incap, name _medic];
+				if (Lifeline_StartReviveBETA == true) then {
+					[_medic, _incap] spawn Lifeline_StartRevive; diag_log format ["%1 | %2 [3217] !!!!!!!!!!! spawn Lifeline_StartRevive !!!!!!!!!!!", name _incap, name _medic];
+				} else {
+					[_medic, _incap] spawn Lifeline_StartReviveOLD; diag_log format ["%1 | %2 [3217] !!!!!!!!!!! spawn Lifeline_StartReviveOLD !!!!!!!!!!!", name _incap, name _medic];
+				};
 
 			}; // end if alive && !(_medic in Lifeline_Process) && !(_incap in Lifeline_Process)
 
-		}; // end count Lifeline_incaps2choose >0 && count Lifeline_healthy_units >0
+		// }; // end count Lifeline_incaps2choose >0 && count Lifeline_healthy_units >0
 
-		sleep 3;
+		} else { 
+			_sleep = 3;	
+		};
+
+
+
+		// diag_log format ["%1 | %2 | [1719] !!!!!!!!!!! _check_both_sides: %3", name _incap, name _medic, _check_both_sides];
+
+		if (count _check_both_sides == 2) then {
+			_sleep = 3;		
+		};
+
+		sleep _sleep;
+		// playsound "beep_hi_1";
+
 
 	}; // end while
 

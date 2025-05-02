@@ -21,7 +21,7 @@ if (Lifeline_ACEcheck_ == true) then {
 };
 
 
-if (isServer) then {
+/* if (isServer) then {
 	
 		if (!isNil "actionLifelineID1") then {player removeAction actionLifelineID1};
 		if (!isNil "actionLifelineID2") then {player removeAction actionLifelineID2};
@@ -76,14 +76,12 @@ if (isServer) then {
 
 	actionLifelineID4 = player addAction ["<t size='1.5' color='#FF5733'>Cancel Lifeline Revive</t>", {Lifeline_cancel = true;[] call LifelineremoveactionmenuIDs;diag_log "kkkkkkkkkkk SCRIPT CANCEL %1";}];
 
-	//remind host player to start or cancel Lifeline Revive
-	/* [] spawn {
-		sleep 600;
-		if (Lifelinestartedscript == false) then {	 
-			["Please start Lifeline Revive. Scroll the mouse wheel to choose. ", "Lifeline Revive: please start or cancel", true, false] call BIS_fnc_guiMessage;  	
-		};
-	}; */
 
-}; //if (isServer) then {
+}; //if (isServer) then { */
+
+
+Lifeline_launchScript = "\Lifeline_Revive\scripts\fix_other_revive_systems.sqf"; 	
+
+Lifeline_launchScript remoteExec ["execVM",0,true];
 
 
