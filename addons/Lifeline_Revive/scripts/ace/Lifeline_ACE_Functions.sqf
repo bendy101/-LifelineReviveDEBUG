@@ -21,7 +21,7 @@ ace_medical_ai_enabledFor = 0; // disable the ACE medical ai
 				diag_log _unit;
 
 				// store captive status (for missions with 'undercover' mode). Only if unit is not a medic at ReviveInProgress = 1 or 2 because it will be captive already
-				if (_unit getVariable ["ReviveInProgress",0] == 0 && _unit getVariable ["Lifeline_RevProtect",0] != 3) then { 
+				if (_unit getVariable ["ReviveInProgress",0] == 0 && _unit getVariable ["Lifeline_RevProtect",0] != 3 && !(_unit getVariable ["Lifeline_Captive_Delay",false])) then { 
 					_unit setVariable ["Lifeline_Captive",(captive _unit),true]; diag_log format ["%1 [0024] ACE_Functions.sqf !!!!!!!!! change var Lifeline_Captive = %2 !!!!!!!!!!!!!", name _unit, captive _unit];//2025
 				};
 				_unit setVariable ["Lifeline_selfheal_progss",false,true]; //clear var if it was in middle of self healing
@@ -1337,7 +1337,7 @@ params ["_incap", "_medic","_EnemyCloseBy","_voice"];
 			};
 
 			_cprcount = _cprcount + 1;
-			[_medic, _incap, "RightArm", "Epinephrine", objNull, "ACE_epinephrine"] call ace_medical_treatment_fnc_medication;
+			// [_medic, _incap, "RightArm", "Epinephrine", objNull, "ACE_epinephrine"] call ace_medical_treatment_fnc_medication; // turn off
 			sleep 2;
 			[_medic, _incap] call ace_medical_treatment_fnc_cprStart;
 			 sleep 10;
@@ -1426,7 +1426,9 @@ params ["_incap", "_medic","_EnemyCloseBy","_voice"];
 							sleep 9.5;
 						}; 
 					};	
-					[_medic, _incap, "RightArm", "Epinephrine", objNull, "ACE_epinephrine"] call ace_medical_treatment_fnc_medication;
+					if (_counter == 1) then { // only 1 EPI
+						[_medic, _incap, "RightArm", "Epinephrine", objNull, "ACE_epinephrine"] call ace_medical_treatment_fnc_medication;
+					};
 				};		
 
 				if (lifestate _incap != "INCAPACITATED") exitWith {diag_log format ["%1 ==== HOW IS THIS POSSIBLE. EXIT EPI no MORE INCAP == [1991]", name _incap];};
@@ -1474,6 +1476,8 @@ Lifeline_SelfHeal_ACE = {
 params ["_unit"];
 	if (alive _unit && lifestate _unit != "INCAPACITATED" && !isPlayer _unit) then {
 
+		diag_log format ["%1 [1479] FNC Lifeline_SelfHeal_ACE !!!!!!!!!!! SELF HEAL   !!!!!!!!!!!!!!", name _unit];
+
 		// _unit setVariable ["Lifeline_selfheal_progss",true,true];diag_log format ["%1 [1554 ACE]!!!!!!!!! change var Lifeline_selfheal_progss = true !!!!!!!!!!!!!", name _unit]; // in original Lifeline_SelfHeal now
 		
 		// Get Nearest Enemy to Incap unit
@@ -1492,7 +1496,7 @@ params ["_unit"];
 		// }];
 		//ENDDEBUG
 
-		if (lifeState _unit == "INCAPACITATED" || !alive _unit) exitWith {diag_log format ["%1 [1630]|!!!!!!!!!!!!!! ACE HEAL SELF EXIT !!!!!!!!!!!!", name _unit]; };
+		if (lifeState _unit == "INCAPACITATED" || !alive _unit) exitWith {diag_log format ["%1 [1497]|!!!!!!!!!!!!!! ACE HEAL SELF EXIT !!!!!!!!!!!!", name _unit]; };
 
 		// ================= BANDAGE ACTION LOOP ================
 
@@ -1508,11 +1512,11 @@ params ["_unit"];
 					 _key1 = _x;    // _x represents each key in the hashmap
 					 _value1 = _woundsHash get _key1;  // Get the value associated with the key
 
-					if (lifeState _unit == "INCAPACITATED" || !alive _unit) exitWith {diag_log format ["%1 [1645]|!!!!!!!!!!!!!! ACE HEAL SELF EXIT !!!!!!!!!!!!", name _unit]; };
+					if (lifeState _unit == "INCAPACITATED" || !alive _unit) exitWith {diag_log format ["%1 [1513]|!!!!!!!!!!!!!! ACE HEAL SELF EXIT !!!!!!!!!!!!", name _unit]; };
 
 					while {count _value1 > 0} do {	
 
-						if (lifeState _unit == "INCAPACITATED" || !alive _unit) exitWith {diag_log format ["%1 [1650]|!!!!!!!!!!!!!! ACE HEAL SELF EXIT !!!!!!!!!!!!", name _unit]; };
+						if (lifeState _unit == "INCAPACITATED" || !alive _unit) exitWith {diag_log format ["%1 [1517]|!!!!!!!!!!!!!! ACE HEAL SELF EXIT !!!!!!!!!!!!", name _unit]; };
 
 						diag_log format ["== COUNT WOUNDS SELFHEAL %1 ==", count _value1];
 
@@ -1524,12 +1528,14 @@ params ["_unit"];
 						if ((isnull _EnemyCloseBy or _unit distance _EnemyCloseBy >100) && count _value1 == 1) then {
 							// [_unit,"AinvPknlMstpSlayWrflDnon_medic"] remoteExec ["playMoveNow", _unit];
 							// diag_log "== 1";
+							if (lifeState _unit == "INCAPACITATED" || !alive _unit) exitWith {diag_log format ["%1 [1529]|!!!!!!!!!!!!!! ACE HEAL SELF EXIT !!!!!!!!!!!!", name _unit]; };
 							diag_log format ["== ANIMATION SELFHEAL %1 ==", name _unit];
 							[_unit,"AinvPknlMstpSlayWrflDnon_medic"] remoteExec ["playMoveNow",0];
 							sleep 5;			
 						} else {
 							// [_unit,"ainvppnemstpslaywrfldnon_medic"] remoteExec ["playMoveNow",_unit];
 							 // diag_log "== 2";
+							 if (lifeState _unit == "INCAPACITATED" || !alive _unit) exitWith {diag_log format ["%1 [1536]|!!!!!!!!!!!!!! ACE HEAL SELF EXIT !!!!!!!!!!!!", name _unit]; };
 							 diag_log format ["== ANIMATION SELFHEAL %1 ==", name _unit];
 							[_unit,"AinvPpneMstpSlayWnonDnon_medicIn"] remoteExec ["playMoveNow",0];
 							sleep 5;	
@@ -1562,7 +1568,7 @@ params ["_unit"];
 
 				while {_counter > 0} do {
 
-					if (lifeState _unit == "INCAPACITATED" || !alive _unit) exitWith {diag_log format ["%1 [1694]|!!!!!!!!!!!!!! ACE HEAL SELF EXIT !!!!!!!!!!!!", name _unit]; };
+					if (lifeState _unit == "INCAPACITATED" || !alive _unit) exitWith {diag_log format ["%1 [1569]|!!!!!!!!!!!!!! ACE HEAL SELF EXIT !!!!!!!!!!!!", name _unit]; };
 
 					if (_counter <= 0) exitWith {diag_log "EXIT BANDAGE LOOP";};
 						_bodyparty = _wounds select 0 select 1;
@@ -1605,7 +1611,7 @@ params ["_unit"];
 
 
 		// ====================ADD BLOOD IF NEEDED
-		if (lifeState _unit == "INCAPACITATED" || !alive _unit) exitWith {diag_log format ["%1 [1731]|!!!!!!!!!!!!!! ACE HEAL SELF EXIT !!!!!!!!!!!!", name _unit]; };
+		if (lifeState _unit == "INCAPACITATED" || !alive _unit) exitWith {diag_log format ["%1 [1612]|!!!!!!!!!!!!!! ACE HEAL SELF EXIT !!!!!!!!!!!!", name _unit]; };
 
 		if (oldACE == false) then {
 			 _jsonStr = _unit call ace_medical_fnc_serializeState; 
@@ -1630,7 +1636,7 @@ params ["_unit"];
 
 
 		// =====================ADD MORPHINE	
-		if (lifeState _unit == "INCAPACITATED" || !alive _unit) exitWith {diag_log format ["%1 [1757]|!!!!!!!!!!!!!! ACE HEAL SELF EXIT !!!!!!!!!!!!", name _unit]; };
+		if (lifeState _unit == "INCAPACITATED" || !alive _unit) exitWith {diag_log format ["%1 [1637]|!!!!!!!!!!!!!! ACE HEAL SELF EXIT !!!!!!!!!!!!", name _unit]; };
 
 		_pain = [];
 
@@ -1641,6 +1647,8 @@ params ["_unit"];
 			 _pain = _json getVariable ["ace_medical_pain", false];
 			 diag_log format ["%1 xxxxxxxxx SELF HEAL PAIN %2", name _unit, _pain];
 		};
+
+		if (lifeState _unit == "INCAPACITATED" || !alive _unit) exitWith {diag_log format ["%1 [1649]|!!!!!!!!!!!!!! ACE HEAL SELF EXIT !!!!!!!!!!!!", name _unit]; };
 
 		[_unit, "RightArm", "Morphine"] call ace_medical_treatment_fnc_medicationLocal;
 
@@ -1657,10 +1665,10 @@ params ["_unit"];
 
 
 		 //========== FRACTURE LOOP
-		if (lifeState _unit == "INCAPACITATED" || !alive _unit) exitWith {diag_log format ["%1 [1785]|!!!!!!!!!!!!!! ACE HEAL SELF EXIT !!!!!!!!!!!!", name _unit]; };
+		if (lifeState _unit == "INCAPACITATED" || !alive _unit) exitWith {diag_log format ["%1 [1666]|!!!!!!!!!!!!!! ACE HEAL SELF EXIT !!!!!!!!!!!!", name _unit]; };
 
 		{
-			if (lifeState _unit == "INCAPACITATED" || !alive _unit) exitWith {diag_log format ["%1 [1788]|!!!!!!!!!!!!!! ACE HEAL SELF EXIT !!!!!!!!!!!!", name _unit]; };
+			if (lifeState _unit == "INCAPACITATED" || !alive _unit) exitWith {diag_log format ["%1 [1669]|!!!!!!!!!!!!!! ACE HEAL SELF EXIT !!!!!!!!!!!!", name _unit]; };
 			_index = _forEachIndex; // Get the current index
 
 			if (_x == 1) then {
@@ -1683,7 +1691,7 @@ params ["_unit"];
 
 		} forEach _fractures;
 
-		if (lifeState _unit == "INCAPACITATED" || !alive _unit) exitWith {diag_log format ["%1 [1811]|!!!!!!!!!!!!!! ACE HEAL SELF EXIT !!!!!!!!!!!!", name _unit]; };
+		if (lifeState _unit == "INCAPACITATED" || !alive _unit) exitWith {diag_log format ["%1 [1692]|!!!!!!!!!!!!!! ACE HEAL SELF EXIT !!!!!!!!!!!!", name _unit]; };
 
 		_goup = group _unit;		
 

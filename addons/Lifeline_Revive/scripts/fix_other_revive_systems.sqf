@@ -409,6 +409,9 @@ if (isNil "oldACE" && Lifeline_remove_3rd_pty_revive == false) then {
 
 // PVP check
 if (hasInterface) then {
+
+	player setVariable ["Lifeline_Captive",(captive player),true]; diag_log format ["%1 [0413] fix_other_revive_systems.sqf !!!!!!!!! change var Lifeline_Captive = %2 !!!!!!!!!!!!!", name player, captive player];//2025
+
 	playerSide1 = side group player; 
 	_currentSides = missionNamespace getVariable ["Lifeline_PVPcheckSides", []];
 	_currentSides pushBackUnique playerSide1;

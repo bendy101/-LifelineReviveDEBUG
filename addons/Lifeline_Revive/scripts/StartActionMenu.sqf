@@ -65,7 +65,7 @@ if (isServer) then {
 		_join3 = " 〉"; 
 
 		
-
+		//DEBUG
 /* 		_colourblue = "#3ccdff";
 		// _colourred = "#c0392b";
 		_colourred = "#FF5733";
@@ -77,7 +77,7 @@ if (isServer) then {
 		_font2 = "RobotoCondensed";
 		_join = " | ";
 		// _font = "LucidaConsoleB"; */
-
+		//ENDDEBUG
 
 		if (!isNil "actionLifelineID1") then {player removeAction actionLifelineID1};
 		if (!isNil "actionLifelineID2") then {player removeAction actionLifelineID2};
@@ -90,6 +90,8 @@ if (isServer) then {
 		
 			Lifeline_cancel = false;
 
+			//DEBUG
+
 			// _players = allPlayers - entities "HeadlessClient_F";diag_log format ["init.sqf [0025] _players: %1", _players];
 
 			// Lifeline_Side = side (_players select 0);diag_log format ["init.sqf [0027] Lifeline_Side: %1", if (isNil "Lifeline_Side") then {"null baby"} else {Lifeline_Side}];
@@ -97,13 +99,9 @@ if (isServer) then {
 			// _scope1count = count (allunits select {group _x == group player && simulationEnabled _x && rating _x > -2000});
 			// _scope2count = count (allunits select {(side (group _x) == Lifeline_Side) && simulationEnabled _x && rating _x > -2000});
 			// _scope3count = count (allunits select {(side (group _x) == Lifeline_Side) && simulationEnabled _x  && (_x in playableUnits) && rating _x > -2000});
-
-
-			
-
+			//ENDDEBUG
 			
 			_groupsWPlayers = allGroups select {{isPlayer _x} count (units _x) > 0 }; 
-
 
 
 			if (Lifeline_PVPstatus) then {
@@ -160,10 +158,6 @@ if (isServer) then {
 			_scope2counttext = ((if (_scope2count < 100) then {"0"} else {""}) + (if (_scope2count < 10) then {"0"} else {""}) + str _scope2count);
 			_scope3counttext = ((if (_scope3count < 100) then {"0"} else {""}) + (if (_scope3count < 10) then {"0"} else {""}) + str _scope3count);
 
-			
-
-
-
 			LifelineremoveactionmenuIDs = {		
 				if (Lifeline_cancel == false) then {
 					"Lifeline_Revive\scripts\Lifeline_Global.sqf" remoteExec ["execVM",0,true];
@@ -199,9 +193,6 @@ if (isServer) then {
 						};
 
 				};
-
-
-
 				if (!Lifeline_PVPstatus) then {
 					if (!Lifeline_Include_OPFOR) then {
 						if (Lifeline_Scope == 4 || Lifeline_Scope == 1) then {
@@ -232,8 +223,6 @@ if (isServer) then {
 					};
 
 				};
-
-
 				if (Lifeline_Include_OPFOR && !Lifeline_PVPstatus) then {
 					actionLifelineID5 = player addAction ["<t size='" + _fontsize + "' font = '" + _font + "' color='"+_colour+"'>Exclude<t color='#FF5733'> OPFOR</t></t>", {
 						if (Lifeline_Include_OPFOR) then {Lifeline_Include_OPFOR = false} else {Lifeline_Include_OPFOR = true};
@@ -256,7 +245,6 @@ if (isServer) then {
 						diag_log "kkkkkkkkkkk INCLUDE OPFOR %1";
 					}];
 				};
-
 
 				actionLifelineID4 = player addAction ["<t size='" + _fontsize + "' font = '" + _font + "' color='#FF5733'>CANCEL LLR</t>", {Lifeline_cancel = true;[] call LifelineremoveactionmenuIDs;diag_log "kkkkkkkkkkk SCRIPT CANCEL %1";}];
 
@@ -302,7 +290,7 @@ if (isServer) then {
 				};
 
 			};
-
+			//DEBUG
 			//remind host player to start or cancel Lifeline Revive
 			/* [] spawn {
 				sleep 600;
@@ -310,6 +298,7 @@ if (isServer) then {
 					["Please Lifeline Revive. Scroll the mouse wheel to choose. ", "Lifeline Revive: please start or cancel", true, false] call BIS_fnc_guiMessage;  	
 				};
 			}; */
+			//ENDDEBUG
 
 			_scope1countcompare = _scope1count;
 			_scope2countcompare = _scope2count;
@@ -332,11 +321,6 @@ if (isServer) then {
 	};
 
 	[] spawn Lifeline_StartActionMenu;
-
-
-
-
-
 
 
 }; //if (isServer) then {

@@ -25,7 +25,7 @@ Lifeline_Incapped = {
 	[_unit, true] remoteExec ["setUnconscious",0]; //MOVED TO TOP OF FUNCTION
 
 	// store captive status (for missions with 'undercover' mode). Only if unit is not a medic at ReviveInProgress = 1 or 2 because it will be captive already
-	if (_unit getVariable ["ReviveInProgress",0] == 0 && _unit getVariable ["Lifeline_RevProtect",0] != 3) then { 
+	if (_unit getVariable ["ReviveInProgress",0] == 0 && _unit getVariable ["Lifeline_RevProtect",0] != 3 && !(_unit getVariable ["Lifeline_Captive_Delay",false])) then { 
 		_unit setVariable ["Lifeline_Captive",(captive _unit),true]; diag_log format ["%1 | [0024 FNC Lifeline_Incapped _Functions.sqf !!!!!!!!! change var Lifeline_Captive = %2 !!!!!!!!!!!!!", name _unit, captive _unit];//2025
 	};
 	// _unit setCaptive true;diag_log format ["%1 | [0024 FNC Lifeline_Incapped _Functions.sqf]!!!!!!!!! change var setCaptive = true !!!!! ReviveInProgress: %2 !!!!!!!!", name _unit, _unit getVariable ["ReviveInProgress",0]];
@@ -740,7 +740,9 @@ Lifeline_bandage_text = {
 		_cpr = false;
 	}; // while do
 
-	diag_log format ["%2 |==== UNIT WOUND ARRAY %1 no# wounds %3 ====[495]", _unitwounds, name _unit, count _unitwounds];
+	if (Lifeline_Revive_debug && Lifeline_logs_damagecalc) then {
+		diag_log format ["%2 |==== UNIT WOUND ARRAY %1 no# wounds %3 ====[495]", _unitwounds, name _unit, count _unitwounds];
+	};
 	_unit setVariable ["unitwounds", _unitwounds, true];
 };
 
@@ -1230,9 +1232,9 @@ Lifeline_Medic_Anim_and_Revive = {
 
 						//turning off the random choice between two animations. Hard setting it here:
 						_crouchreviveanim = 0;
-
+						//DEBUG
 						// if (lifestate _medic != "INCAPACITATED" || (alive _medic) || lifestate _incap == "INCAPACITATED" || (alive _incap)) then { 
-					/* 	if (lifestate _medic != "INCAPACITATED" && alive _medic) then {
+				 			/* 	if (lifestate _medic != "INCAPACITATED" && alive _medic) then {
 							// _medic setdir (_medic getDir _incap); //TEMPOFF yeha
 							// diag_log format ["%1 | [1105 _Functions.sqf] nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn FORCE DIRECTION ===============================", name _medic];playsound "forcedirection";
 							
@@ -1250,6 +1252,7 @@ Lifeline_Medic_Anim_and_Revive = {
 								// _medic setDir (_medic getDir _incap);diag_log format ["%1 | [1116 _Functions.sqf] nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn FORCE DIRECTION ===============================", name _medic];playsound "forcedirection";
 							// };							
 						}; */
+                        //ENDDEBUG
 
 						if (_part_yo != "CPR") then {
 								// Kneeling revive - no near enemy
@@ -1785,6 +1788,7 @@ Lifeline_radio_how_copy = {
 	diag_log format ["| %1 | %2 | [1645] kkkkkkkkkkkkk SAY3D HANGTIGHT | voice: %3", name _medic, name _medic, _voice];
 };
 */
+
 
 
 

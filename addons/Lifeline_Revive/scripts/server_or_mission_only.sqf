@@ -10,7 +10,7 @@ diag_log "                                                                      
 diag_log "                                                                                                '"; 
 diag_log "============================================================================================================='"; 
 diag_log "============================================================================================================='"; 
-diag_log "======================================== server_or_mission_only.sqf ==============================================='"; 
+diag_log "======================================== server_or_mission_only.sqf ========================================='"; 
 diag_log "============================================================================================================='"; 
 diag_log "============================================================================================================='"; 
 
@@ -48,7 +48,6 @@ Lifeline_mod = false;
 	Lifeline_debug_soundalert = true;
 
 
-	Lifeline_StartReviveBETA = true; //Fallback code: old Version of medic journey to incap.  Still not 100% convinced with my new code for the final 20 metres of medic getting to incap. Can fall back on the old cod
 
 	Lifeline_ACE_vanillaFAK = true;
 

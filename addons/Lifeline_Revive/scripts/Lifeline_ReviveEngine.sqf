@@ -40,8 +40,12 @@ Lifeline_players_autorev = [];
 Lifeline_UnitVoices = Lifeline_UnitVoices call BIS_fnc_arrayShuffle;
 Lifeline_UnitVoicesCount = count Lifeline_UnitVoices;
 Lifeline_mascas = false;
+Lifeline_Group_Mascal = [];
 // Lifeline_PVPstatus = false;
 // publicVariable "Lifeline_PVPstatus";
+
+
+
 
 
 
@@ -88,10 +92,6 @@ Lifeline_Side = side (_players select 0); //
 publicVariable "Lifeline_Side"; // THIS IS A SINGLE SIDE. NEED TO UPDATE TO ARRAY VERSION  FOR ALLIES.
 Lifeline_OPFOR_Sides = Lifeline_Side call BIS_fnc_enemySides;
 publicVariable "Lifeline_OPFOR_Sides"; // THIS IS AN ARRAY OF ENEMY SIDES */
-
-//added 2025-02-21 17:24:43 WIP for Opfor
-playerSide1 = side group player; //fix for dedicated
-enemyUnitsJa = allUnits select {[playerSide1, side group _x] call BIS_fnc_sideIsEnemy};
 
 //added 2025-02-21 17:24:43 WIP for Opfor
 playerSide1 = side group player; //fix for dedicated
@@ -232,43 +232,80 @@ if (isServer) then {
 	Lifelineunitscount_pre = 0;
 
 	Lifeline_DH_update = {
+		    // IMPORTANT: Fix the initialization counter logic
+    // This ensures the count values are synchronized properly
+    Lifelineunitscount_pre = count Lifeline_All_Units;
+    Lifelinecompletedinit = Lifelineunitscount_pre;
 
-		if (Lifelinecompletedinit > 1) then {	
-			Lifelineunitscount_pre = (count Lifeline_All_Units);
-		};
+		// if (Lifelinecompletedinit > 1) then {	
+		// 	Lifelineunitscount_pre = (count Lifeline_All_Units);
+		// };
 
-<<<<<<< HEAD
 		if (Lifeline_PVPstatus) then {
 				// GROUP
-				if (Lifeline_Scope == 1) then {_groupsWPlayers = allGroups select {{isPlayer _x} count (units _x) > 0 }; Lifeline_All_Units = allunits select {(group _x) in _groupsWPlayers && simulationEnabled _x && isDamageAllowed _x && rating _x > -2000}};
+				if (Lifeline_Scope == 1) then {_groupsWPlayers = allGroups select {{isPlayer _x} count (units _x) > 0 }; Lifeline_All_Units = allunits select {(group _x) in _groupsWPlayers && simulationEnabled _x && rating _x > -2000}};
 				// PLAYABLE SLOTS
-				if (Lifeline_Scope == 2) then {Lifeline_All_Units = allunits select {simulationEnabled _x && isDamageAllowed _x && ((_x in playableUnits) || (_x in switchableUnits)) && rating _x > -2000}};
+				if (Lifeline_Scope == 2) then {Lifeline_All_Units = allunits select {simulationEnabled _x && ((_x in playableUnits) || (_x in switchableUnits)) && rating _x > -2000}};
 				// SIDE	
-				if (Lifeline_Scope == 3) then {Lifeline_All_Units = allunits select {simulationEnabled _x && isDamageAllowed _x && rating _x > -2000}};
+				if (Lifeline_Scope == 3) then {Lifeline_All_Units = allunits select {simulationEnabled _x && rating _x > -2000}};
 		};
 
 		if (!Lifeline_PVPstatus) then {
 			if (Lifeline_Include_OPFOR) then {
 				// GROUP
-				if (Lifeline_Scope == 1) then {_groupsWPlayers = allGroups select {{isPlayer _x} count (units _x) > 0 }; Lifeline_All_UnitBluFor = allunits select {(group _x) in _groupsWPlayers && side (group _x) == Lifeline_Side && simulationEnabled _x && isDamageAllowed _x && rating _x > -2000}};
+				if (Lifeline_Scope == 1) then {_groupsWPlayers = allGroups select {{isPlayer _x} count (units _x) > 0 }; Lifeline_All_UnitBluFor = allunits select {(group _x) in _groupsWPlayers && side (group _x) == Lifeline_Side && simulationEnabled _x && rating _x > -2000}};
 				// PLAYABLE SLOTS
-				if (Lifeline_Scope == 2) then {Lifeline_All_UnitBluFor = allunits select {side (group _x) == Lifeline_Side && simulationEnabled _x && isDamageAllowed _x && ((_x in playableUnits) || (_x in switchableUnits)) && rating _x > -2000}};
+				if (Lifeline_Scope == 2) then {Lifeline_All_UnitBluFor = allunits select {side (group _x) == Lifeline_Side && simulationEnabled _x && ((_x in playableUnits) || (_x in switchableUnits)) && rating _x > -2000}};
 				// SIDE	
-				if (Lifeline_Scope == 3) then {Lifeline_All_UnitBluFor = allunits select {side (group _x) == Lifeline_Side && simulationEnabled _x && isDamageAllowed _x && rating _x > -2000}};
+				if (Lifeline_Scope == 3) then {Lifeline_All_UnitBluFor = allunits select {side (group _x) == Lifeline_Side && simulationEnabled _x && rating _x > -2000}};
 				// OPFOR
-				Lifeline_All_UnitOpFor = allunits select {(side (group _x) in Lifeline_OPFOR_Sides && simulationEnabled _x && isDamageAllowed _x)};
+				Lifeline_All_UnitOpFor = allunits select {(side (group _x) in Lifeline_OPFOR_Sides && simulationEnabled _x )};
 				// ALL UNITS
 				Lifeline_All_Units = Lifeline_All_UnitBluFor + Lifeline_All_UnitOpFor;
 			};
 			if (!Lifeline_Include_OPFOR) then {
 				// GROUP
-				if (Lifeline_Scope == 1) then {_groupsWPlayers = allGroups select {{isPlayer _x} count (units _x) > 0 }; Lifeline_All_Units = allunits select {side (group _x) == Lifeline_Side && (group _x) in _groupsWPlayers && simulationEnabled _x && isDamageAllowed _x && rating _x > -2000}};
+				if (Lifeline_Scope == 1) then {_groupsWPlayers = allGroups select {{isPlayer _x} count (units _x) > 0 }; Lifeline_All_Units = allunits select {side (group _x) == Lifeline_Side && (group _x) in _groupsWPlayers && simulationEnabled _x && rating _x > -2000}};
 				// PLAYABLE SLOTS
-				if (Lifeline_Scope == 2) then {Lifeline_All_Units = allunits select {side (group _x) == Lifeline_Side && simulationEnabled _x && isDamageAllowed _x && ((_x in playableUnits) || (_x in switchableUnits)) && rating _x > -2000}};				
+				if (Lifeline_Scope == 2) then {Lifeline_All_Units = allunits select {side (group _x) == Lifeline_Side && simulationEnabled _x && ((_x in playableUnits) || (_x in switchableUnits)) && rating _x > -2000}};				
 				// SIDE	
-				if (Lifeline_Scope == 3) then {Lifeline_All_Units = allunits select {side (group _x) == Lifeline_Side && simulationEnabled _x && isDamageAllowed _x && rating _x > -2000}};
+				if (Lifeline_Scope == 3) then {Lifeline_All_Units = allunits select {side (group _x) == Lifeline_Side && simulationEnabled _x && rating _x > -2000}};
 			};	
 		};
+
+		//version to exclude units that are invincible. npcs etc
+		//DEBUG
+		/* if (Lifeline_PVPstatus) then {
+				// GROUP
+				if (Lifeline_Scope == 1) then {_groupsWPlayers = allGroups select {{isPlayer _x} count (units _x) > 0 }; Lifeline_All_Units = allunits select {(group _x) in _groupsWPlayers && simulationEnabled _x && (isDamageAllowed _x && _x getVariable ["ReviveInProgress",0] == 0 || _x getVariable ["ReviveInProgress",0] != 0) && rating _x > -2000}};
+				// PLAYABLE SLOTS
+				if (Lifeline_Scope == 2) then {Lifeline_All_Units = allunits select {simulationEnabled _x && ((_x in playableUnits) || (_x in switchableUnits)) && (isDamageAllowed _x && _x getVariable ["ReviveInProgress",0] == 0 || _x getVariable ["ReviveInProgress",0] != 0) && rating _x > -2000}};
+				// SIDE	
+				if (Lifeline_Scope == 3) then {Lifeline_All_Units = allunits select {simulationEnabled _x && (isDamageAllowed _x && _x getVariable ["ReviveInProgress",0] == 0 || _x getVariable ["ReviveInProgress",0] != 0) && rating _x > -2000}};
+		};
+		if (!Lifeline_PVPstatus) then {
+			if (Lifeline_Include_OPFOR) then {
+				// GROUP
+				if (Lifeline_Scope == 1) then {_groupsWPlayers = allGroups select {{isPlayer _x} count (units _x) > 0 }; Lifeline_All_UnitBluFor = allunits select {(group _x) in _groupsWPlayers && side (group _x) == Lifeline_Side && simulationEnabled _x && (isDamageAllowed _x && _x getVariable ["ReviveInProgress",0] == 0 || _x getVariable ["ReviveInProgress",0] != 0) && rating _x > -2000}};
+				// PLAYABLE SLOTS
+				if (Lifeline_Scope == 2) then {Lifeline_All_UnitBluFor = allunits select {side (group _x) == Lifeline_Side && simulationEnabled _x && ((_x in playableUnits) || (_x in switchableUnits)) && (isDamageAllowed _x && _x getVariable ["ReviveInProgress",0] == 0 || _x getVariable ["ReviveInProgress",0] != 0) && rating _x > -2000}};
+				// SIDE	
+				if (Lifeline_Scope == 3) then {Lifeline_All_UnitBluFor = allunits select {side (group _x) == Lifeline_Side && simulationEnabled _x && (isDamageAllowed _x && _x getVariable ["ReviveInProgress",0] == 0 || _x getVariable ["ReviveInProgress",0] != 0) && rating _x > -2000}};
+				// OPFOR
+				Lifeline_All_UnitOpFor = allunits select {(side (group _x) in Lifeline_OPFOR_Sides && simulationEnabled _x && (isDamageAllowed _x && _x getVariable ["ReviveInProgress",0] == 0 || _x getVariable ["ReviveInProgress",0] != 0))};
+				// ALL UNITS
+				Lifeline_All_Units = Lifeline_All_UnitBluFor + Lifeline_All_UnitOpFor;
+			};
+			if (!Lifeline_Include_OPFOR) then {
+				// GROUP
+				if (Lifeline_Scope == 1) then {_groupsWPlayers = allGroups select {{isPlayer _x} count (units _x) > 0 }; Lifeline_All_Units = allunits select {side (group _x) == Lifeline_Side && (group _x) in _groupsWPlayers && simulationEnabled _x && (isDamageAllowed _x && _x getVariable ["ReviveInProgress",0] == 0 || _x getVariable ["ReviveInProgress",0] != 0) && rating _x > -2000}};
+				// PLAYABLE SLOTS
+				if (Lifeline_Scope == 2) then {Lifeline_All_Units = allunits select {side (group _x) == Lifeline_Side && simulationEnabled _x && ((_x in playableUnits) || (_x in switchableUnits)) && (isDamageAllowed _x && _x getVariable ["ReviveInProgress",0] == 0 || _x getVariable ["ReviveInProgress",0] != 0) && rating _x > -2000}};				
+				// SIDE	
+				if (Lifeline_Scope == 3) then {Lifeline_All_Units = allunits select {side (group _x) == Lifeline_Side && simulationEnabled _x && (isDamageAllowed _x && _x getVariable ["ReviveInProgress",0] == 0 || _x getVariable ["ReviveInProgress",0] != 0) && rating _x > -2000}};
+			};	
+		}; */
+		//ENDDEBUG
 
 		
 		/* if (Lifeline_Scope != 1) then {
@@ -282,40 +319,6 @@ if (isServer) then {
 			};
 		}; */
 
-=======
-		// GROUP
-		if (Lifeline_Scope == 1 && isDedicated) then {_groupsWPlayers = allGroups select {{isPlayer _x} count (units _x) > 0 }; Lifeline_All_Units = allunits select {(group _x) in _groupsWPlayers && simulationEnabled _x && rating _x > -2000}};
-		if (Lifeline_Scope == 1 && !isDedicated) then {Lifeline_All_Units = allunits select {group _x == group player && simulationEnabled _x && rating _x > -2000}};
-
-		// SIDE	
-		//DEBUG
-		// if (Lifeline_Scope == 2) then {Lifeline_All_Units = allunits select {(side _x == Lifeline_Side or side _x == civilian) && simulationEnabled _x && rating _x > -2000 && _x checkAIFeature "ANIM"}}; //disable line 1083 in Lifeline_Global.sqf "_medic disableAI "ANIM"; "
-		//ENDDEBUG
-		
-		if (Lifeline_Scope == 2) then {Lifeline_All_Units = allunits select {(side (group _x) == Lifeline_Side) && simulationEnabled _x && rating _x > -2000}};
-		// if (Lifeline_Scope == 2) then {Lifeline_All_Units = allunits select {(side (group _x) == Lifeline_Side || [playerSide1, side group _x] call BIS_fnc_sideIsEnemy) && simulationEnabled _x && rating _x > -2000}}; // WIP for opfor
-				
-		// if (Lifeline_Scope == 2) then {Lifeline_All_Units = allunits select {(side (group _x) == Lifeline_Side) && simulationEnabled _x && rating _x > -2000 && ((captive _x == false && _x getVariable ["ReviveInProgress",0] == 0) || (_x getVariable ["ReviveInProgress",0] in [1,2,3]))}};
-		// if (Lifeline_Scope == 2) then {Lifeline_All_Units = allunits select {simulationEnabled _x && rating _x > -2000}}; // TEST FOR OPFOR
-
-		// ALL PLAYABLE (SLOTS)
-		if (Lifeline_Scope == 3) then {Lifeline_All_Units = allunits select {(side (group _x) == Lifeline_Side) && simulationEnabled _x  && (_x in playableUnits) && rating _x > -2000}};
-
-		//For Enemy auto kill w ACE
-		if (Lifeline_RevMethod == 3) then { 
-			playerSide1 = side group player;//this needs to be updated for dedicated servers.
-			if (Lifeline_ACE_CIVILIANlimitbleedtime == false) then {
-				enemyUnitsJa = allUnits select {
-					[playerSide1, side group _x] call BIS_fnc_sideIsEnemy
-				};
-			} else {
-				enemyUnitsJa = allUnits select {
-					[playerSide1, side group _x] call BIS_fnc_sideIsEnemy || side group _x == CIVILIAN 
-				};
-			};
-		};
-
->>>>>>> 587abbfd0679f8fd5647207d0d9400494fa562ac
 		publicVariable "Lifeline_All_Units";
 		waitUntil {count Lifeline_All_Units >0};
 		Lifelineunitscount = (count Lifeline_All_Units); // added to indicate with a hint when all units are processed below	
@@ -475,9 +478,6 @@ if (isServer) then {
 		hackfix_captive_incap = true; // captive when incapitated, force it.
 		
 
-
-
-
 				
 		while {true} do {
 			// _alldown = true;  // no longer needed. was for old method MASCAL
@@ -502,7 +502,8 @@ if (isServer) then {
 
 				// Self heal for AI
 				if (!isPlayer _x && !(lifestate _x == "INCAPACITATED") && alive _x && _isbleeding == true 
-					&& _x getVariable ["Lifeline_selfheal_progss",false] == false
+					&& _x getVariable ["Lifeline_selfheal_progss",false] == false && Lifeline_SelfHeal_Cond > 0
+					&& getSuppression _x < 0.5 //new line
 				) then {
 					diag_log format ["%1 [1936] !!!!!!!!!!!!!!!! spawn self heal !!!!!!!!!!!!! DMG %2 STATE %3 Lifeline_selfheal_progss %4", name _x, damage _x, lifestate _x, _x getVariable ["Lifeline_selfheal_progss",false]];
 					_x spawn Lifeline_SelfHeal;
@@ -681,33 +682,6 @@ if (isServer) then {
 
 					if (Lifeline_PVPstatus == false && Lifeline_Include_OPFOR == true && (side group _X) in Lifeline_OPFOR_Sides && !Lifeline_Idle_CrouchOPFOR) exitWith {};
 
-					
-				/* 	if (speed _x <= Lifeline_Idle_Crouch_Speed && stance _x == "STAND" && _crouchtrig == false && behaviour _x == "AWARE" && _x getVariable ["ReviveInProgress",0] == 0) then {
-						_crouchtrig = true; 
-					   _x setUnitPos "MIDDLE";
-					   [_x, "MIDDLE"] remoteExec ["setUnitPos", 0];
-					   diag_log format ["%1 | Set to crouch", name _x];
-					};
-					if ((speed _x > Lifeline_Idle_Crouch_Speed && _crouchtrig == true) || behaviour _x != "AWARE") then {
-						_crouchtrig = false;						
-						if (unitPos _x != "DOWN") then {
-							_x setUnitPos "AUTO";
-							[_x, "AUTO"] remoteExec ["setUnitPos", 0];
-						};
-						diag_log format ["%1 | Return to previous stance: %2", name _x, unitPos _x];
-					}; 
-					if (speed _x == 0 && _crouchtrig == true && (behaviour _x == "COMBAT" || behaviour _x == "STEALTH" || (isPlayer (leader group _x) && stance (leader group _x) == "PRONE" && behaviour _x == "AWARE"))) then {
-						_crouchtrig = false;
-						// _x setUnitPos "DOWN";
-						// _x setUnitPos "AUTO";  
-						// [_x, "DOWN"] remoteExec ["setUnitPos", 0];
-						// [_x, "AUTO"] remoteExec ["setUnitPos", 0];
-						// [_x] call Lifeline_PostureHack;
-						[_x] remoteExec ["Lifeline_PostureHack", 0];
-					};
-					 _x setVariable ["Lifeline_crouchtrig",_crouchtrig, true]; */
-					//  [_x] remoteExec ["Lifeline_AutoCrouch", 0];
-					//[_x, _crouchtrig] call Lifeline_AutoCrouch;
 					 [_x, _crouchtrig] remoteExec ["Lifeline_AutoCrouch", 0];
 				};	
 
@@ -727,11 +701,7 @@ if (isServer) then {
 					};
 
 					// if ((isDamageAllowed _x == false || captive _x == true) && alive _x && lifestate _x != "INCAPACITATED" &&  _x getVariable ["ReviveInProgress",0] == 0 && !(_x in Lifeline_Process) // deleted _x getVariable ["LifelineBleedOutTime",0] (unlike line above)
-<<<<<<< HEAD
 			      /*   if ((isDamageAllowed _x == false || (captive _x == true && _captive == false)) && alive _x && lifestate _x != "INCAPACITATED" &&  _x getVariable ["ReviveInProgress",0] == 0 && !(_x in Lifeline_Process) // deleted _x getVariable ["LifelineBleedOutTime",0] (unlike line above)
-=======
-/* 					if ((isDamageAllowed _x == false || (captive _x == true && _captive == false)) && alive _x && lifestate _x != "INCAPACITATED" &&  _x getVariable ["ReviveInProgress",0] == 0 && !(_x in Lifeline_Process) // deleted _x getVariable ["LifelineBleedOutTime",0] (unlike line above)
->>>>>>> 587abbfd0679f8fd5647207d0d9400494fa562ac
 						&& (isNull findDisplay 60492) && (isNull findDisplay 47) && (isNull findDisplay 48) && (isNull findDisplay 50) && (isNull findDisplay 51) && (isNull findDisplay 58) && (isNull findDisplay 61) && (isNull findDisplay 312) && (isNull findDisplay 314)) then {
 						[_x] spawn {
 							params ["_x"];
@@ -752,17 +722,10 @@ if (isServer) then {
 									};			
 							};									
 						};
-<<<<<<< HEAD
 					}; */	
-=======
-					};		 */			
->>>>>>> 587abbfd0679f8fd5647207d0d9400494fa562ac
 
-					_captive = _x getVariable ["Lifeline_Captive", false];		
-					
-						    
-					
-					if (hackfix_captive_units && captive _x == true && _captive == false && alive _x && lifestate _x != "INCAPACITATED" &&  _x getVariable ["ReviveInProgress",0] == 0 && !(_x in Lifeline_Process) // deleted _x getVariable ["LifelineBleedOutTime",0] (unlike line above)
+				/* 	_captive = _x getVariable ["Lifeline_Captive", false];						
+					if (hackfix_captive_units && !(_x getVariable ["Lifeline_Captive_Delay",false]) && captive _x == true && _captive == false && alive _x && lifestate _x != "INCAPACITATED" &&  _x getVariable ["ReviveInProgress",0] == 0 && !(_x in Lifeline_Process) // deleted _x getVariable ["LifelineBleedOutTime",0] (unlike line above)
 						&& (!isPlayer _x || (isPlayer _x && (isNull findDisplay 60492) && (isNull findDisplay 47) && (isNull findDisplay 48) && (isNull findDisplay 50) && (isNull findDisplay 51) && (isNull findDisplay 58) && (isNull findDisplay 61) && (isNull findDisplay 312) && (isNull findDisplay 314)))) then {
 						hackfix_captive_units = false;
 						[_x] spawn {
@@ -771,7 +734,7 @@ if (isServer) then {
 							hackfix_captive_units = true;
 							_captive = _x getVariable ["Lifeline_Captive", false];
 							// if ((isDamageAllowed _x == false || captive _x == true) && alive _x && lifestate _x != "INCAPACITATED" && !(_x getVariable ["Lifeline_Down",false]) && _x getVariable ["ReviveInProgress",0] == 0 && (_x getVariable ["LifelineBleedOutTime",0]) == 0 && !(_x in Lifeline_Process)
-							if (captive _x == true && _captive == false && alive _x && lifestate _x != "INCAPACITATED" && _x getVariable ["ReviveInProgress",0] == 0 && !(_x in Lifeline_Process)  // deleted _x getVariable ["LifelineBleedOutTime",0] (unlike line above)
+							if (!(_x getVariable ["Lifeline_Captive_Delay",false]) && captive _x == true && _captive == false && alive _x && lifestate _x != "INCAPACITATED" && _x getVariable ["ReviveInProgress",0] == 0 && !(_x in Lifeline_Process)  // deleted _x getVariable ["LifelineBleedOutTime",0] (unlike line above)
 								&& (!isPlayer _x || (isPlayer _x && (isNull findDisplay 60492) && (isNull findDisplay 47) && (isNull findDisplay 48) && (isNull findDisplay 50) && (isNull findDisplay 51) && (isNull findDisplay 58) && (isNull findDisplay 61) && (isNull findDisplay 312) && (isNull findDisplay 314)))) then {
 									// if (Lifeline_debug_soundalert) then {["hackfix"] remoteExec ["playSound",2]};									
 									// if !(local _x) then {	
@@ -780,13 +743,14 @@ if (isServer) then {
 									// 	_x setCaptive _captive;diag_log format ["%1 | [0500 HACKFIX][Lifeline_ReviveEngine.sqf]!!!!!!!!! change var setCaptive = %2 !!!!!!!!!!!!!", name _x, _captive];		
 									// };
 									
-									[format["Bug: Unit %1 is captive", name _x]] remoteExec ["hint", 0];												
+									// [format["Bug: Unit %1 is captive", name _x]] remoteExec ["hint", 0];												
 							};									
 						};
-					}; 	
+					}; 	 */
 
 					// FIX bugged invincible units.
-			        if (hackfix_invincible_units && isDamageAllowed _x == false && alive _x && lifestate _x != "INCAPACITATED" &&  _x getVariable ["ReviveInProgress",0] == 0 && !(_x in Lifeline_Process) // deleted _x getVariable ["LifelineBleedOutTime",0] (unlike line above)
+			        // if (hackfix_invincible_units && isDamageAllowed _x == false && alive _x && lifestate _x != "INCAPACITATED" &&  _x getVariable ["ReviveInProgress",0] == 0 && !(_x in Lifeline_Process) // deleted _x getVariable ["LifelineBleedOutTime",0] (unlike line above)
+			        if (hackfix_invincible_units && !(isNil {_x getVariable "ReviveInProgress"}) && isDamageAllowed _x == false && alive _x && lifestate _x != "INCAPACITATED" &&  _x getVariable ["ReviveInProgress",0] == 0 && !(_x in Lifeline_Process) // deleted _x getVariable ["LifelineBleedOutTime",0] (unlike line above)
 						&& (!isPlayer _x || (isPlayer _x && (isNull findDisplay 60492) && (isNull findDisplay 47) && (isNull findDisplay 48) && (isNull findDisplay 50) && (isNull findDisplay 51) && (isNull findDisplay 58) && (isNull findDisplay 61) && (isNull findDisplay 312) && (isNull findDisplay 314)))) then {
 						hackfix_invincible_units = false;
 						[_x] spawn {
@@ -837,63 +801,10 @@ if (isServer) then {
 
 				//========================= END Hack fixes ==================
 
-				//========================== MASCAS =========================	
-
-				//check if all units are incapacitated or dead for the hint text "MASCAS / MASCAL allunits are down"
-				/* if (lifestate _x != "INCAPACITATED" && lifestate _x != "DEAD" && lifestate _x != "DEAD-RESPAWN" && lifestate _x != "DEAD-SWITCHING") then {
-					_alldown = false;
-				};	
-				if (lifestate _x == "INCAPACITATED" && (_x getVariable ["Lifeline_autoRecover",false])) then {
-					_autorevive = true;
-					if (isPlayer _x) then {
-						Lifeline_players_autorev pushBackUnique _x;
-					};
-				};	 */
 
 			} foreach Lifeline_All_Units;
 
 
-			// MASCAS Hint text for when all units are down.
-		/* 	if (_alldown == false) then {
-				Lifeline_mascastxt_trig = false;
-				Lifeline_mascastxt_timer = 0;
-				Lifeline_players_autorev = [];
-				if (Lifeline_mascas == true) then {
-					Lifeline_mascas = false;
-				};
-			};
-			if (_alldown == true) then {
-					Lifeline_mascas = true;
-					_bottomtext = "all units down";
-					_bottomtext2 = "all units down";
-					//if one of units have luck of autorevive, after 60 seconds display message of hope....
-					if (_autorevive == true) then {
-						if (Lifeline_mascastxt_trig == false) then {
-								Lifeline_mascastxt_timer = time + 60;
-								Lifeline_mascastxt_trig = true;
-							};
-						if (time >= Lifeline_mascastxt_timer) then {					
-						 _bottomtext = "SOME LUCK:<br />a unit will regain consciousness";
-						 _bottomtext2 = "SOME LUCK:<br />you will regain consciousness";
-						//_bottomtext = "luck: a unit will regain consciousness";
-						//_bottomtext2 = "luck: you will regain consciousness";
-						};
-					};				
-				//===METHOD FOR CALCULATING RIGHT ALIGN SENDING IN REMOTEEXEC TO BIS_fnc_dynamicText
-				_colour = "EF5736"; 
-				// _colour = "B61717"; 
-					if (count allPlayers > count Lifeline_players_autorev) then {
-						// [format ["<t align='right' size='%3' color='#%1'>MASCAS / MASCAL</t><br /><t align='right' size='%4' color='#%1'>%2</t>",_colour,_bottomtext, 0.7,0.5],((safeZoneW - 1) * 0.48),1.15,5,0,0,Lifelinetxt1Layer] remoteExec ["BIS_fnc_dynamicText",allPlayers - Lifeline_players_autorev]
-						_textright = format ["<t align='right' size='%3' color='#%1'>MASCAS / MASCAL</t><br /><t align='right' size='%4' color='#%1'>%2</t>",_colour,_bottomtext, 0.7,0.5];
-						[_textright,1.15,5] remoteExec ["Lifeline_display_textright2",allPlayers - Lifeline_players_autorev];
-					};
-					if (count Lifeline_players_autorev > 0) then {
-						// [format ["<t align='right' size='%3' color='#%1'>MASCAS / MASCAL</t><br /><t align='right' size='%4' color='#%1'>%2</t>",_colour,_bottomtext2, 0.7,0.5],((safeZoneW - 1) * 0.48),1.15,5,0,0,Lifelinetxt1Layer] remoteExec ["BIS_fnc_dynamicText",Lifeline_players_autorev]
-						_textright = format ["<t align='right' size='%3' color='#%1'>MASCAS / MASCAL</t><br /><t align='right' size='%4' color='#%1'>%2</t>",_colour,_bottomtext2, 0.7,0.5];
-						[_textright,1.15,5] remoteExec ["Lifeline_display_textright2",Lifeline_players_autorev];
-					};
-				// };
-			}; */
 
 			sleep 2;
 		}; // end while
@@ -948,7 +859,6 @@ if (isServer) then {
 				} forEach enemyUnitsJa;  
 				sleep 60;  
 				diag_log "==================================================== 60 sec loop for auto kill opfor";
-<<<<<<< HEAD
 			}; 
 		};
 	}; */
@@ -991,8 +901,6 @@ if (isServer) then {
 				} forEach enemyUnitsJa;  
 				sleep 60;  
 				diag_log "============================ 60 sec loop for auto kill opfor";
-=======
->>>>>>> 587abbfd0679f8fd5647207d0d9400494fa562ac
 			}; 
 		};
 	};
@@ -1343,73 +1251,58 @@ if (isServer) then {
 	_bluforUnits = [];
 	_check_both_sides = [];
 	_incap_side = [];
+	_groupindex = 0;
+	_selectGroup = [];
 	
 
 
 	Lifeline_mascal_autorevive_timer = 0; // when all units are down (MASCAL) but a unit has the auto-revive flag, then a timer will start before player is informed a unit is recovering.
 
 	["Lifeline Revive initialized"] remoteExec ["hintsilent", allplayers];
+	// [] execvm "Lifeline_Revive\scripts\temp.sqf"; 
 
 	while {true} do {
 
 		// sound alert for scope update loop
 		// if (Lifeline_debug_soundalert && Lifeline_Revive_debug && Lifeline_soundalert_updatescope) then {playsound "updatescope";};
+		diag_log format ["================================== [1264] PRIMARY LOOP  | START LOOP"];
 
 		scopeName "main";
+
+		diag_log format ["================================== [1268] PRIMARY LOOP  | START LOOP"];
 
 		Lifeline_incaps2choose = [];
 		Lifeline_medics2choose = [];
 		Lifeline_healthy_units = [];
+		Lifeline_incaps2chooseGROUPS = [];
 		Lifeline_medics = [];
 		_incap = objNull;
 		_medic = objNull;
-		_sleep = 3;
-
+		_dedi_in_action = false;
+		_dedi_medic_available = false;
 		
+		_sleep = 0.2;
+
+		diag_log format ["================================== [1270] PRIMARY LOOP  | SORT INCAPACITATED UNITS"];
+
+		// Sort incapacitated units based on the selected limit
+		// if (Lifeline_Medic_Limit == -1) then {
+			[6] call Lifeline_sort_order_incapacitated;
+		// } else {
+			// [3] call Lifeline_sort_order_incapacitated;
+		// };
 
 
-
-		[3] call Lifeline_sort_order_incapacitated;
+		diag_log format ["================================== [1273] PRIMARY LOOP  | SORT INCAPACITATED UNITS"];
 
 
 		Lifeline_incaps2choose = Lifeline_incapacitated select {!(_x in Lifeline_Process) && (lifestate _x == "INCAPACITATED") && (rating _x > -2000)};
+		
+
+		_diag_array = ""; {_diag_array = _diag_array + name _x + ":" + str group _x + ", " } foreach Lifeline_incaps2choose; diag_log format ["================ [1285] PRIMARY LOOP  %1 Lifeline_incaps2choose: %2'", "temp", _diag_array];
 
 
 
-		// ======= SORT ALL INCAPACITATED ON SAME SIDE ARE GROUPED TOGETHER. ALSO PLAYERS ALWAYS FIRST.
-
-		// Method 1
-		/* _Lifeline_incap_blufor = [];
-		_Lifeline_incap_opfor = [];
-
-		// 1) Players (highest priority)
-		_Lifeline_incap_players = Lifeline_incaps2choose select {isPlayer _x}; 
-		// 2) AI units (subtract players from total)
-		_Lifeline_incap_AI = Lifeline_incaps2choose - _Lifeline_incap_players;
-		// 3) AI in player groups - simplified select approach
-		_playerGroups = [];
-		{_playerGroups pushBackUnique (group _x);} forEach allPlayers;
-		_Lifeline_incap_PG = _Lifeline_incap_AI select {(group _x) in _playerGroups}; 
-		// 4) AI not in player groups (remaining AI)
-		_Lifeline_incap_nonPG = _Lifeline_incap_AI - _Lifeline_incap_PG;
-			
-		if (!Lifeline_PVPstatus && Lifeline_Include_OPFOR) then {
-			// 5) BLUFOR units from non-player group AI
-			_Lifeline_incap_blufor = _Lifeline_incap_nonPG select {side group _x == Lifeline_Side};
-			// 6) OPFOR units from non-player group AI
-			_Lifeline_incap_opfor = _Lifeline_incap_nonPG select {side group _x in Lifeline_OPFOR_Sides};
-			// Combine in priority order while preserving original order within groups
-			Lifeline_incaps2choose = _Lifeline_incap_players + _Lifeline_incap_PG + _Lifeline_incap_blufor + _Lifeline_incap_opfor;
-			// publicVariable "Lifeline_incaps2choose";
-		};
-		if (Lifeline_PVPstatus || (!Lifeline_PVPstatus && !Lifeline_Include_OPFOR)) then {
-			Lifeline_incaps2choose = _Lifeline_incap_players + _Lifeline_incap_PG + _Lifeline_incap_nonPG;
-			// publicVariable "Lifeline_incaps2choose";
-		};	
-
-		_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach _Lifeline_incap_blufor; diag_log format ["====== [1218] PRIMARY LOOP || _Lifeline_incap_blufor: %1",_diag_array];
-		_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach _Lifeline_incap_opfor; diag_log format ["====== [1218] PRIMARY LOOP || _Lifeline_incap_opfor: %1",_diag_array]; */
-		// end Method 1
 
 		
 		//DEBUG // JUST FOR DIAGLOG  
@@ -1417,65 +1310,82 @@ if (isServer) then {
 
 		if (count Lifeline_incaps2choose > 0 ) then {
 
+
+			// ======================== SELECT INCAP UNIT ==========================
+			// ======================== SELECT INCAP UNIT ==========================
 			// ======================== SELECT INCAP UNIT ==========================
 
-			if (Lifeline_side_switch == 0) then {
-			 _incap = (Lifeline_incaps2choose select 0);
-			 _incaptemp = _incap;
-			 _incap_side = side group _incap; // even though this is declared again below, it is need for the conditionals here.
+
+			// ====== GROUP SWITCHING LOGIC ========
+			{
+				Lifeline_incaps2chooseGROUPS pushBackUnique group _x;
+			} foreach Lifeline_incaps2choose;
+			
+			// Select first unit from first group in Lifeline_incaps2chooseGROUPS
+
+
+
+			// to fix when number of groups changes mid loop
+			if (_groupindex > (count Lifeline_incaps2chooseGROUPS - 1)) then {
+					_groupindex = 0;
+					// Don't set _sleep = 3 here, as we want the sleep after going through all groups
+			};
+
+			diag_log format ["PRIMARY LOOP [1321] uuuuuuuuuuuuuuuuuuuuuuuuuu COUNT INDEX Lifeline_incaps2chooseGROUPS: %1 _groupindex: %2", count Lifeline_incaps2chooseGROUPS, _groupindex];
+			
+			if (count Lifeline_incaps2chooseGROUPS > 0) then {
+				_selectGroup = Lifeline_incaps2chooseGROUPS select _groupindex;
+				diag_log format ["PRIMARY LOOP [1333] uuuuuuuuuuuuuuuuuuuuuuuuuu SELECTED GROUP: %1 _groupindex: %2", _selectGroup, _groupindex];
+				_groupUnits = Lifeline_incaps2choose select {group _x == _selectGroup};
+
+				
+				if (Lifeline_Dedicated_Medic) then {
+					_dedi_in_action = [_selectGroup] call Lifeline_check_dedimedic select 0;
+					_dedi_medic_available = [_selectGroup] call Lifeline_check_dedimedic select 1;
+					// if no dedicated medic is available, then put dedi medic at the front of the list
+					if (!_dedi_medic_available) then {
+						_realMedics = _groupUnits select {_x getUnitTrait "medic"};
+						_nonMedics = _groupUnits select {!(_x getUnitTrait "medic")};
+						_groupUnits = _realMedics + _nonMedics;
+					};
+				};
+
+
+				
+				if (count _groupUnits > 0) then {
+					_incap = _groupUnits select 0;
+					_incap_side = side group _incap;
+				};
+				
+				// Set longer sleep if we've processed the last group
+				if (_groupindex == (count Lifeline_incaps2chooseGROUPS - 1)) then {
+					_sleep = 3;
+				};
 			};
 
 
-
-		    /// =============== ALL NEW HERE
-			// Method 1       
-			// if (((!Lifeline_PVPstatus && Lifeline_Include_OPFOR) || Lifeline_PVPstatus) && Lifeline_side_switch > 0) then {
-			// 	diag_log format ["PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuu SWITCH %1  uuuuuuuuuuuuuuuuuuuuuuuuuuuuu ReviveInProgress %2 Lifeline_AssignedMedic %3", name _incap, _incap getVariable ["ReviveInProgress",0], (_incap getVariable ["Lifeline_AssignedMedic",[]])];
-			// 	if (_incap_sidetemp == Lifeline_Side && count _Lifeline_incap_opfor > 0) then {
-			// 		diag_log "PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuu CHOOSE OPFOR";				
-
-			// 		_incap = (_Lifeline_incap_opfor select 0);				
-			// 	};
-			// 	if (_incap_sidetemp in Lifeline_OPFOR_Sides && count _Lifeline_incap_blufor > 0) then {
-			// 		diag_log "PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuu CHOOSE BLUFOR";
-			// 		_incap = (_Lifeline_incap_blufor select 0);
-			// 	};
-			// 	Lifeline_side_switch = Lifeline_side_switch - 1;				
-			// };		
-			// Method 2
-
 			
+			// Create arrays for side switching logic
+			// private _opforUnits = Lifeline_incaps2choose select {side group _x in Lifeline_OPFOR_Sides};
+			// private _bluforUnits = Lifeline_incaps2choose select {side group _x == Lifeline_Side};
 
 
-			diag_log format ["PRIMARY LOOP [1253] uuuuuuuuuuuuuuuuuuuuuuuuuu BEFORE SWITCH incap: %1 side: %2 Lifeline_side_switch %3", name _incap, _incap_side, Lifeline_side_switch];
-			
-			/* if (((!Lifeline_PVPstatus && Lifeline_Include_OPFOR) || Lifeline_PVPstatus) && Lifeline_side_switch > 0) then {
-				
-				diag_log format ["PRIMARY LOOP [1253] uuuuuuuuuuuuuuuuuuuuuuuuuu SWITCH incap: %1 side: %2 Lifeline_side_switch %3", name _incap, _incap_side, Lifeline_side_switch];
-				if (_incap_side == Lifeline_Side) then {
-					// Find first unit from OPFOR side
-					private _opforUnits = Lifeline_incaps2choose select {side group _x in Lifeline_OPFOR_Sides};
-					if (count _opforUnits > 0) then {
-						_incap = _opforUnits select 0;
-						diag_log "PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuu CHOOSE OPFOR";
-					};
-				} else {
-					// Find first unit from BLUFOR side
-					private _bluforUnits = Lifeline_incaps2choose select {side group _x == Lifeline_Side};
-					if (count _bluforUnits > 0) then {
-						_incap = _bluforUnits select 0;
-						diag_log "PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuu CHOOSE BLUFOR";
-					};
-				};
-				Lifeline_side_switch = Lifeline_side_switch - 1;
-				diag_log format ["PRIMARY LOOP [1270] uuuuuuuuuuuuuuuuuuuuuuuuuu incap: %1 side: %2 Lifeline_side_switch %3", name _incap, _incap_side, Lifeline_side_switch];
+			/* if (Lifeline_side_switch == 0) then {
+			 _incap = (Lifeline_incaps2choose select 0);
+			 _incaptemp = _incap;
+			 _incap_side = side group _incap; // even though this is declared again below, it is need for the conditionals here.
 			}; */
+
+			
+
+			// diag_log format ["PRIMARY LOOP [1253] uuuuuuuuuuuuuuuuuuuuuuuuuu BEFORE SWITCH incap: %1 side: %2 Lifeline_side_switch %3", name _incap, _incap_side, Lifeline_side_switch];
+			
 
 			//=================================================
 
 			
 
-			if (Lifeline_side_switch > 0) then {
+		/* 	if (Lifeline_side_switch > 0) then {
 				if (_incap_side == Lifeline_Side) then {
 						// Find first unit from OPFOR side
 						if (count _opforUnits > 0) then {
@@ -1491,25 +1401,118 @@ if (isServer) then {
 					};
 				};
 				Lifeline_side_switch = 0;
-			};
+			}; */
 
 
 			_incap_side = side group _incap; 
 
 
-			diag_log format ["PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuu SELECTED INCAP %1  uuuuuuuuuuuuuuuuuuuuuuuuuuuuu ReviveInProgress %2 Lifeline_AssignedMedic %3 SIDE %4", name _incap, _incap getVariable ["ReviveInProgress",0], (_incap getVariable ["Lifeline_AssignedMedic",[]]), _incap_side];
+			diag_log format ["PRIMARY LOOP [1383]uuuuuuuuuuuuuuuuuuuuuuuuuu SELECTED INCAP %1  INDEX:%5 GROUP: %6 uuuuuuuuuuuuuuuuuuuuuuuuuuuuu ReviveInProgress %2 Lifeline_AssignedMedic %3 SIDE %4", name _incap, _incap getVariable ["ReviveInProgress",0], (_incap getVariable ["Lifeline_AssignedMedic",[]]), _incap_side, _groupindex, group _incap];
 			if (Lifeline_Revive_debug) then {[_incap,"SELECTED INCAP"] call serverSide_unitstate};
 			// _incap setVariable ["ReviveInProgress",3,true]; // added
 			
 			moveOut _incap; //added, dunno why, but needed in this version
 				
 
-			// ======================== SELECT MEDIC UNIT ==========================
+			// ======================== SELECT MEDIC UNIT ================================
+			// ======================== SELECT MEDIC UNIT ================================
+			// ======================== SELECT MEDIC UNIT ================================
 			
-			Lifeline_healthy_units = Lifeline_All_Units - Lifeline_incapacitated;
-			sleep 0.2;
-			// Lifeline_medics2chooseSIDE = Lifeline_healthy_units select {(side group _x) == (_incap_side)}; //added to only select units on the same side as the incap
-			// Lifeline_medics2chooseSIDE = Lifeline_healthy_units select {(side group _x) == (_incap_side) && [_x,_incap] call Lifeline_check_available_medic};
+		 	//Lifeline_healthy_units = Lifeline_All_Units - Lifeline_incapacitated;
+
+			// Check if medic limit is reached. 
+			_medic_under_limit = true;
+
+
+
+			/*  // ======= MEDIC NUMERICAL LIMITS LOGIC ======== 
+			
+			if (Lifeline_Medic_Limit >= 0 && !(group _incap in Lifeline_Group_Mascal)) then {
+				diag_log format ["PRIMARY LOOP [1349] uuuuuuuuuuuuuuuuuuuuuuuuuu incap: %1 MEDIC LIMIT GATE 1 CHECK %2", name _incap, Lifeline_Medic_Limit];
+				// Subtract both incapacitated units and players from the group
+				_incap_group_units = (units group _incap) - Lifeline_incapacitated - (units group _incap select {isPlayer _x || !alive _x || lifeState _x == "DEAD"}); // exclude dead units
+				_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach _incap_group_units; diag_log format ["PRIMARY LOOP [1351] uuuuuuuuuuuuuuuuuuuuuuuuuu incap: %1 MEDIC LIMIT GATE 2 CHECK _incap_group_units %2", name _incap, _diag_array];
+
+				if (count _incap_group_units > 0) then {
+					Lifeline_healthy_units = _incap_group_units;
+					diag_log format ["PRIMARY LOOP [1355] uuuuuuuuuuuuuuuuuuuuuuuuuu incap: %1 MEDIC LIMIT GATE 3 CHECK _incap_group_units %2", name _incap, _incap_group_units];
+				};
+				_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_healthy_units; diag_log format ["PRIMARY LOOP [1355] uuuuuuuuuuuuuuuuuuuuuuuuuu incap: %1 MEDIC LIMIT GATE 3 CHECK _incap_group_units %2", name _incap, _diag_array];
+
+				_count_current_medics = [group _incap] call Lifeline_count_group_medics;
+				
+				// Standard group limits (1, 2, 3)
+				if (Lifeline_Medic_Limit == 1 && _count_current_medics > 0) then {
+					_medic_under_limit = false;	
+				};
+				if (Lifeline_Medic_Limit == 2 && _count_current_medics > 1) then {
+					_medic_under_limit = false;
+				};
+				if (Lifeline_Medic_Limit == 3 && _count_current_medics > 2) then {
+					_medic_under_limit = false;
+				};
+				
+				// Group limits plus unsuppressed units (4, 5, 6)
+				if (Lifeline_Medic_Limit >= 4 && Lifeline_Medic_Limit <= 6) then {
+					_limit_per_group = Lifeline_Medic_Limit - 3; // Convert 4->1, 5->2, 6->3
+					
+					// Check for the count of medics and if we've reached the base limit
+					if (_count_current_medics >= _limit_per_group) then {
+						// When we've reached the base limit, we'll only allow unsuppressed units to be medics
+						_suppressed_units = Lifeline_healthy_units select {getSuppression _x > 0.1};
+						// _suppressed_units = Lifeline_healthy_units select {_x getVariable ["testbaby",true] == true}; // TESTER
+						_unsuppressed_units = Lifeline_healthy_units - _suppressed_units;
+						
+						if (Lifeline_Revive_debug) then {
+							diag_log format ["PRIMARY LOOP [1387] Lifeline_Medic_Limit %1 reached (%2 group medics). %3 suppressed units excluded, %4 unsuppressed units still eligible.", 
+								Lifeline_Medic_Limit, _count_current_medics, count _suppressed_units, count _unsuppressed_units];
+						};
+						
+						// If there are no unsuppressed units, we'll check if all units are suppressed
+						if (count _unsuppressed_units == 0 && count _suppressed_units > 0) then {
+							// All units are suppressed, so we'll still use the first setting logic
+							if (Lifeline_Revive_debug) then {
+								diag_log format ["PRIMARY LOOP [1395] No unsuppressed units available - using fallback logic for setting %1", Lifeline_Medic_Limit];
+							};
+							
+							// Match the behavior of settings 1-3
+							if (_limit_per_group == 1 && _count_current_medics > 0) then {
+								_medic_under_limit = false;
+							};
+							if (_limit_per_group == 2 && _count_current_medics > 1) then {
+								_medic_under_limit = false;
+							};
+							if (_limit_per_group == 3 && _count_current_medics > 2) then {
+								_medic_under_limit = false;
+							};
+						} else {
+							// We have unsuppressed units available, use those
+							Lifeline_healthy_units = _unsuppressed_units;
+							_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach _unsuppressed_units; diag_log format ["PRIMARY LOOP [1403] uuuuuuuuuuuuuuuuuuuuuuuuuu MEDIC LIMIT GATE CHECK ELSE [1] _unsuppressed_units %2", name _incap, _diag_array];
+						};
+					};
+				};
+			} else {
+				Lifeline_healthy_units = Lifeline_All_Units - Lifeline_incapacitated;
+				_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_healthy_units; diag_log format ["PRIMARY LOOP [1403] uuuuuuuuuuuuuuuuuuuuuuuuuu MEDIC LIMIT GATE CHECK ELSE [2] Lifeline_healthy_units %2", name _incap, _diag_array];
+			}; 
+
+			_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_healthy_units; diag_log format ["PRIMARY LOOP [1410] uuuuuuuuuuuuuuuuuuuuuuuuuu incap: %1 MEDIC LIMIT GATE 2 CHECK _incap_group_units %2", name _incap, _diag_array];
+
+			// =========================== END OF MEDIC NUMERICAL LIMITS LOGIC ================================  */
+
+
+			_medic_under_limit = [_incap,false] call Lifeline_Medic_Num_Limit;
+			_dedicated_medic = false;
+			
+			// diag_log format ["PRIMARY LOOP [1485] uuuuuuuu FUCKING MEDIC LIMIT _medic_under_limit %2 incap: %1 ", name _incap, _medic_under_limit];
+
+
+			
+			
+
+			// Lifeline_medicsMASCALcheck = Lifeline_healthy_units select {(side group _x) == (_incap_side)}; //added to only select units on the same side as the incap
+			// Lifeline_medicsMASCALcheck = Lifeline_healthy_units select {(side group _x) == (_incap_side) && [_x,_incap] call Lifeline_check_available_medic};
 	
 			//DEBUG
 			// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_All_Units; diag_log format ["====== [1202] PRIMARY LOOP || Lifeline_All_Units: %1",_diag_array];
@@ -1518,13 +1521,14 @@ if (isServer) then {
 			// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_Process; diag_log format ["====== [1205] PRIMARY LOOP || Lifeline_Process: %1",_diag_array];
 			//ENDDEBUG
 
-			_AssignedMedic = (_incap getVariable ["Lifeline_AssignedMedic",[]]);
+			_AssignedMedic = (_incap getVariable ["Lifeline_AssignedMedic",[]]); // is this actually needed?
 			// diag_log format ["=========================== INCAP'S ASSIGNED Lifeline_AssignedMedic %1 =============================", _AssignedMedic];
+			// _count_healthy_group = [group _incap] call Lifeline_count_group_medics;
+			// _count_healthy_group = [group _incap] call Lifeline_count_group_medics2;
 
 
 
-
-			// CONDITIONS FOR CHOOSING MEDIC:
+			// ==== CONDITIONS FOR CHOOSING MEDIC:
 			{
 				// _blacklist = _x call Lifeline_Blacklist_Check;
 				if (
@@ -1542,20 +1546,27 @@ if (isServer) then {
 					// && (lifestate _x != "INCAPACITATED")
 					// && _x getVariable ["Lifeline_ExitTravel", false] == false
 					// && (side (group _x) == side (group _incap)) // TEST FOR OPFOR
+					// (!Lifeline_Dedicated_Medic || (Lifeline_Dedicated_Medic && (_x getUnitTrait "medic" || _count_healthy_group > 0))) &&
+					(!Lifeline_Dedicated_Medic || (Lifeline_Dedicated_Medic && (_x getUnitTrait "medic" || _dedi_in_action || !_dedi_medic_available))) &&
+					_medic_under_limit &&
 					[_x,_incap] call Lifeline_check_available_medic
-
 				) then {
 					Lifeline_medics2choose pushBackUnique _x;
 				};
 			} foreach Lifeline_healthy_units;
-			// } foreach Lifeline_medics2chooseSIDE;
+
+
+
+
+			// } foreach Lifeline_medicsMASCALcheck;
 			
-			// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_medics2choose; diag_log format ["====== [1240] PRIMARY LOOP || Lifeline_medics2choose: %1",_diag_array];
+			// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_healthy_units; diag_log format ["%3 |uuuuuuuuuuu [1240] PRIMARY LOOP || Lifeline_healthy_units: %1 _medic_under_limit %2",_diag_array, _medic_under_limit, name _incap];
+			_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_medics2choose; diag_log format ["%3 |uuuuuuuuuuu [1241] PRIMARY LOOP || Lifeline_medics2choose: %1 _medic_under_limit %2",_diag_array, _medic_under_limit, name _incap];
 
 			
-           	// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_medics2chooseSIDE; diag_log format ["====== [1241] PRIMARY LOOP || Lifeline_medics2chooseSIDE: %1",_diag_array];
-            // _Lifeline_medics2chooseSIDE = Lifeline_medics2chooseSIDE select {(side group _x) == (_incap_side)};
-			// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach _Lifeline_medics2chooseSIDE; diag_log format ["====== [1242] PRIMARY LOOP || _Lifeline_medics2chooseSIDE: %1",_diag_array];
+           	// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_medicsMASCALcheck; diag_log format ["====== [1241] PRIMARY LOOP || Lifeline_medicsMASCALcheck: %1",_diag_array];
+            // _Lifeline_medicsMASCALcheck = Lifeline_medicsMASCALcheck select {(side group _x) == (_incap_side)};
+			// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach _Lifeline_medicsMASCALcheck; diag_log format ["====== [1242] PRIMARY LOOP || _Lifeline_medicsMASCALcheck: %1",_diag_array];
 
             //DEBUG
 			// CONSOLEincap = str format ["%1|%2",name _incap, _incap_side];		// console debugging temp	
@@ -1565,7 +1576,7 @@ if (isServer) then {
 
 			_voice = "";
 
-			diag_log format ["%1 PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu COUNT Lifeline_medics2choose: %2 uuuuuuuuuuuuuuuuuuuuuuu", name _incap, count Lifeline_medics2choose];
+			diag_log format ["%1 [1469] PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu COUNT Lifeline_medics2choose: %2 uuuuuuuuuuuuuuuuuuuuuuu", name _incap, count Lifeline_medics2choose];
 
 
 
@@ -1573,19 +1584,110 @@ if (isServer) then {
 
 			if (alive _incap && count Lifeline_medics2choose >0) then { // medic available
 
+
+			   //SORTING MEDICS TO CHOOSE. FIRST BY DISTANCE, THEN BY SUPPRESSION
+				
+				// 1. First sort all medics by distance
 				Lifeline_medics = [Lifeline_medics2choose, [], {_incap distance _x}, "ASCEND"] call BIS_fnc_sortBy;
+
+				// diag_log format ["%1 | [1516] PRIMARY LOOP || Lifeline_medics: %2 count: %3", name _incap, Lifeline_medics, count Lifeline_medics];
+
+				// 2. Create an array of all groups in sorted order
+				_medicGroups = [];
+				{
+					_grp = group _x;
+					if !(_grp in _medicGroups) then {
+						_medicGroups pushBack _grp;
+					};
+				} forEach Lifeline_medics;
+
+				// 3. Create a new sorted array, processing each group's members by suppression
+				_sortedMedics = [];
+				{
+					_currentGroup = _x;
+					// Get all medics from current group
+					_groupMedics = Lifeline_medics select {group _x == _currentGroup};
+					// Sort them by suppression
+					_groupMedics = [_groupMedics, [], {getSuppression _x}, "ASCEND"] call BIS_fnc_sortBy;
+					// Add them to final array
+					_sortedMedics append _groupMedics;
+				} forEach _medicGroups;
+				//DEBUG
+				/* if (_sortedMedics isNotEqualTo Lifeline_medics) then {
+					playSound "siren1";
+					diag_log format ["%1 | [1541] =============================================", name _incap];
+					diag_log format ["%1 | [1541] PRIMARY LOOP || Lifeline_medics: %2 count: %3", name _incap, Lifeline_medics, count Lifeline_medics];
+					diag_log format ["%1 | [1541] PRIMARY LOOP ||   _sortedMedics: %2 count: %3", name _incap, _sortedMedics, count _sortedMedics];
+				}; */
+				//ENDDEBUG
+
+				// Update the Lifeline_medics array with our new sorted order
+				Lifeline_medics = _sortedMedics;
+
+
 				_arraynum = 0;
 				_numMedics = count Lifeline_medics;
 				_arraynum = [0]; // MAKE IT ALWAYS CLOSEST
 				_medic = Lifeline_medics select (selectRandom _arraynum);
+
+				// If Group MASCAL happened and medics from another group are en route, then limit the number of other group medics  (option is Lifeline_Medic_Limit)
+				if (group _incap in Lifeline_Group_Mascal) then {
+					_count_current_medics = [group _medic] call Lifeline_count_group_medics;
+					if (Lifeline_Medic_Limit == 1 && _count_current_medics > 0) then {
+						_medic_under_limit = false;	
+					};
+					if (Lifeline_Medic_Limit == 2 && _count_current_medics > 1) then {
+						_medic_under_limit = false;
+					};
+					if (Lifeline_Medic_Limit == 3 && _count_current_medics > 2) then {
+						_medic_under_limit = false;
+					};
+					if !(_medic_under_limit) then {
+						_medic = objNull;
+					};
+				};
+
 				_check_both_sides = [];
 
-				_sleep = 1; // faster queue when found medic
+				// _sleep = 1; // faster queue when found medic
 				// _sleep = 0.5; // faster queue when found medic
-				// _sleep = 0.2; // faster queue when found medic
+				_sleep = 0.2; // faster queue when found medic
+
+
+				/* if (_medic == objNull) then {			// SWITCH LOGIC IN REJECT MEDIC 
+
+					if ((!Lifeline_PVPstatus && Lifeline_Include_OPFOR) || Lifeline_PVPstatus) then {
+						
+						if (_incap_side == Lifeline_Side) then {
+							_check_both_sides pushBackUnique 1;
+							// Find first unit from OPFOR side
+							_opforUnits = Lifeline_incaps2choose select {side group _x in Lifeline_OPFOR_Sides};
+							if (count _opforUnits > 0) then {
+								Lifeline_side_switch = 2;
+								// _sleep = 0.2;
+								_sleep = 1;
+							};
+						};
+						if (_incap_side in Lifeline_OPFOR_Sides) then {
+							_check_both_sides pushBackUnique 2;
+							// Find first unit from BLUFOR side
+							_bluforUnits = Lifeline_incaps2choose select {side group _x == Lifeline_Side};
+							if (count _bluforUnits > 0) then {
+								Lifeline_side_switch = 1;
+								// _sleep = 0.2;
+								_sleep = 1;
+							};
+						};
+					};
+				}; */
+
+
+
+
+
 				
 				
-				sleep 0.2;
+				// sleep 0.2;
 
 				diag_log format ["PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuu SELECTED MEDIC %1  uuuuuuuuuuuuuuuuuuuuuuuuuuuuu ReviveInProgress %2 Lifeline_AssignedMedic %3", name _medic, _medic getVariable ["ReviveInProgress",0], (_medic getVariable ["Lifeline_AssignedMedic",[]])];
 				if (Lifeline_Revive_debug) then {[_medic,"SELECTED MEDIC"] call serverSide_unitstate};
@@ -1611,7 +1713,7 @@ if (isServer) then {
 				//ENDDEBUG
 
 				diag_log format ["%1 uuuuuuuuuuuuuu [2963] PRIMARY LOOP 'ReviveInProgress = 3' ADDED TO INCAP. test, should be three: %2", name _incap, _incap getVariable ["ReviveInProgress",0]];				
-				sleep 0.5;				
+				// sleep 0.5;				
 
 				diag_log " ";
 				
@@ -1619,103 +1721,90 @@ if (isServer) then {
 
 		
 			} else { // no medic available
-				// =======  'ELSE' REJECTED NO MEDIC
-				diag_log format ["%1 ", name _incap];
-				diag_log format ["%1 [3089] PRIMARY LOOP 'ELSE' REJECTED NO MEDIC (incap is %1) !!!!!!!!!!!! PRIMARY LOOP [ELSE] //if (alive _incap && count Lifeline_medics2choose >0) ", name _incap];
-				diag_log format ["%1 ", name _incap];
+
+				// ============================  'ELSE' REJECTED NO MEDIC ================================
+				// ============================  'ELSE' REJECTED NO MEDIC ================================
+				// ============================  'ELSE' REJECTED NO MEDIC ================================
+
+				diag_log format ["%1 [1674] PRIMARY LOOP 'ELSE' REJECTED NO MEDIC _groupindex: %2 (count Lifeline_incaps2chooseGROUPS - 1): %3", name _incap, _groupindex, (count Lifeline_incaps2chooseGROUPS - 1)];
+				// if (_groupindex < (count Lifeline_incaps2chooseGROUPS - 1)) then {
+					
+				// if (!isPlayer _incap) then { // players always put to front of list, so we dont want to switch groups if incap is player, next unit might also be player.
+					_groupindex = _groupindex + 1;  
+				// };
+
+
+
+				diag_log format ["%1 [1650] PRIMARY LOOP 'ELSE' REJECTED NO MEDIC  ", name _incap];
+				diag_log format ["%1 [1650] PRIMARY LOOP 'ELSE' REJECTED NO MEDIC (incap is %1) !!!!!!!!!!!! PRIMARY LOOP [ELSE] //if (alive _incap && count Lifeline_medics2choose >0) ", name _incap];
+				diag_log format ["%1 [1650] PRIMARY LOOP 'ELSE' REJECTED NO MEDIC  ", name _incap];
+
+				
+
 
 
 				// ================ CHECK FOR MASCAL (Mass Casualty Event) ================================
 
-				Lifeline_medics2chooseSIDE = Lifeline_healthy_units select {(side group _x) == (_incap_side) && [_x,_incap] call Lifeline_check_medics_MASCAL};
+				Lifeline_medicsMASCALcheck = Lifeline_healthy_units select {(side group _x) == (_incap_side) && [_x,_incap] call Lifeline_check_medics_MASCAL};
+				Lifeline_medicsMASCALcheckTOTAL = (Lifeline_All_Units - Lifeline_incapacitated) select {(side group _x) == (_incap_side) && [_x,_incap] call Lifeline_check_medics_MASCAL};
+				_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_healthy_units; diag_log format ["uuuuuuuuuuu [1654] PRIMARY LOOP || Lifeline_healthy_units: %1",_diag_array];
+				_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_medicsMASCALcheck; diag_log format ["uuuuuuuuuuu [1654] PRIMARY LOOP || Lifeline_medicsMASCALcheck: %1",_diag_array];
+
+
+
+									//TEST
+				/* 	if (count Lifeline_incapacitated > 1) then {
+						private _firstUnit = Lifeline_incapacitated select 0;
+						Lifeline_incapacitated deleteAt 0;
+						Lifeline_incapacitated pushBack _firstUnit;
+						publicVariable "Lifeline_incapacitated";
+						
+						// Optional: Log the change
+						diag_log format ["Moved unit %1 from front to back of Lifeline_incapacitated array", name _firstUnit];
+					}; */
+
+				// diag_log format ["%1 uuuuuuuuuuu [1641] PRIMARY LOOP || Lifeline_medicsMASCALcheck: %2 _incap_side %3", name _incap, Lifeline_medicsMASCALcheck, _incap_side];
+				
+				//DEBUG
 				
 				// ================ METHOD 1. WITH AUTO RECOVER TEXT CHANGE ================================
 
-				/* if (count Lifeline_medics2chooseSIDE == 0) then {
-					// Determine if this side matters for MASCAL notification
-					private _isRelevantSide = false;
-					
-					// In PVP, we care about any side that has players
-					if (Lifeline_PVPstatus) then {
-						// _isRelevantSide = ({isPlayer _x && side group _x == _incap_side} count allUnits) > 0;
-						_isRelevantSide = true;
-					} else {
-						// In PVE with OPFOR included, we care about player side and possibly OPFOR
-						if (Lifeline_Include_OPFOR) then {
-							// Check if this is the player side or if we should notify about OPFOR too
-							_isRelevantSide = (_incap_side == Lifeline_Side);
-						} else {
-							// In PVE without OPFOR included, we only care about player side
-							// _isRelevantSide = (_incap_side == Lifeline_Side);
-							_isRelevantSide = true;
-						};
-					};
-					
-					// If this is a side we care about, check for MASCAL
-					if (_isRelevantSide) then {
-						// Filter incapacitated units on this side
-						private _sideIncaps = Lifeline_incapacitated select {side group _x == _incap_side};
-						private _sideIncapsPlayers = _sideIncaps select {isPlayer _x};
-						private _hasAutoRecover = ({_x getVariable ["Lifeline_autoRecover", false]} count _sideIncaps) > 0;
-						diag_log format ["==============================================================================MASCAL: Side %1 - %2", _incap_side,  _hasAutoRecover];
-
-							{						
-								// Create a hash map for side-specific timers if it doesn't exist yet
-								if (isNil "Lifeline_mascal_side_timers") then {
-									Lifeline_mascal_side_timers = createHashMap;
-								};
-								// Check if this side wasn't in MASCAL in the last loop (timer is negative)
-								// If timer doesn't exist or is negative, this is a new MASCAL event
-								if ((Lifeline_mascal_side_timers getOrDefault [_incap_side, -1]) < 0) then {
-									// Reset timer at start of a new MASCAL event
-									Lifeline_mascal_side_timers set [_incap_side, 0];
-									diag_log format ["MASCAL: New MASCAL event for side %1 - Resetting timer", _incap_side];
-								};
-								// Determine message based on auto-recover status
-								_statusText = "all units down";
-								if (_hasAutoRecover) then {
-									// Increment the timer for this specific side
-									private _sideTimer = Lifeline_mascal_side_timers get _incap_side;
-									_sideTimer = _sideTimer + 1;
-									Lifeline_mascal_side_timers set [_incap_side, _sideTimer];
-									
-									// Show recovery message after delay threshold
-									if (_sideTimer >= 15) then {
-										_statusText = "a unit is recovering...";
-									};
-								} else {
-									// Reset timer if no auto-recover
-									Lifeline_mascal_side_timers set [_incap_side, 0];
-									_statusText = "all units down";
-								};								
-								// Create formatted text for right-aligned message
-								private _colour = "EF5736"; // Your existing red color
-								private _textright = format ["<t align='right' size='%3' color='#%1'>MASCAL</t><br /><t align='right' size='%4' color='#%1'>%2</t>", _colour, _statusText, 0.7, 0.5 ];								
-								// Call your existing display function for this specific player
-								[_textright, 1.15, 5] remoteExec ["Lifeline_display_textright2", _x];
-								
-								// Play sound for this specific player
-								["siren1"] remoteExec ["playSound", _x];
-								
-								// Log each player notification
-								diag_log format ["MASCAL: Notified player %1, Side %2 - %3", name _x, _incap_side, _statusText];
-
-							} forEach _sideIncapsPlayers;
-					};
-				} else {
-					// No MASCAL active for this side, set timer to -1 to indicate MASCAL not active
-					if (!isNil "Lifeline_mascal_side_timers") then {
-						Lifeline_mascal_side_timers set [_incap_side, -1];
-					};
-				}; */
-
+				// deleted for now. Resurect later
 
 
 				// ================ METHOD 2. SIMPLE METHOD WITHOUT AUTO RECOVER TEXT CHANGE ================================
+				//ENDDEBUG
+
+				
+				//Check if GROUP MASCAL  
+				if (count Lifeline_medicsMASCALcheck == 0) then {
+
+					if (Lifeline_Revive_debug && Lifeline_debug_soundalert) then {
+						["mascalya"] remoteExec ["playSound", 0];
+					};
+
+					diag_log format ["%1 Group %4 +++++++++++++ [1757] PRIMARY LOOP || GROUP MASCAL || Lifeline_medicsMASCALcheck: %2 _incap_side %3", name _incap, Lifeline_medicsMASCALcheck, _incap_side, group _incap];
+					diag_log format ["%1 Group %4 +++++++++++++ [1757] PRIMARY LOOP || GROUP MASCAL || Lifeline_medicsMASCALcheck: %2 _incap_side %3", name _incap, Lifeline_medicsMASCALcheck, _incap_side, group _incap];
+					diag_log format ["%1 Group %4 +++++++++++++ [1757] PRIMARY LOOP || GROUP MASCAL || Lifeline_medicsMASCALcheck: %2 _incap_side %3", name _incap, Lifeline_medicsMASCALcheck, _incap_side, group _incap];
+
+					//send group to mascal list		
+					Lifeline_Group_Mascal pushBackUnique group _incap;
+					
+					
+				} else {
+					Lifeline_Group_Mascal = Lifeline_Group_Mascal - [group _incap];
+					// _groupindex = _groupindex + 1;
+				};
+
+				//Check if TOTAL MASCAL 
+				if (count Lifeline_medicsMASCALcheckTOTAL == 0) then {
+
+					diag_log format ["%1 Group %4 !!!!!!!!!!!!!!!! [1772] PRIMARY LOOP || TOTAL MASCAL || Lifeline_medicsMASCALcheck: %2 _incap_side %3", name _incap, Lifeline_medicsMASCALcheck, _incap_side, group _incap];
+					diag_log format ["%1 Group %4 !!!!!!!!!!!!!!!! [1772] PRIMARY LOOP || TOTAL MASCAL || Lifeline_medicsMASCALcheck: %2 _incap_side %3", name _incap, Lifeline_medicsMASCALcheck, _incap_side, group _incap];
+					diag_log format ["%1 Group %4 !!!!!!!!!!!!!!!! [1772] PRIMARY LOOP || TOTAL MASCAL || Lifeline_medicsMASCALcheck: %2 _incap_side %3", name _incap, Lifeline_medicsMASCALcheck, _incap_side, group _incap];
 
 
-				if (count Lifeline_medics2chooseSIDE == 0) then {
-					// Determine if this side matters for MASCAL notification
+					// Determine if this side matters for MASCAL notification for players
 					private _isRelevantSide = false;					
 					// In PVP, we care about any side that has players
 					if (Lifeline_PVPstatus) then {
@@ -1733,6 +1822,7 @@ if (isServer) then {
 					
 					// If this is a side we care about, check for MASCAL
 					if (_isRelevantSide) then {
+
 						// Filter incapacitated units on this side
 						private _sideIncaps = Lifeline_incapacitated select {side group _x == _incap_side};
 						private _sideIncapsPlayers = _sideIncaps select {isPlayer _x};
@@ -1750,7 +1840,7 @@ if (isServer) then {
 								// Log each player notification
 								diag_log format ["MASCAL: Notified player %1, Side %2 - %3", name _x, _incap_side, _statusText];
 
-						} forEach _sideIncapsPlayers;
+						} forEach _sideIncapsPlayers;				
 					};
 				};
 
@@ -1758,30 +1848,21 @@ if (isServer) then {
 
 
                 
-				if (Lifeline_Revive_debug && Lifeline_debug_soundalert) then {
+				/* if (Lifeline_Revive_debug && Lifeline_debug_soundalert) then {
 					// ["no_medic"] remoteExec ["playSound", 0];
 					if (_incap_side == WEST) then {["west_no_medic"] remoteExec ["playSound", 0];};
 					if (_incap_side == EAST) then {["east_no_medic"] remoteExec ["playSound", 0];};
 					if (_incap_side == RESISTANCE) then {["ind_no_medic"] remoteExec ["playSound", 0];};
-				};
+				}; */
 
 				_incap setVariable ["ReviveInProgress",0,true];diag_log format ["%1 [3140]!!!!!!!!! [INCAP] change var ReviveInProgress = 0 !!!!!!!!!!!!!", name _incap];
 				
-				// if (_incap_side == Lifeline_Side && Lifeline_side_switch == 0) then {
-				// 	Lifeline_side_switch = 3; // 3 times we try the other side if no medic is available for Lifeline_Side (player side in PVE)
-				// } else {
-				// 	Lifeline_side_switch = 0; // reset the counter for the other side
-				// };
-                // switch logic Lifeline_side_switch
-                // if (Lifeline_side_switch == 0 && _incap_side == Lifeline_Side) then {
-				// 	Lifeline_side_switch = 3; 
-				// };
 
-				diag_log format ["%1 | %2 | [1607] !!!!!!!!!!!! PRIMARY LOOP. JUST BEFORE SWITCH IN REJECT MEDIC Lifeline_side_switch %3 _incap_side %4", name _incap, name _medic, Lifeline_side_switch, _incap_side];
+				diag_log format ["%1 | [1607] !!!!!!!!!!!! PRIMARY LOOP. JUST BEFORE SWITCH IN REJECT MEDIC Lifeline_side_switch %2 _incap_side %3", name _incap, Lifeline_side_switch, _incap_side];
 
 				// SWITCH LOGIC IN REJECT MEDIC 
 
-				if ((!Lifeline_PVPstatus && Lifeline_Include_OPFOR) || Lifeline_PVPstatus) then {
+			/* 	if ((!Lifeline_PVPstatus && Lifeline_Include_OPFOR) || Lifeline_PVPstatus) then {
 					
 					if (_incap_side == Lifeline_Side) then {
 						_check_both_sides pushBackUnique 1;
@@ -1790,8 +1871,9 @@ if (isServer) then {
 						if (count _opforUnits > 0) then {
 							Lifeline_side_switch = 2;
 							// _sleep = 0.2;
-							_sleep = 1;
+							// _sleep = 1;
 						};
+						diag_log format ["%1 [1832] PRIMARY LOOP | OTHER SIDE SWITCH | LIST -> OPFOR | _opforUnits %2 Lifeline_side_switch %3 _check_both_sides %4", name _incap, count _opforUnits, Lifeline_side_switch, _check_both_sides];
 					};
 					if (_incap_side in Lifeline_OPFOR_Sides) then {
 						_check_both_sides pushBackUnique 2;
@@ -1800,112 +1882,118 @@ if (isServer) then {
 						if (count _bluforUnits > 0) then {
 							Lifeline_side_switch = 1;
 							// _sleep = 0.2;
-							_sleep = 1;
+							// _sleep = 1;
 						};
+						diag_log format ["%1 [1832] PRIMARY LOOP | OTHER SIDE SWITCH | OPFOR -> LIST | _opforUnits %2 Lifeline_side_switch %3 _check_both_sides %4", name _incap, count _opforUnits, Lifeline_side_switch, _check_both_sides];
 					};
-				};
+				}; */
 
 				
 
 				_medic = objNull;
 			};
 
-			// medic leave vehicle
-			if (alive _incap && alive _medic && !(isNull objectParent _medic) && isTouchingGround (vehicle _medic)) then {
-				_vehicle = objectParent _medic;
-				if (_medic distance2D _incap < 200) then {
-					_medic setVariable ["AssignedVeh", _vehicle, true];
-					unassignVehicle _medic;
-					moveOut _medic;
-					[_medic] allowGetIn false;
-				} else {
-					if (_vehicle isKindOf "car") exitWith {
-						_pos = [_incap, 10, 20, 5, 0, 20, 0] call BIS_fnc_findSafePos;
-						_vehicle domove _pos;
-						// diag_log format ["%1|%2 [3173] PRIMARY LOOP !!!!!!!!!!!!!! Lifeline_RESET CALL FUNCTION. Lifeline_reset_trig: %3", name _incap, name _medic,(_medic getVariable ["Lifeline_reset_trig",false])];
-						//DEBUG
-						/* if !(_medic getVariable ["Lifeline_reset_trig",false]) then {
-								_medic setVariable ["Lifeline_reset_trig", true, true]; diag_log format ["%1 [3360]=========== VAR CHANGE Lifeline_reset_trig = true ==================", name _medic]; // to stop double reset.		
-							[[_incap,_medic],"3361"] call Lifeline_reset2;	
-						}; */ //ENDDEBUG
-						// _medic setVariable ["Lifeline_ExitTravel", true, true];diag_log format ["%1 [3166]!!!!!!!!! change var Lifeline_ExitTravel = true !!!!!!!!!!!!!", name _medic];
-						// breakTo "main";
-					};
-				};
-			};
 
-			// Medic group position
-			if (alive _incap && alive _medic && count units group _medic ==1) then {
-				if (_medic getVariable ["Lifeline_medicOrigPos",[]] isEqualTo []) then {
-					_pos = (getPosATL _medic);
-					_dir = (getdir _medic);
-					_medic setVariable ["Lifeline_medicOrigPos", _pos, true];
-					_medic setVariable ["Lifeline_medicOrigDir", _dir, true];
-				};
-			};
-			
-			diag_log format ["%1 | %2 | [3105] !!!!!!!!!!!! PRIMARY LOOP. JUST BEFORE DISPATCH MEDIC", name _incap, name _medic];
+			// =========================== END OF INCAP AND MEDIC SELECTION ================================
 
-			// Dispatch medic
-			if (alive _incap && alive _medic && !(_medic in Lifeline_Process) && !(_incap in Lifeline_Process)) then {
 
-				_pairloopsetting = 25;
-				// _pairloopsetting = 15;
-				_dist = (_medic distance2D _incap);diag_log format ["%1 | %2 [2915] PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuu distance %3 uuuuuuuuuuuuuuuuuuuuuuuuuuuu", name _incap, name _medic, _dist];
-				_pairloopsetting = _pairloopsetting + (_dist/4);diag_log format ["%1 | %2 [2915] PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuu _pairloopsetting %3 uuuuuuuuuuuuuuuuuuuuuuuuuuuu", name _incap, name _medic, _pairloopsetting];
-				_pairlooptimeout = (time + _pairloopsetting);diag_log format ["%1 | %2 [2915] PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuu _pairlooptimeout %3 secs %4 uuuuuuuuuuuuuuuuuuuuuuuuuuuu", name _incap, name _medic, _pairlooptimeout, _pairlooptimeout - time];
-				_incap setVariable ["LifelinePairTimeOut", _pairlooptimeout, true]; diag_log format ["%1 [3209]!!!!!!!!! [INCAP] change var LifelinePairTimeOut = +15 sec !!!!!!!!!!!!!", name _incap];
-				_medic setVariable ["LifelinePairTimeOut", _pairlooptimeout, true]; diag_log format ["%1 [3209]!!!!!!!!! [MEDIC] change var LifelinePairTimeOut = +15 sec !!!!!!!!!!!!!", name _medic];
-				
-				// diag_log format ["%1 uuuuuuuuuuuuuu [3258] PRIMARY LOOP 'ReviveInProgress = 1'     ADDED TO MEDIC. test, should be one: %2", name _medic, _medic getVariable ["ReviveInProgress",0]];
-				// diag_log format ["%1 PRIMARY LOOP uuuuuuuuuuuuuu [3258] PRIMARY LOOP 'Lifeline_reset_trig = false' ADDED TO MEDIC. test, should be false: %2", name _medic, _medic getVariable ["Lifeline_reset_trig",false]];
-				//DEBUG	
-				// _IDinSquad = groupId _incap; 
-				// [_voice,_medic] spawn Lifeline_radio_how_copy;					
-				// [_voice,_medic] remoteExec ["Lifeline_radio_how_copy"]; 
-				//ENDDEBUG
+			if (!isNull _medic) then {
+		
 
-				//original version
-				if (Lifeline_radio && _medic distance2D _incap > 55 && _medic getVariable ["Lifeline_ExitTravel", false] == false && _medic getVariable ["ReviveInProgress",0] != 0 && alive _medic && alive _incap && lifestate _medic != "INCAPACITATED"
-					&& lifestate _incap == "INCAPACITATED"
-				) then {
-					[_incap,_voice,_medic] spawn {
-						params ["_incap","_voice","_medic"];
-						sleep 1;
-						if (isPlayer _incap && _medic getVariable ["ReviveInProgress",0] != 0) then {
-						[_incap, [_voice+"_hangtight1", 50, 1, true]] remoteExec ["say3D", _incap];
-						diag_log format ["| %1 | %2 | [2734] kkkkkkkkkkkkk SAY3D HANGTIGHT | voice: %3", name _incap, name _medic, _voice];
+				// medic leave vehicle
+				if (alive _incap && alive _medic && !(isNull objectParent _medic) && isTouchingGround (vehicle _medic)) then {
+					diag_log format ["%1 | %2 | [1835] !!!!!!!!!!!! PRIMARY LOOP. medic leave vehicle GATE 1", name _incap, name _medic];
+					_vehicle = objectParent _medic;
+					if (_medic distance2D _incap < 200) then {
+						_medic setVariable ["AssignedVeh", _vehicle, true];
+						unassignVehicle _medic;
+						moveOut _medic;
+						[_medic] allowGetIn false;
+					} else {
+						diag_log format ["%1 | %2 | [1835] !!!!!!!!!!!! PRIMARY LOOP. medic leave vehicle GATE 2", name _incap, name _medic];
+						if (_vehicle isKindOf "car") exitWith {
+							_pos = [_incap, 10, 20, 5, 0, 20, 0] call BIS_fnc_findSafePos;
+							_vehicle domove _pos;
+							
 						};
 					};
 				};
 
-				Lifeline_Process pushBackUnique _incap;
-				Lifeline_Process pushBackUnique _medic;
-				publicVariable "Lifeline_Process";
-				_incap setVariable ["ReviveInProgress",3,true]; diag_log format ["%1 [1773]!!!!!!!!! [INCAP] change var ReviveInProgress = 3 !!!!!!!!!!!!!", name _incap];
-				_medic setVariable ["ReviveInProgress",1,true]; diag_log format ["%1 [1774]!!!!!!!!! [MEDIC] change var ReviveInProgress = 1 !!!!!!!!!!!!!", name _medic];
-				if (lifestate _medic != "INCAPACITATED") then {
-					_medic setVariable ["Lifeline_Captive",(captive _medic),true]; diag_log format ["%1 [1775]!!!!!!!!! [MEDIC] change var Lifeline_Captive = %2 !!!!!!!!!!!!!", name _medic, captive _medic];//2025
+				// Medic group position
+				if (alive _incap && alive _medic && count units group _medic ==1) then {
+					if (_medic getVariable ["Lifeline_medicOrigPos",[]] isEqualTo []) then {
+						_pos = (getPosATL _medic);
+						_dir = (getdir _medic);
+						_medic setVariable ["Lifeline_medicOrigPos", _pos, true];
+						_medic setVariable ["Lifeline_medicOrigDir", _dir, true];
+					};
 				};
+				
+				diag_log format ["%1 | %2 | [1877] !!!!!!!!!!!! PRIMARY LOOP. JUST BEFORE DISPATCH MEDIC", name _incap, name _medic];
 
-				// _medic setVariable ["Lifeline_reset_trig",false,true]; diag_log format ["%1 [983]!!!!!!!!! [MEDIC] change var Lifeline_reset_trig = false !!!!!!!!!!!!!", name _medic];
-				_incap setVariable ["Lifeline_AssignedMedic", [_medic], true];	diag_log format ["%1 [983]!!!!!!!!! [INCAP] change var Lifeline_AssignedMedic = %2 !!!!!!!!!!!!!", name _incap, name _medic];			
-				diag_log format ["%1 uuuuuuuuuuuuuu [3057] PRIMARY LOOP 'ReviveInProgress = 1'     ADDED TO MEDIC. test, should be one: %2", name _medic, _medic getVariable ["ReviveInProgress",0]];
-				// diag_log format ["%1 uuuuuuuuuuuuuu [3057] PRIMARY LOOP 'Lifeline_reset_trig = false' ADDED TO MEDIC. test, should be false: %2", name _medic, _medic getVariable ["Lifeline_reset_trig",false]];
+				// Dispatch medic
+				if (alive _incap && alive _medic && !(_medic in Lifeline_Process) && !(_incap in Lifeline_Process)) then {
 
-				// Call Functions. Start revive travel and incap / medic pair monitoring loop
-				[_medic, _incap] spawn Lifeline_PairLoop; diag_log format ["%1 | %2 [3217] !!!!!!!!!!! spawn Lifeline_PairLoop !!!!!!!!!!!", name _incap, name _medic];
-				if (Lifeline_StartReviveBETA == true) then {
-					[_medic, _incap] spawn Lifeline_StartRevive; diag_log format ["%1 | %2 [3217] !!!!!!!!!!! spawn Lifeline_StartRevive !!!!!!!!!!!", name _incap, name _medic];
-				} else {
-					[_medic, _incap] spawn Lifeline_StartReviveOLD; diag_log format ["%1 | %2 [3217] !!!!!!!!!!! spawn Lifeline_StartReviveOLD !!!!!!!!!!!", name _incap, name _medic];
-				};
+					_pairloopsetting = 25;
+					// _pairloopsetting = 15;
+					_dist = (_medic distance2D _incap);diag_log format ["%1 | %2 [2915] PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuu distance %3 uuuuuuuuuuuuuuuuuuuuuuuuuuuu", name _incap, name _medic, _dist];
+					_pairloopsetting = _pairloopsetting + (_dist/4);diag_log format ["%1 | %2 [2915] PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuu _pairloopsetting %3 uuuuuuuuuuuuuuuuuuuuuuuuuuuu", name _incap, name _medic, _pairloopsetting];
+					_pairlooptimeout = (time + _pairloopsetting);diag_log format ["%1 | %2 [2915] PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuu _pairlooptimeout %3 secs %4 uuuuuuuuuuuuuuuuuuuuuuuuuuuu", name _incap, name _medic, _pairlooptimeout, _pairlooptimeout - time];
+					_incap setVariable ["LifelinePairTimeOut", _pairlooptimeout, true]; diag_log format ["%1 [3209]!!!!!!!!! [INCAP] change var LifelinePairTimeOut = +15 sec !!!!!!!!!!!!!", name _incap];
+					_medic setVariable ["LifelinePairTimeOut", _pairlooptimeout, true]; diag_log format ["%1 [3209]!!!!!!!!! [MEDIC] change var LifelinePairTimeOut = +15 sec !!!!!!!!!!!!!", name _medic];
+					//DEBUG	
+					// diag_log format ["%1 uuuuuuuuuuuuuu [3258] PRIMARY LOOP 'ReviveInProgress = 1'     ADDED TO MEDIC. test, should be one: %2", name _medic, _medic getVariable ["ReviveInProgress",0]];
+					// diag_log format ["%1 PRIMARY LOOP uuuuuuuuuuuuuu [3258] PRIMARY LOOP 'Lifeline_reset_trig = false' ADDED TO MEDIC. test, should be false: %2", name _medic, _medic getVariable ["Lifeline_reset_trig",false]];
 
-			}; // end if alive && !(_medic in Lifeline_Process) && !(_incap in Lifeline_Process)
+					// _IDinSquad = groupId _incap; 
+					// [_voice,_medic] spawn Lifeline_radio_how_copy;					
+					// [_voice,_medic] remoteExec ["Lifeline_radio_how_copy"]; 
+					//ENDDEBUG
 
-		// }; // end count Lifeline_incaps2choose >0 && count Lifeline_healthy_units >0
+					//original version
+					if (Lifeline_radio && _medic distance2D _incap > 55 && _medic getVariable ["Lifeline_ExitTravel", false] == false && _medic getVariable ["ReviveInProgress",0] != 0 && alive _medic && alive _incap && lifestate _medic != "INCAPACITATED"
+						&& lifestate _incap == "INCAPACITATED"
+					) then {
+						[_incap,_voice,_medic] spawn {
+							params ["_incap","_voice","_medic"];
+							sleep 1;
+							if (isPlayer _incap && _medic getVariable ["ReviveInProgress",0] != 0) then {
+							[_incap, [_voice+"_hangtight1", 50, 1, true]] remoteExec ["say3D", _incap];
+							diag_log format ["| %1 | %2 | [2734] kkkkkkkkkkkkk SAY3D HANGTIGHT | voice: %3", name _incap, name _medic, _voice];
+							};
+						};
+					};
+
+					Lifeline_Process pushBackUnique _incap;
+					Lifeline_Process pushBackUnique _medic;
+					publicVariable "Lifeline_Process";
+					_incap setVariable ["ReviveInProgress",3,true]; diag_log format ["%1 [1773]!!!!!!!!! [INCAP] change var ReviveInProgress = 3 !!!!!!!!!!!!!", name _incap];
+					_medic setVariable ["ReviveInProgress",1,true]; diag_log format ["%1 [1774]!!!!!!!!! [MEDIC] change var ReviveInProgress = 1 !!!!!!!!!!!!!", name _medic];
+					if (lifestate _medic != "INCAPACITATED" && !(_medic getVariable ["Lifeline_Captive_Delay",false])) then {
+						_medic setVariable ["Lifeline_Captive",(captive _medic),true]; diag_log format ["%1 [1775]!!!!!!!!! [MEDIC] change var Lifeline_Captive = %2 !!!!!!!!!!!!!", name _medic, captive _medic];//2025
+					};
+
+					// _medic setVariable ["Lifeline_reset_trig",false,true]; diag_log format ["%1 [983]!!!!!!!!! [MEDIC] change var Lifeline_reset_trig = false !!!!!!!!!!!!!", name _medic];
+					_incap setVariable ["Lifeline_AssignedMedic", [_medic], true];	diag_log format ["%1 [983]!!!!!!!!! [INCAP] change var Lifeline_AssignedMedic = %2 !!!!!!!!!!!!!", name _incap, name _medic];			
+					diag_log format ["%1 uuuuuuuuuuuuuu [3057] PRIMARY LOOP 'ReviveInProgress = 1'     ADDED TO MEDIC. test, should be one: %2", name _medic, _medic getVariable ["ReviveInProgress",0]];
+					// diag_log format ["%1 uuuuuuuuuuuuuu [3057] PRIMARY LOOP 'Lifeline_reset_trig = false' ADDED TO MEDIC. test, should be false: %2", name _medic, _medic getVariable ["Lifeline_reset_trig",false]];
+
+					// Call Functions. Start revive travel and incap / medic pair monitoring loop
+					[_medic, _incap] spawn Lifeline_PairLoop; diag_log format ["%1 | %2 [3217] PRIMARY LOOP !!!!!!!!!!! spawn Lifeline_PairLoop !!!!!!!!!!!", name _incap, name _medic];
+					if (Lifeline_StartReviveBETA == true) then {
+						[_medic, _incap] spawn Lifeline_StartRevive; diag_log format ["%1 | %2 [3217] PRIMARY LOOP !!!!!!!!!!! spawn Lifeline_StartRevive !!!!!!!!!!!", name _incap, name _medic];
+					} else {
+						[_medic, _incap] spawn Lifeline_StartReviveOLD; diag_log format ["%1 | %2 [3217] PRIMARY LOOP !!!!!!!!!!! spawn Lifeline_StartReviveOLD !!!!!!!!!!!", name _incap, name _medic];
+					};
+
+				}; // end if alive && !(_medic in Lifeline_Process) && !(_incap in Lifeline_Process)
+
+			};
+
+			// }; // end count Lifeline_incaps2choose >0 && count Lifeline_healthy_units >0
 
 		} else { 
+			diag_log format ["+++++++++++++++++++++ PRIMARY LOOP ELSE. NO INCAPS!!  [2017] SLEEP %1", _sleep];
 			_sleep = 3;	
 		};
 
@@ -1913,13 +2001,23 @@ if (isServer) then {
 
 		// diag_log format ["%1 | %2 | [1719] !!!!!!!!!!! _check_both_sides: %3", name _incap, name _medic, _check_both_sides];
 
-		if (count _check_both_sides == 2) then {
+	/* 	if (count _check_both_sides == 2) then {
 			_sleep = 3;		
+		}; */
+
+		
+		if (_sleep == 3) then {
+			// playsound "siren1";
+			diag_log format ["++++++++++++++++++++++++++++++++++++++++++++++ [1922] +++++++++++++++++++++++++++++++++++++++++!", _sleep];
+			diag_log format ["+++++++++++++++++++++ PRIMARY LOOP end of loop [1922] SLEEP IS THREE SECONDS !!!!!!!!!!!!!!!!!!!", _sleep];
+			diag_log format ["+++++++++++++++++++++ PRIMARY LOOP end of loop [1922] SLEEP IS THREE SECONDS !!!!!!!!!!!!!!!!!!!", _sleep];
+			diag_log format ["+++++++++++++++++++++ PRIMARY LOOP end of loop [1922] SLEEP IS THREE SECONDS !!!!!!!!!!!!!!!!!!!", _sleep];
 		};
 
 		sleep _sleep;
+		// sleep 0.2;
 		// playsound "beep_hi_1";
-
+		diag_log format ["+++++++++++++++++++++ PRIMARY LOOP end of loop [1926] SLEEP %1", _sleep];
 
 	}; // end while
 

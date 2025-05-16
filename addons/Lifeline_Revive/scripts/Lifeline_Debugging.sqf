@@ -74,6 +74,7 @@ Lifeline_debug_ENDMISSION = true; // hardcore debug. END the mission important b
 		//_type = "FIREWEAPON";  if (_unit checkAIFeature _type) then {_text18 = _type + " "}; 
 		_alltext = _text1+_text2+_text3+_text4+_text5+_text6+_text7+_text8+_text9+_text10+_text11+_text12+_text13+_text14+_text15+_text16+_text17+_text18;  
 		diag_log format ["%2 | %1 !!!!!!!!SERV | Fleeing: %4 | Supprssion: %5 | moveToCompleted: %6 | Behaviour: %7 | CombatMode: %8 | AI feat missing: %3 '",_line, name _unit, _alltext, fleeing _unit, getSuppression _unit, moveToCompleted _unit, behaviour _unit, combatMode (group _unit)];
+		diag_log format ["%2 | %1 !!!!!!!!SERV | TESTBABY: %3  '",_line, name _unit, _unit getVariable ["testbaby","NOT SET"]]; // just a test var
 		diag_log format ["%2 | %1 !!!!!!!!SERV | ==================================================================================================='",_line, name _unit];
 	};
 
@@ -177,9 +178,8 @@ Lifeline_debug_unit_states = {
 					};
 
 					// _captive = _x getVariable ["Lifeline_Captive", false];	
-
 					// if ((isDamageAllowed _x == false || captive _x == true) && alive _x && lifestate _x != "INCAPACITATED" && !(_x getVariable ["Lifeline_Down",false]) && _x getVariable ["ReviveInProgress",0] == 0 && (_x getVariable ["LifelineBleedOutTime",0]) == 0 && !(_x in Lifeline_Process)
-					if (Debug_invincible_or_captive && (isDamageAllowed _x == false || captive _x == true ) && alive _x && lifestate _x != "INCAPACITATED" &&  _x getVariable ["ReviveInProgress",0] == 0 && !(_x in Lifeline_Process) // deleted _x getVariable ["LifelineBleedOutTime",0] (unlike line above)
+					if (Debug_invincible_or_captive && !(_x getVariable ["Lifeline_Captive_Delay",false]) && !(isNil {_x getVariable "ReviveInProgress"}) && (isDamageAllowed _x == false || captive _x == true ) && alive _x && lifestate _x != "INCAPACITATED" &&  _x getVariable ["ReviveInProgress",0] == 0 && !(_x in Lifeline_Process) // deleted _x getVariable ["LifelineBleedOutTime",0] (unlike line above)
 						&& (!isPlayer _x || (isPlayer _x && (isNull findDisplay 60492) && (isNull findDisplay 47) && (isNull findDisplay 48) && (isNull findDisplay 50) && (isNull findDisplay 51) && (isNull findDisplay 58) && (isNull findDisplay 61) && (isNull findDisplay 312) && (isNull findDisplay 314)))
 					) then {
 						
@@ -191,7 +191,7 @@ Lifeline_debug_unit_states = {
 							
 							// sleep 20;
 							// if ((isDamageAllowed _x == false || captive _x == true) && alive _x && lifestate _x != "INCAPACITATED" && !(_x getVariable ["Lifeline_Down",false]) && _x getVariable ["ReviveInProgress",0] == 0 && (_x getVariable ["LifelineBleedOutTime",0]) == 0 && !(_x in Lifeline_Process)
-							if (Debug_invincible_or_captive && (isDamageAllowed _x == false || captive _x == true) && alive _x && lifestate _x != "INCAPACITATED" && !(_x getVariable ["Lifeline_Down",false]) && _x getVariable ["ReviveInProgress",0] == 0 && !(_x in Lifeline_Process)  // deleted _x getVariable ["LifelineBleedOutTime",0] (unlike line above)
+							if (Debug_invincible_or_captive && !(_x getVariable ["Lifeline_Captive_Delay",false]) && (isDamageAllowed _x == false || captive _x == true) && alive _x && lifestate _x != "INCAPACITATED" && !(_x getVariable ["Lifeline_Down",false]) && _x getVariable ["ReviveInProgress",0] == 0 && !(_x in Lifeline_Process)  // deleted _x getVariable ["LifelineBleedOutTime",0] (unlike line above)
 								&& (!isPlayer _x || (isPlayer _x && (isNull findDisplay 60492) && (isNull findDisplay 47) && (isNull findDisplay 48) && (isNull findDisplay 50) && (isNull findDisplay 51) && (isNull findDisplay 58) && (isNull findDisplay 61) && (isNull findDisplay 312) && (isNull findDisplay 314)))
 								) then {			
 								_txtj = ""; 
@@ -346,8 +346,10 @@ Lifeline_debug_unit_states = {
 								};
 						};
 					};		
-					// AssignedMedic has LifelinePairTimeOut=0 				
-					if (alive _x && lifestate _x == "INCAPACITATED" && _x getVariable ["ReviveInProgress",0] == 3 && _x in Lifeline_Process 
+					//DEBUG
+					// AssignedMedic has LifelinePairTimeOut=0 			
+					// maybe not needed as we seem to mostly use _incap for attaching the pair timeout variable	
+					/* if (alive _x && lifestate _x == "INCAPACITATED" && _x getVariable ["ReviveInProgress",0] == 3 && _x in Lifeline_Process 
 					&& ((_x getVariable ["Lifeline_AssignedMedic",[]] select 0) getVariable ["LifelinePairTimeOut",0] == 0 || lifestate (_x getVariable ["Lifeline_AssignedMedic",[]] select 0) == "INCAPACITATED")) then {
 					diag_log format ["%1 AssignedMedic has LifelinePairTimeOut=0 uuuuuuuuuu BUG GATE uuuuuuuuuu AssignedMedic:%2, ReviveInProgress %3'", name _x, (_x getVariable ["Lifeline_AssignedMedic",[]] select 0), (_x getVariable ["ReviveInProgress",0])];
 						[_x] spawn {
@@ -370,7 +372,8 @@ Lifeline_debug_unit_states = {
 								["siren1"] remoteExec ["playSound",Debug_to];
 								};
 						};
-					};						
+					};	 */					
+					//ENDDEBUG
 					// Captive state not staying true when down. 				
 					if (alive _x && lifestate _x == "INCAPACITATED" && captive _x == false && Lifeline_RevProtect != 3) then {
 					diag_log format ["%1 Captive turned off when down uuuuuuuuuu BUG GATE uuuuuuuuuu AssignedMedic:%2, ReviveInProgress %3'", name _x, (_x getVariable ["Lifeline_AssignedMedic",[]] select 0), (_x getVariable ["ReviveInProgress",0])];
