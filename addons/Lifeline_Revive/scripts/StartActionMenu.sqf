@@ -89,6 +89,10 @@ if (isServer) then {
 
 		
 			Lifeline_cancel = false;
+			Lifeline_Side = side player;
+			publicVariable "Lifeline_Side";
+			Lifeline_OPFOR_Sides = Lifeline_Side call BIS_fnc_enemySides;
+			publicVariable "Lifeline_OPFOR_Sides"; // THIS IS AN ARRAY OF ENEMY SIDES
 
 			//DEBUG
 

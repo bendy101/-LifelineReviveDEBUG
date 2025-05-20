@@ -81,21 +81,14 @@ publicVariable "Lifeline_PVPstatus";
 
 
 
-/* // wait for players 
+// wait for players 
 waitUntil {count (allPlayers - entities "HeadlessClient_F") >0};
 
-_players = allPlayers - entities "HeadlessClient_F";
-
-// if there are only players on one side, then set the side to that side. If its PVP
-// Needs updating to include allies.
-Lifeline_Side = side (_players select 0); //
-publicVariable "Lifeline_Side"; // THIS IS A SINGLE SIDE. NEED TO UPDATE TO ARRAY VERSION  FOR ALLIES.
-Lifeline_OPFOR_Sides = Lifeline_Side call BIS_fnc_enemySides;
-publicVariable "Lifeline_OPFOR_Sides"; // THIS IS AN ARRAY OF ENEMY SIDES */
+// THIS IS AN ARRAY OF ENEMY SIDES
 
 //added 2025-02-21 17:24:43 WIP for Opfor
-playerSide1 = side group player; //fix for dedicated
-enemyUnitsJa = allUnits select {[playerSide1, side group _x] call BIS_fnc_sideIsEnemy};
+// playerSide1 = side group player; //fix for dedicated
+// enemyUnitsJa = allUnits select {[playerSide1, side group _x] call BIS_fnc_sideIsEnemy};
 
 
 // if a teamswitch mission
@@ -230,6 +223,22 @@ if (isServer) then {
 	publicVariable "Lifeline_All_Units";
 	Lifelinecompletedinit = 1; //just for the hint showing units initializing
 	Lifelineunitscount_pre = 0;
+
+	if (hasInterface) then {
+		Lifeline_Side = side group player;
+		publicVariable "Lifeline_Side";
+		diag_log format ["========================== SIDE GATE hasinterface Lifeline_Side: %1", Lifeline_Side];
+	} else {
+		_players = allPlayers - entities "HeadlessClient_F";
+		Lifeline_Side = side (_players select 0); //
+		publicVariable "Lifeline_Side"; // THIS IS A SINGLE SIDE. NEED TO UPDATE TO ARRAY VERSION  FOR ALLIES.
+		diag_log format ["========================== SIDE GATE DEDI SERVER Lifeline_Side: %1", Lifeline_Side];
+	};
+
+	Lifeline_OPFOR_Sides = Lifeline_Side call BIS_fnc_enemySides;
+	publicVariable "Lifeline_OPFOR_Sides"; 
+
+
 
 	Lifeline_DH_update = {
 		    // IMPORTANT: Fix the initialization counter logic
@@ -1717,7 +1726,8 @@ if (isServer) then {
 
 				diag_log " ";
 				
-				_voice = _medic getVariable "Lifeline_Voice";
+				// _voice = _medic getVariable "Lifeline_Voice";
+				_voice = _medic getVariable ["Lifeline_Voice", selectRandom Lifeline_UnitVoices];
 
 		
 			} else { // no medic available

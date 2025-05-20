@@ -59,6 +59,22 @@ if (Lifeline_antistasiLoaded) then {
 };
 
 
+// Detect if a DRO mission is running
+if (((toLower missionName) find "dynamic recon ops") != -1 
+|| ((toLower missionName) find "dynamic%20combat%20ops") != -1 
+|| ((toLower missionName) find "dynamic%20recon%20ops") != -1) then { 
+	diag_log format ["++++++++++++++++++++++ DRO mission detected - enabling compatibility"]; 
+	waitUntil {(missionNameSpace getVariable "lobbyComplete") == 1}; 
+	diag_log format ["++++++++++++++++++++++ DRO mission detected - lobby complete reviveDisabled %1 ", reviveDisabled]; 
+	waitUntil {!(isNil "newUnitsReady")};
+	waitUntil {(newUnitsReady == true)};
+	diag_log format ["++++++++++++++++++++++ DRO mission detected -!isNil newUnitsReady reviveDisabled %1 newUnitsReady %2", reviveDisabled, newUnitsReady]; 
+	reviveDisabled = 3;
+	waitUntil {(missionNameSpace getVariable "playersReady") == 1}; 
+	diag_log format ["++++++++++++++++++++++ DRO mission detected - playersReady reviveDisabled %1 newUnitsReady %2", reviveDisabled, newUnitsReady];  	
+};
+
+
 // wait for players 
 waitUntil {count (allPlayers - entities "HeadlessClient_F") >0};
 
@@ -431,12 +447,12 @@ publicVariable "Lifeline_PVPstatus";
 
 
 
-_players = allPlayers - entities "HeadlessClient_F";
+// _players = allPlayers - entities "HeadlessClient_F";
 
 // if there are only players on one side, then set the side to that side. If its PVP
 // Needs updating to include allies.
-Lifeline_Side = side (_players select 0); //
-publicVariable "Lifeline_Side"; // THIS IS A SINGLE SIDE. NEED TO UPDATE TO ARRAY VERSION  FOR ALLIES.
+// Lifeline_Side = side (_players select 0); //
+// publicVariable "Lifeline_Side"; // THIS IS A SINGLE SIDE. NEED TO UPDATE TO ARRAY VERSION  FOR ALLIES.
 Lifeline_OPFOR_Sides = Lifeline_Side call BIS_fnc_enemySides;
 publicVariable "Lifeline_OPFOR_Sides"; // THIS IS AN ARRAY OF ENEMY SIDES
 

@@ -80,6 +80,28 @@ if (isClass (configFile >> "cfgPatches" >> "ace_medical")) then {
 	diag_log "=====kkkkkkkkkkkkkkkkkkkkkkkkkkk NO ACE MEDICAL kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk====";
 };
 
+
+//check for SOG AI 
+if (isClass (configFile >> "cfgPatches" >> "JBOY_SOGAI_mod")) then {
+	diag_log "mission init.sqf +++++++++++ SOG AI DETECTED +++++++++++++++'";
+	[] spawn {
+		waitUntil {(!isNil "jboy_medicStart")};
+		jboy_medicStart = compile preprocessFileLineNumbers ("");
+		//DEBUG
+		// diag_log "mission init.sqf +++++++++++SOG AI+++++++++++++++ jboy_medicStart = compile preprocessFileLineNumbers ('')'";
+		// waitUntil {(!isNil "jboy_useSpearheadAIRevive")};
+		// jboy_useSpearheadAIRevive = true;	
+		// diag_log "mission init.sqf +++++++++++SOG AI+++++++++++++++ jboy_useSpearheadAIRevive = true'"; 
+		// waitUntil {!isNil {missionNamespace getVariable "jboy_useSpearheadAIRevive"}};
+		// missionNameSpace setVariable ["jboy_useSpearheadAIRevive",true,false];
+		// diag_log "mission init.sqf +++++++++++SOG AI+++++++++++++++ missionNameSpace setVariable ['jboy_useSpearheadAIRevive',true]'"; 		
+		// waitUntil {!isNil {missionNamespace getVariable "jboy_debugMedic"}};
+		// missionNameSpace setVariable ["jboy_debugMedic",true,false];
+		// diag_log "mission init.sqf +++++++++++SOG AI+++++++++++++++ missionNameSpace setVariable ['jboy_debugMedic',true,false]'"; 
+		//ENDDEBUG
+	};
+};
+
 diag_log format ["kkkkkkkkkkkkkkkkkkkkkkkkkkkk ACE DECLARED AGAIN var = %1 kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk", oldACE];
 
 taofoldingmap = 0;
