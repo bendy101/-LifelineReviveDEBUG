@@ -626,15 +626,23 @@ Lifeline_reset2 = {
 					_x allowDamage true;diag_log format ["%1 | [483 Lifeline_reset2][Lifeline_ReviveEngine.sqf] ALLOWDAMAGE SET: %2", name _x, "true"];					
 					_x setCaptive _captive;diag_log format ["%1 | [484 Lifeline_reset2][Lifeline_ReviveEngine.sqf]!!!!!!!!! change var setCaptive = %2 Lifeline_Captive:%3 timestamp:%4 !!!!!!!!!!!!!", name _x, _captive, _x getVariable ["Lifeline_Captive", false], _timestamp]; 
 					[_x, true] remoteExec ["allowDamage",0];diag_log format ["%1 | [506 Lifeline_reset2 from %3 ][_Global.sqf] ALLOWDAMAGE SET: %2", name _x, "true", _lineno];
-					// [_x, false] remoteExec ["setCaptive",_x];diag_log format ["%1 | [507 Lifeline_reset2]!!!!!!!!! change var setCaptive = false !!!!!!!!!!!!!", name _x];
-					// [_x, _captive] remoteExec ["setCaptive",_x];diag_log format ["%1 | [507 Lifeline_reset2]!!!!!!!!! change var setCaptive = %2 !!!!!!!!!!!!!", name _x, _captive];
 					[_x, _captive] remoteExec ["setCaptive",0];diag_log format ["%1 | [507 Lifeline_reset2 from %4 ]!!!!!!!!! change var setCaptive = %2 !!!! Lifeline_Captive %5 ReviveInProgress: %3  timestamp: %6 !!!!!!!!!", name _x, _captive, _x getVariable ["ReviveInProgress",0], _lineno,  _x getVariable ["Lifeline_Captive", false], _timestamp];
 				//  } else {
-					_x allowDamage true;diag_log format ["%1 | [509 Lifeline_reset2][Lifeline_ReviveEngine.sqf] ALLOWDAMAGE SET: %2", name _x, "true"];
+					// _x allowDamage true;diag_log format ["%1 | [509 Lifeline_reset2][Lifeline_ReviveEngine.sqf] ALLOWDAMAGE SET: %2", name _x, "true"];
 					// _x setCaptive false;diag_log format ["%1 | [510 Lifeline_reset2][Lifeline_ReviveEngine.sqf]!!!!!!!!! change var setCaptive = false !!!!!!!!!!!!!", name _x]; 
-					_x setCaptive _captive;diag_log format ["%1 | [510 Lifeline_reset2][Lifeline_ReviveEngine.sqf]!!!!!!!!! change var setCaptive = %2 !!!!!!!!!!!!!", name _x, _captive]; 
+					// _x setCaptive _captive;diag_log format ["%1 | [510 Lifeline_reset2][Lifeline_ReviveEngine.sqf]!!!!!!!!! change var setCaptive = %2 !!!!!!!!!!!!!", name _x, _captive]; 
 				// };	 
 			//    }; //endspawn
+					/* [_x,_captive] spawn {
+						params ["_unit","_captive"];	
+						_unit setVariable ["Lifeline_Captive_Delay",true,true];
+						sleep 5;
+						if (_unit getVariable ["ReviveInProgress",0] != 2) then { 
+							_unit setCaptive _captive;diag_log format ["%1 | [647 Lifeline_reset2][Lifeline_ReviveEngine.sqf]!!!!!!!!! change var setCaptive = %2 Lifeline_Captive:%3 !!!!!!!!!!!!!", name _unit, _captive, _unit getVariable ["Lifeline_Captive", false]]; 
+							[_unit, _captive] remoteExec ["setCaptive",0];	 diag_log format ["%1 | [0648]!!!!!!!!! change var setCaptive = %2 !!!!! ReviveInProgress: %3 !!!!!!!!", name _unit, _captive, _unit getVariable ["ReviveInProgress",0]];
+							_unit setVariable ["Lifeline_Captive_Delay",false,true];
+						};
+					}; */
 			};	
 			
 		};	//if (alive _x) then 
