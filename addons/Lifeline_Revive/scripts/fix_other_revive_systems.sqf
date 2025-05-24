@@ -17,6 +17,15 @@ diag_log "======================================================================
 // 	sleep 1;
 // };
 
+// just for the Arma 3 hint "Lifeline Revive X of y units" message.
+if (Lifeline_added_units == 0) then {
+	Lifeline_added_units_hint_trig = false;
+} else {
+	Lifeline_added_units_hint_trig = true;
+};
+
+
+
 if (hasInterface) then {
 // Wait for mission to start AND player to be in game
 	waitUntil {
@@ -424,6 +433,18 @@ if (isNil "oldACE" && Lifeline_remove_3rd_pty_revive == false) then {
 
 
 // PVP check
+if (isServer) then {
+    // Initialize PVP status on server
+    Lifeline_PVPstatus = false;
+    publicVariable "Lifeline_PVPstatus";
+    
+    // Wait for at least one player to join
+    waitUntil {
+        sleep 1;
+        count (allPlayers - entities "HeadlessClient_F") > 0
+    };
+};
+
 if (hasInterface) then {
 
 	player setVariable ["Lifeline_Captive",(captive player),true]; diag_log format ["%1 [0413] fix_other_revive_systems.sqf !!!!!!!!! change var Lifeline_Captive = %2 !!!!!!!!!!!!!", name player, captive player];//2025
@@ -435,15 +456,17 @@ if (hasInterface) then {
 	enemyUnitsJa = allUnits select {[playerSide1, side group _x] call BIS_fnc_sideIsEnemy};
 	publicVariable "enemyUnitsJa";
 };
-_playersides = missionNamespace getVariable ["Lifeline_PVPcheckSides", []];
-if (count _playersides > 1) then {
-	Lifeline_PVPstatus = true;
-};
-if (count _playersides == 1) then {
-	Lifeline_PVPstatus = false;
-};
 
-publicVariable "Lifeline_PVPstatus";
+// Update PVP status based on player sides
+if (isServer) then {
+    _playersides = missionNamespace getVariable ["Lifeline_PVPcheckSides", []];
+    if (count _playersides > 1) then {
+        Lifeline_PVPstatus = true;
+    } else {
+        Lifeline_PVPstatus = false;
+    };
+    publicVariable "Lifeline_PVPstatus";
+};
 
 
 

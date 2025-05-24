@@ -5,7 +5,7 @@ diag_log "                                                                      
 diag_log "                                                                                   			               '"; 
 diag_log "============================================================================================================='";
 diag_log "============================================================================================================='";
-diag_log "========================================== Lifeline_ReviveEngine.sqf ==========================================='";
+diag_log "========================================== Lifeline_ReviveEngine.sqf ja ==========================================='";
 diag_log format ["========================================== %1     %2 ==========================================='", Lifeline_Version, Lifeline_Version_no];
 diag_log "============================================================================================================='";
 
@@ -241,10 +241,10 @@ if (isServer) then {
 
 
 	Lifeline_DH_update = {
-		    // IMPORTANT: Fix the initialization counter logic
-    // This ensures the count values are synchronized properly
-    Lifelineunitscount_pre = count Lifeline_All_Units;
-    Lifelinecompletedinit = Lifelineunitscount_pre;
+		// IMPORTANT: Fix the initialization counter logic
+		// This ensures the count values are synchronized properly
+		Lifelineunitscount_pre = count Lifeline_All_Units;
+		Lifelinecompletedinit = Lifelineunitscount_pre;
 
 		// if (Lifelinecompletedinit > 1) then {	
 		// 	Lifelineunitscount_pre = (count Lifeline_All_Units);
@@ -339,7 +339,10 @@ if (isServer) then {
 		// Add needed settings to each unit.
 		{
 			if !(_x getVariable ["LifelineDHadded",false]) then {
-					[format ["Lifeline Revive Units %1 of %2", Lifelinecompletedinit, Lifelineunitscount]] remoteExec ["hintsilent", allPlayers];
+					if (Lifeline_added_units_hint_trig) then {
+						[format ["Lifeline Revive Units %1 of %2", Lifelinecompletedinit, Lifelineunitscount]] remoteExec ["hintsilent", allPlayers];
+					};
+
 					Lifelinecompletedinit = Lifelinecompletedinit + 1;
 
 					// add voice identifiers (the orignal voiceover artists name)	
@@ -1014,7 +1017,7 @@ if (isServer) then {
 												if (Lifeline_Revive_debug && Lifeline_hintsilent) then {[format ["%1 bled out. Dead.", name _x]] remoteExec ["hintSilent",2]};
 												if (Lifeline_Revive_debug && Lifeline_hintsilent) then {["diedbleedout1"] remoteExec ["playSound",2]};
 												diag_log " ";
-												diag_log format ["[0496] !!!!!!!!!!!! %1 BLED OUT !!!!!!!!!!!!!!'", name _x];
+												diag_log format ["[0496] !!!!!!!!!!!! %1 BLED OUT !!!!!!!!!!!!!!", name _x];
 												diag_log " ";
 												//DEBUG
 												_bleedout = "BLED OUT";
@@ -1089,6 +1092,10 @@ if (isServer) then {
 											};
 											_x setVariable ["ReviveInProgress",0,true]; diag_log format ["%1 [983]!!!!!!!!! change var ReviveInProgress = 0 !!!!!!!!!!!!!", name _x];
 											_x setVariable ["Lifeline_AssignedMedic", [], true]; // added
+											//these two variables below are just for SOG AI to avoid clashes. 										
+											_x setVariable ["isInjured",false,true]; 											
+											// _x setVariable ["isMedic",false,true]; // keep off
+											// -------- 
 										};
 									// }; //if (Lifeline_RevMethod != 3) then {
 
@@ -1268,6 +1275,9 @@ if (isServer) then {
 	Lifeline_mascal_autorevive_timer = 0; // when all units are down (MASCAL) but a unit has the auto-revive flag, then a timer will start before player is informed a unit is recovering.
 
 	["Lifeline Revive initialized"] remoteExec ["hintsilent", allplayers];
+	if (Lifeline_added_units == 1) then {
+		Lifeline_added_units_hint_trig = false;
+	};
 	// [] execvm "Lifeline_Revive\scripts\temp.sqf"; 
 
 	while {true} do {
@@ -1308,7 +1318,7 @@ if (isServer) then {
 		Lifeline_incaps2choose = Lifeline_incapacitated select {!(_x in Lifeline_Process) && (lifestate _x == "INCAPACITATED") && (rating _x > -2000)};
 		
 
-		_diag_array = ""; {_diag_array = _diag_array + name _x + ":" + str group _x + ", " } foreach Lifeline_incaps2choose; diag_log format ["================ [1285] PRIMARY LOOP  %1 Lifeline_incaps2choose: %2'", "temp", _diag_array];
+		_diag_array = ""; {_diag_array = _diag_array + name _x + ":" + str group _x + ", " } foreach Lifeline_incaps2choose; diag_log format ["================ [1285] PRIMARY LOOP  %1 Lifeline_incaps2choose: %2", "temp", _diag_array];
 
 
 
@@ -1716,7 +1726,8 @@ if (isServer) then {
 						if (Lifeline_hintsilent) then {hintsilent format ["MEDIC ALREADY ASSIGNED\nfor incap: %1", name _incap]};
 						// if (Lifeline_debug_soundalert) then {["siren1"] remoteExec ["playSound",2];};
 					};
-					_medic setVariable ["ReviveInProgress",0,true];diag_log format ["%1 [3089]!!!!!!!!! [MEDIC] change var ReviveInProgress = 0 !!!!!!!!!!!!!", name _incap];
+					_medic setVariable ["ReviveInProgress",0,true];diag_log format ["%1 [3089]!!!!!!!!! [MEDIC] change var ReviveInProgress = 0 !!!!!!!!!!!!!", name _incap];				
+					_medic setVariable ["isMedic",false,true]; //just for SOG AI to avoid clashes. 
 					_medic = objNull;
 				}; // exitwith
 				//ENDDEBUG
@@ -1866,6 +1877,7 @@ if (isServer) then {
 				}; */
 
 				_incap setVariable ["ReviveInProgress",0,true];diag_log format ["%1 [3140]!!!!!!!!! [INCAP] change var ReviveInProgress = 0 !!!!!!!!!!!!!", name _incap];
+				_incap setVariable ["isInjured",false,true]; //just for SOG AI to avoid clashes. 
 				
 
 				diag_log format ["%1 | [1607] !!!!!!!!!!!! PRIMARY LOOP. JUST BEFORE SWITCH IN REJECT MEDIC Lifeline_side_switch %2 _incap_side %3", name _incap, Lifeline_side_switch, _incap_side];
@@ -1979,6 +1991,10 @@ if (isServer) then {
 					publicVariable "Lifeline_Process";
 					_incap setVariable ["ReviveInProgress",3,true]; diag_log format ["%1 [1773]!!!!!!!!! [INCAP] change var ReviveInProgress = 3 !!!!!!!!!!!!!", name _incap];
 					_medic setVariable ["ReviveInProgress",1,true]; diag_log format ["%1 [1774]!!!!!!!!! [MEDIC] change var ReviveInProgress = 1 !!!!!!!!!!!!!", name _medic];
+					//these two variables below are just for SOG AI to avoid clashes. 
+					_incap setVariable ["isInjured",true,true]; 
+					_medic setVariable ["isMedic",true,true]; 
+                    // -------- 
 					if (lifestate _medic != "INCAPACITATED" && !(_medic getVariable ["Lifeline_Captive_Delay",false])) then {
 						_medic setVariable ["Lifeline_Captive",(captive _medic),true]; diag_log format ["%1 [1775]!!!!!!!!! [MEDIC] change var Lifeline_Captive = %2 !!!!!!!!!!!!!", name _medic, captive _medic];//2025
 					};
@@ -2015,14 +2031,15 @@ if (isServer) then {
 			_sleep = 3;		
 		}; */
 
-		
+		//DEBUG
 		if (_sleep == 3) then {
 			// playsound "siren1";
 			diag_log format ["++++++++++++++++++++++++++++++++++++++++++++++ [1922] +++++++++++++++++++++++++++++++++++++++++!", _sleep];
 			diag_log format ["+++++++++++++++++++++ PRIMARY LOOP end of loop [1922] SLEEP IS THREE SECONDS !!!!!!!!!!!!!!!!!!!", _sleep];
-			diag_log format ["+++++++++++++++++++++ PRIMARY LOOP end of loop [1922] SLEEP IS THREE SECONDS !!!!!!!!!!!!!!!!!!!", _sleep];
-			diag_log format ["+++++++++++++++++++++ PRIMARY LOOP end of loop [1922] SLEEP IS THREE SECONDS !!!!!!!!!!!!!!!!!!!", _sleep];
+			// diag_log format ["+++++++++++++++++++++ PRIMARY LOOP end of loop [1922] SLEEP IS THREE SECONDS !!!!!!!!!!!!!!!!!!!", _sleep];
+			// diag_log format ["+++++++++++++++++++++ PRIMARY LOOP end of loop [1922] SLEEP IS THREE SECONDS !!!!!!!!!!!!!!!!!!!", _sleep];
 		};
+		//ENDDEBUG
 
 		sleep _sleep;
 		// sleep 0.2;

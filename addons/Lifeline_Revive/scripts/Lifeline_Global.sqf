@@ -548,6 +548,12 @@ Lifeline_reset2 = {
 			_x setVariable ["Lifeline_AssignedMedic", [], true];diag_log format ["%1 [0246]!!!!!!!!! change var Lifeline_AssignedMedic = [] !!!!!!!!!!!!!", name _x];
 			_x setvariable ["LifelinePairTimeOut",0,true];diag_log format ["%1 [0247]!!!!!!!!! change var LifelinePairTimeOut = 0 !!!!!!!!!!!!!", name _x];
 			// _x setVariable ["Lifeline_ExitTravel", false, true];
+			
+			// these two variables below are just for SOG AI to avoid clashes. 
+
+		    _x setVariable ["isInjured",false,true]; 
+			_x setVariable ["isMedic",false,true]; 
+            // -------------------- 
 
 			if (_x in Lifeline_Process) then {
 				Lifeline_Process = Lifeline_Process - [_x];
@@ -1572,6 +1578,7 @@ Lifeline_StartRevive = {
 
 
 			// DISTANCE RADIUS <=8 || 	// DISTANCE RADIUS <=15
+			diag_log format ["%1 | %2 | [1575] DISTANCE RADIUS <=8 || 	// DISTANCE RADIUS <=15", name _incap, name _medic];
 
 			// diag_log format ["%1 | %2 \%5\====// WAITUNTIL REVIVE JOURNEY [0986] //==== AssignedMedic: %3 _exit: %4 DIST: %6 SPEED: %7", name _incap, name _medic, name (_incap getVariable ["Lifeline_AssignedMedic",[]] select 0), _exit,time,_medic distance2D _incap, speed _medic];
 			waitUntil {
@@ -1632,6 +1639,7 @@ Lifeline_StartRevive = {
 
 
 			// DISTANCE RADIUS <=6 || 	// DISTANCE RADIUS <=8
+			diag_log format ["%1 | %2 | [1636] DISTANCE RADIUS <=6 || 	// DISTANCE RADIUS <=8", name _incap, name _medic];
 
 			waitUntil {
 				//DEBUG
@@ -1810,6 +1818,7 @@ Lifeline_StartRevive = {
 			// [_medic,_newrevpos] call Lifeline_align_dir;
 
 			// DISTANCE RADIUS <=4
+			diag_log format ["%1 | %2 | [1815] DISTANCE RADIUS <=4", name _incap, name _medic];
 
 			waitUntil {
 				// sleep 0.1;
@@ -1980,6 +1989,7 @@ Lifeline_StartRevive = {
 			_waitcount = 5; // 5 seconds, 25 times 0.2
 
 			// DISTANCE RADIUS <=2
+			diag_log format ["%1 | %2 | [1986] DISTANCE RADIUS <=2", name _incap, name _medic];
 
 			waitUntil {
 				// _medic playMoveNow _animMove;
@@ -2141,7 +2151,8 @@ Lifeline_StartRevive = {
 			_one = 1;
 			_waitcount = 5; 
 
-			// DISTANCE RADIUS <=1		
+			// DISTANCE RADIUS <=1	
+			diag_log format ["%1 | %2 | [2148] DISTANCE RADIUS <=1", name _incap, name _medic];
 
 			waitUntil {
 				sleep 0.2;
@@ -3669,7 +3680,7 @@ Lifeline_StartReviveOLD = {
 
 
 			// DISTANCE RADIUS <=10 || 	// DISTANCE RADIUS <=15
-
+			diag_log format ["%1 | %2 | [3677] DISTANCE RADIUS <=10 || 	// DISTANCE RADIUS <=15", name _incap, name _medic];
 			// _revivePos = [_incap, _medic, _distnextto] call Lifeline_POSnexttoincap;	
 			// diag_log format ["%1 | %2 \%5\====// WAITUNTIL REVIVE JOURNEY [0955] //==== AssignedMedic: %3 _exit: %4 DIST: %6 SPEED: %7", name _incap, name _medic, name (_incap getVariable ["Lifeline_AssignedMedic",[]] select 0), _exit,time,_medic distance2D _incap, speed _medic];
 			waitUntil {
@@ -3713,6 +3724,7 @@ Lifeline_StartReviveOLD = {
 
 
 			// DISTANCE RADIUS <=8 || 	// DISTANCE RADIUS <=15
+			diag_log format ["%1 | %2 | [3721] DISTANCE RADIUS <=8 || 	// DISTANCE RADIUS <=15", name _incap, name _medic];
 
 			// diag_log format ["%1 | %2 \%5\====// WAITUNTIL REVIVE JOURNEY [0986] //==== AssignedMedic: %3 _exit: %4 DIST: %6 SPEED: %7", name _incap, name _medic, name (_incap getVariable ["Lifeline_AssignedMedic",[]] select 0), _exit,time,_medic distance2D _incap, speed _medic];
 			waitUntil {
@@ -3773,6 +3785,7 @@ Lifeline_StartReviveOLD = {
 
 
 			// DISTANCE RADIUS <=6 || 	// DISTANCE RADIUS <=8
+			diag_log format ["%1 | %2 | [3782] DISTANCE RADIUS <=6 || 	// DISTANCE RADIUS <=8", name _incap, name _medic];
 
 			waitUntil {
 				//DEBUG
@@ -3950,6 +3963,7 @@ Lifeline_StartReviveOLD = {
 			// [_medic,_newrevpos] call Lifeline_align_dir;
 
 			// DISTANCE RADIUS <=4
+			diag_log format ["%1 | %2 | [3960] DISTANCE RADIUS <=4", name _incap, name _medic];
 
 			waitUntil {
 				// sleep 0.1;
@@ -4089,6 +4103,7 @@ Lifeline_StartReviveOLD = {
 			_diag_texty2 = "";
 
 			// DISTANCE RADIUS <=2
+			diag_log format ["%1 | %2 | [4100] DISTANCE RADIUS <=2", name _incap, name _medic];
 
 			waitUntil {
 				// _medic playMoveNow _animMove;
@@ -4190,6 +4205,7 @@ Lifeline_StartReviveOLD = {
 			_trig1 = false;
 
 			// DISTANCE RADIUS <=1
+			diag_log format ["%1 | %2 | [4202] DISTANCE RADIUS <=1", name _incap, name _medic];
 
 			waitUntil {
 				sleep 0.2;

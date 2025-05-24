@@ -83,7 +83,7 @@ if (isClass (configFile >> "cfgPatches" >> "ace_medical")) then {
 
 //check for SOG AI 
 if (isClass (configFile >> "cfgPatches" >> "JBOY_SOGAI_mod")) then {
-	diag_log "mission init.sqf +++++++++++ SOG AI DETECTED +++++++++++++++'";
+	diag_log "XEH_postInit.sqf +++++++++++ SOG AI DETECTED +++++++++++++++'";
 	[] spawn {
 		waitUntil {(!isNil "jboy_medicStart")};
 		jboy_medicStart = compile preprocessFileLineNumbers ("");
@@ -99,6 +99,11 @@ if (isClass (configFile >> "cfgPatches" >> "JBOY_SOGAI_mod")) then {
 		// missionNameSpace setVariable ["jboy_debugMedic",true,false];
 		// diag_log "mission init.sqf +++++++++++SOG AI+++++++++++++++ missionNameSpace setVariable ['jboy_debugMedic',true,false]'"; 
 		//ENDDEBUG
+		if (Lifeline_SOGAI_orangetrian == false) then {
+			waitUntil {isNil {missionNameSpace getVariable "JBOY_showInjuredIcon"}};
+			missionNameSpace setVariable ["JBOY_showInjuredIcon", false];
+		};
+
 	};
 };
 
