@@ -22,6 +22,18 @@ diag_log "======================================================================
 }; */
 //ENDDEBUG
 
+if (Lifeline_remove_3rd_pty_revive == true && Lifeline_revive_enable) then {
+	_PsychoRevive = "PsychoRevive" call BIS_fnc_getParamValue;
+	if !(isNil "_PsychoRevive") then {
+		if (_PsychoRevive == 1) then {
+			{
+				_x setVariable ["tcb_ais_aisInit",true];
+				diag_log format ["%1 XEH_postInit.sqf !!!!!!!!!!!!!!!!! my hack removing psycho on each unit !!!!!!!!!!!!!!!!!!!!!!", name _x];
+			} foreach (allunits select {(simulationEnabled _x)});
+		};
+	};
+};
+
 if !(Lifeline_revive_enable) exitWith {diag_log "1. nnnnnnnnnnnnnnnnnnnnnn MOD DISABLED. EXIT. nnnnnnnnnnnnnnnnnnnnnnn'";};
 
  diag_log " ";
@@ -87,23 +99,18 @@ if (isClass (configFile >> "cfgPatches" >> "JBOY_SOGAI_mod")) then {
 	[] spawn {
 		waitUntil {(!isNil "jboy_medicStart")};
 		jboy_medicStart = compile preprocessFileLineNumbers ("");
-		//DEBUG
-		// diag_log "mission init.sqf +++++++++++SOG AI+++++++++++++++ jboy_medicStart = compile preprocessFileLineNumbers ('')'";
-		// waitUntil {(!isNil "jboy_useSpearheadAIRevive")};
-		// jboy_useSpearheadAIRevive = true;	
-		// diag_log "mission init.sqf +++++++++++SOG AI+++++++++++++++ jboy_useSpearheadAIRevive = true'"; 
-		// waitUntil {!isNil {missionNamespace getVariable "jboy_useSpearheadAIRevive"}};
-		// missionNameSpace setVariable ["jboy_useSpearheadAIRevive",true,false];
-		// diag_log "mission init.sqf +++++++++++SOG AI+++++++++++++++ missionNameSpace setVariable ['jboy_useSpearheadAIRevive',true]'"; 		
-		// waitUntil {!isNil {missionNamespace getVariable "jboy_debugMedic"}};
-		// missionNameSpace setVariable ["jboy_debugMedic",true,false];
-		// diag_log "mission init.sqf +++++++++++SOG AI+++++++++++++++ missionNameSpace setVariable ['jboy_debugMedic',true,false]'"; 
-		//ENDDEBUG
+	};	
+	if (Lifeline_Idle_Crouch) then {	
+		[] spawn {
+			waitUntil {(!isNil "jboy_followersCopyLeaderStance")};
+			jboy_followersCopyLeaderStance = compile preprocessFileLineNumbers ("");
+		};	
+	};
+	[] spawn {
 		if (Lifeline_SOGAI_orangetrian == false) then {
 			waitUntil {isNil {missionNameSpace getVariable "JBOY_showInjuredIcon"}};
 			missionNameSpace setVariable ["JBOY_showInjuredIcon", false];
 		};
-
 	};
 };
 

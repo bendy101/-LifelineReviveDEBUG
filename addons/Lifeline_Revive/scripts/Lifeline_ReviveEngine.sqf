@@ -15,9 +15,13 @@ if (Lifeline_Voices == 1) then { Lifeline_UnitVoices = ["Adam", "Antoni", "Arnol
 if (Lifeline_Voices == 2) then { Lifeline_UnitVoices = ["A006", "Alistair", "Allen", "Bruce", "Charlie", "Daniel", "Dave", "Hugh", "Philemon"]; };
 if (Lifeline_Voices == 3) then { Lifeline_UnitVoices = ["Adam", "Antoni", "Arnold", "Bill", "Callum", "Clyde"]; };
 
-if (Lifeline_RevProtect == 1) then {dmg_trig=false; cptv_trig=true};
-if (Lifeline_RevProtect == 2) then {dmg_trig=true; cptv_trig=true};
-if (Lifeline_RevProtect == 3) then {dmg_trig=true};//changed for antistasi
+Lifeline_RevProtect_Set = {	
+	if (Lifeline_RevProtect == 1) then {dmg_trig=false; cptv_trig=true};
+	if (Lifeline_RevProtect == 2) then {dmg_trig=true; cptv_trig=true};
+	if (Lifeline_RevProtect == 3) then {dmg_trig=true};//changed for antistasi
+};
+
+[] call Lifeline_RevProtect_Set;
 
 if (Lifeline_Revive_debug) then {
 	[] call serverSide_MissionSettings;//just diaglogs
@@ -408,11 +412,11 @@ if (isServer) then {
 					_x setVariable ["LifelinePairTimeOut",0,true];//diag_log format ["%1 [304]!!!!!!!!! change var LifelinePairTimeOut = 0 !!!!!!!!!!!!!", name _x];
 				};
 
-				// Add vehicle to Lifeline_All_Units
-				if !(assignedvehicle _x isEqualTo (_x getVariable ["AssignedVeh", objNull])) then {
+				// Add vehicle to Lifeline_All_Units -- this should be OFF. Only need to know when medic is selected.
+				/* if !(assignedvehicle _x isEqualTo (_x getVariable ["AssignedVeh", objNull])) then {
 					_vehicle = assignedvehicle _x;
 					_x setVariable ["AssignedVeh", _vehicle, true];
-				};
+				}; */
 
 				// add death event handler 
 				_x addMPEventHandler ["MPKilled", {
@@ -1924,15 +1928,17 @@ if (isServer) then {
 
 				// medic leave vehicle
 				if (alive _incap && alive _medic && !(isNull objectParent _medic) && isTouchingGround (vehicle _medic)) then {
-					diag_log format ["%1 | %2 | [1835] !!!!!!!!!!!! PRIMARY LOOP. medic leave vehicle GATE 1", name _incap, name _medic];
+					diag_log format ["%1 | %2 | [1835] !!!!!!!!!!!! PRIMARY LOOP. medic leave vehicle GATE 1 assignedVehicle %3", name _incap, name _medic, assignedVehicle _medic];
 					_vehicle = objectParent _medic;
 					if (_medic distance2D _incap < 200) then {
 						_medic setVariable ["AssignedVeh", _vehicle, true];
 						unassignVehicle _medic;
+						// [_medic] remoteExec ["unassignVehicle", 0];
 						moveOut _medic;
 						[_medic] allowGetIn false;
+						diag_log format ["%1 | %2 | [1938] !!!!!!!!!!!! PRIMARY LOOP. check assignedVehicle %3", name _incap, name _medic, assignedVehicle _medic];
 					} else {
-						diag_log format ["%1 | %2 | [1835] !!!!!!!!!!!! PRIMARY LOOP. medic leave vehicle GATE 2", name _incap, name _medic];
+						diag_log format ["%1 | %2 | [1940] !!!!!!!!!!!! PRIMARY LOOP. medic leave vehicle GATE 2", name _incap, name _medic];
 						if (_vehicle isKindOf "car") exitWith {
 							_pos = [_incap, 10, 20, 5, 0, 20, 0] call BIS_fnc_findSafePos;
 							_vehicle domove _pos;

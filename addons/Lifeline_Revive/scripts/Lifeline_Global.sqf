@@ -378,8 +378,39 @@ Lifeline_Smoke = {
 	true
 };
 
-
 Lifeline_EnemyCloseBy = {
+	params ["_unit"];
+	_EnemyCloseBy = objNull;
+	_select = Lifeline_EnemyCloseByType;
+	if (Lifeline_EnemyCloseByType == 3) then {
+		_select = selectRandom [1,2];
+	};
+	
+	if (_select == 1) then {
+			_EnemyCloseBy = [_unit] call Lifeline_EnemyCloseBySimple;
+	} else {
+		_EnemyCloseBy = [_unit] call Lifeline_KnowsAboutEnemy;
+	};
+	_EnemyCloseBy
+};
+
+Lifeline_EnemyCloseBySimple = {
+	params ["_unit"];
+	_EnemiesCloseBy = [];
+	_EnemyCloseBy = objNull;
+	_EnemySides = (Lifeline_Side call BIS_fnc_enemySides);
+	_EnemyUnits = allunits select {side _x in _EnemySides};
+	_EnemiesCloseBy = _EnemyUnits select {_x distance _unit <500 && simulationEnabled _x};
+	if (count _EnemiesCloseBy >0) then {
+		_EnemyCloseBy = _EnemiesCloseBy select 0;
+	} else {
+		_EnemyCloseBy = objNull;
+	};
+	_EnemyCloseBy
+};
+
+
+Lifeline_KnowsAboutEnemy = {
     params ["_unit"];
     
     private _EnemiesKnownBy = [];
@@ -525,7 +556,7 @@ Lifeline_reset2 = {
 
 /* 			_veh = _x getVariable ["AssignedVeh", objNull];
 			if (!isNull _veh && !isPlayer _x) then {
-				_x setVariable ["Lifeline_back2vehicle",true,true];
+				_x setVariable ["Lifeline_back2vehicle",true,true];diag_log format ["%1 [0528]!!!!!!!!! change var Lifeline_back2vehicle = true !!!!!!!!!!!!!", name _x];
 				diag_log format ["%1 [0633] !!!!!!!!!!!!! ASSIGNED VEHICLE GATE !!!!!!!!!!!!!", name _x];
 				// Add the vehicle to the group's known vehicles
 				(group _x) addVehicle _veh;			
@@ -540,7 +571,7 @@ Lifeline_reset2 = {
 						sleep 0.5;
 						(vehicle _unit != _unit) || (!alive _unit) || lifestate _unit == "INCAPACITATED"
 					};
-					_unit setVariable ["Lifeline_back2vehicle",false,true];
+					_unit setVariable ["Lifeline_back2vehicle",false,true];diag_log format ["%1 [0542]!!!!!!!!! change var Lifeline_back2vehicle = false !!!!!!!!!!!!!", name _x];
 				};
 			};	 */
 
@@ -580,25 +611,31 @@ Lifeline_reset2 = {
 			[_x] joinSilent _x; // also makes units get back in assigned vehicles
 			_x assignTeam _teamcolour;
 			_veh = _x getVariable ["AssignedVeh", objNull];
+			 
+			diag_log format ["%1 [0583] !!!!!!!!!!!!! VEHICLE IS ASSIGNED: %2 !!!!!!!!!!!!!", name _x, _veh];
 			if (!isNull _veh && !isPlayer _x) then {
-				_x setVariable ["Lifeline_back2vehicle",true,true];
+				_x setVariable ["Lifeline_back2vehicle",true,true]; diag_log format ["%1 [0585]!!!!!!!!! change var Lifeline_back2vehicle = true !!!!!!!!!!!!!", name _x];
 				diag_log format ["%1 [0633] !!!!!!!!!!!!! ASSIGNED VEHICLE GATE !!!!!!!!!!!!!", name _x];
 				// Add the vehicle to the group's known vehicles
-				(group _x) addVehicle _veh;			
+				(group _x) addVehicle _veh; diag_log format ["%1 [0606] !!!!!!!!!!!!! ADD VEHICLE TO GROUP !!!!!!!!!!!!!", name _x];
 				// Allow the unit to get in and assign them to the vehicle
 				[_x] allowGetIn true;
 				_x assignAsCargo _veh;
 				[_x] orderGetIn true;
     
-				[_x] spawn {
-					params ["_unit"];
+				[_x,_veh] spawn {
+					params ["_unit","_veh"];
 					waitUntil {
 						sleep 0.5;
-						(vehicle _unit != _unit) || (!alive _unit) || lifestate _unit == "INCAPACITATED"
+						(vehicle _unit != _unit) || (!alive _unit) || lifestate _unit == "INCAPACITATED" ||
+						((_veh isKindOf "Air") && !isTouchingGround _veh)
 					};
-					_unit setVariable ["Lifeline_back2vehicle",false,true];
+					_unit setVariable ["Lifeline_back2vehicle",false,true];diag_log format ["%1 [0600]!!!!!!!!! change var Lifeline_back2vehicle = false !!!!!!!!!!!!!", name _unit];
 				};
-			};	
+			} else {
+				diag_log format ["%1 [0601] !!!!!!!!!!!!! VEHICLE IS NOT ASSIGNED !!!!!!!!!!!!!", name _x];
+				_x setVariable ["Lifeline_back2vehicle",false,true];diag_log format ["%1 [0604]!!!!!!!!! change var Lifeline_back2vehicle = false !!!!!!!!!!!!!", name _x];
+			};
 			
 			
 			if (alive leader _x && lifestate leader _x != "incapacitated") then {
@@ -607,7 +644,7 @@ Lifeline_reset2 = {
 
 			// _x setvariable ["LifelineBleedOutTime",0,true]; // must be OFF. Its called at end of revive loop even when 15 sec pair is cancelled.
 			if (!isNull (_x getVariable ["AssignedVeh", objNull]) && !isPlayer leader _x && isNull assignedVehicle _x) then {
-				(group _x) addVehicle (_x getVariable "AssignedVeh");
+				(group _x) addVehicle (_x getVariable "AssignedVeh"); diag_log format ["%1 [0633] !!!!!!!!!!!!! ADD VEHICLE TO GROUP !!!!!!!!!!!!!", name _x];
 			};
 			if (isplayer _x && alive _x && lifestate _x != "INCAPACITATED") then {
 				[group _x, _x] remoteExec ["selectLeader", groupOwner group _x];
@@ -1041,7 +1078,7 @@ Lifeline_PairLoop = {
 
 
 				_teamcolour = assignedTeam _medic; // joinSilent deletes Teamcolour, so workaround here.
-				[_medic] joinSilent _medic;
+				[_medic] joinSilent _medic; diag_log format ["%1 [1067] !!!!!!!!!!!!! JOIN SILENT !!!!!!!!!!!!!", name _medic];
 				_medic assignTeam _teamcolour; // joinSilent deletes Teamcolour, so workaround here.
 				
 				_medic = objNull;
@@ -3209,6 +3246,7 @@ Lifeline_StartReviveOLD = {
 	_cptv_trig = false;
 	_opforpve = false;
 
+
 	if (Lifeline_RevProtect in [1,2]) then {
 		_cptv_trig = cptv_trig;
 	};
@@ -3576,7 +3614,7 @@ Lifeline_StartReviveOLD = {
 			_teamcolour = assignedTeam _medic;// joinSilent deletes Teamcolour, so workaround here.
 
 			// good for getting confused in buildings - confirm later
-			[_medic] joinSilent _medic; // THIS AFFECTS SPEED
+			// [_medic] joinSilent _medic; // // THIS AFFECTS SPEED. FUCKS UP UNITS THAT LEAVE TURRENTS AND ALREADY PART OF GROUP WITH MULTPLE
 					
 			_medic assignTeam _teamcolour;// joinSilent deletes Teamcolour, so workaround here.
 			
@@ -4719,7 +4757,7 @@ _newUnit setCaptive false;
 Lifeline_Medic_Num_Limit = {
 	params ["_incap","_closermedic"];
 
-	// _medic_under_limit = true;
+	_medic_under_limit = true;
 
 	// these vars are so we can add 1 because when its  a "closer medic" situation,. We swap unit with medic already on its way. 
 	_zero = 0;
