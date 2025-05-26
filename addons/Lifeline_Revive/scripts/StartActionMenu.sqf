@@ -104,20 +104,26 @@ if (isServer) then {
 			// _scope2count = count (allunits select {(side (group _x) == Lifeline_Side) && simulationEnabled _x && rating _x > -2000});
 			// _scope3count = count (allunits select {(side (group _x) == Lifeline_Side) && simulationEnabled _x  && (_x in playableUnits) && rating _x > -2000});
 			//ENDDEBUG
+
+			Lifeline_Living_Units = allunits select {simulationEnabled _x && isDamageAllowed _x && rating _x > -2000 && _x isKindOf "CAManBase"};
+			publicVariable "Lifeline_living_Units";
 			
 			_groupsWPlayers = allGroups select {{isPlayer _x} count (units _x) > 0 }; 
 
 
 			if (Lifeline_PVPstatus) then {
 					// GROUP
-					_scope1count = count (allunits select {side (group _x) == Lifeline_Side && (group _x) in _groupsWPlayers && simulationEnabled _x && isDamageAllowed _x && rating _x > -2000});
-					_scope1countOPFOR = count (allunits select {side (group _x) in Lifeline_OPFOR_Sides && (group _x) in _groupsWPlayers && simulationEnabled _x && isDamageAllowed _x && rating _x > -2000});
+					_scope1 = (Lifeline_Living_Units select {side (group _x) == Lifeline_Side && (group _x) in _groupsWPlayers});
+					_scope1count = count _scope1;
+					_scope1countOPFOR = count (Lifeline_Living_Units select {side (group _x) in Lifeline_OPFOR_Sides && (group _x) in _groupsWPlayers});
 					// ALL PLAYABLE (SLOTS)
-					_scope2count = count (allunits select {side (group _x) == Lifeline_Side && simulationEnabled _x && isDamageAllowed _x && ((_x in playableUnits) || (_x in switchableUnits)) && rating _x > -2000});
-					_scope2countOPFOR = count (allunits select {side (group _x) in Lifeline_OPFOR_Sides && simulationEnabled _x && isDamageAllowed _x && ((_x in playableUnits) || (_x in switchableUnits)) && rating _x > -2000});
+					_slots = (Lifeline_Living_Units select {side (group _x) == Lifeline_Side && ((_x in playableUnits) || (_x in switchableUnits))});
+					{_scope1 pushBackUnique _x} forEach _slots;
+					_scope2count = count _scope1;
+					_scope2countOPFOR = count (Lifeline_Living_Units select {side (group _x) in Lifeline_OPFOR_Sides && ((_x in playableUnits) || (_x in switchableUnits))});
 					// SIDE	
-					_scope3count = count (allunits select {side (group _x) == Lifeline_Side && simulationEnabled _x && isDamageAllowed _x && rating _x > -2000});
-					_scope3countOPFOR = count (allunits select {side (group _x) in Lifeline_OPFOR_Sides && simulationEnabled _x && isDamageAllowed _x && rating _x > -2000});
+					_scope3count = count (Lifeline_Living_Units select {side (group _x) == Lifeline_Side});
+					_scope3countOPFOR = count (Lifeline_Living_Units select {side (group _x) in Lifeline_OPFOR_Sides});
 
 
 					_scope1countOPFORtext = ((if (_scope1countOPFOR < 100) then {"0"} else {""}) + (if (_scope1countOPFOR < 10) then {"0"} else {""}) + str _scope1countOPFOR);
@@ -127,14 +133,17 @@ if (isServer) then {
 			if (!Lifeline_PVPstatus) then {
 				if (Lifeline_Include_OPFOR) then {
 					// GROUP
-					_scope1count = count (allunits select {(group _x) in _groupsWPlayers && side (group _x) == Lifeline_Side && simulationEnabled _x && isDamageAllowed _x && rating _x > -2000});
+					_scope1 = (Lifeline_Living_Units select {(group _x) in _groupsWPlayers && side (group _x) == Lifeline_Side});
+					_scope1count = count _scope1;
 					// ALL PLAYABLE (SLOTS)
-					_scope2count = count (allunits select {side (group _x) == Lifeline_Side && simulationEnabled _x && isDamageAllowed _x && ((_x in playableUnits) || (_x in switchableUnits)) && rating _x > -2000});
+					_slots = (Lifeline_Living_Units select {side (group _x) == Lifeline_Side && ((_x in playableUnits) || (_x in switchableUnits))});
+					{_scope1 pushBackUnique _x} forEach _slots;
+					_scope2count = count _scope1;
 					// SIDE	
-					_scope3count = count (allunits select {side (group _x) == Lifeline_Side && simulationEnabled _x && isDamageAllowed _x && rating _x > -2000});
+					_scope3count = count (Lifeline_Living_Units select {side (group _x) == Lifeline_Side});
 
 					// OPFOR
-					_scopeOPFORcount = count (allunits select {(side (group _x) in Lifeline_OPFOR_Sides && simulationEnabled _x && isDamageAllowed _x)});
+					_scopeOPFORcount = count (Lifeline_Living_Units select {(side (group _x) in Lifeline_OPFOR_Sides)});
 
 					_scopeOPFORcounttext = ((if (_scopeOPFORcount < 100) then {"0"} else {""}) + (if (_scopeOPFORcount < 10) then {"0"} else {""}) + str _scopeOPFORcount);
 
@@ -149,11 +158,14 @@ if (isServer) then {
 				};
 				if (!Lifeline_Include_OPFOR) then {
 					// GROUP
-					_scope1count = count (allunits select {side (group _x) == Lifeline_Side && (group _x) in _groupsWPlayers && simulationEnabled _x && isDamageAllowed _x && rating _x > -2000});
+					_scope1 = (Lifeline_Living_Units select {side (group _x) == Lifeline_Side && (group _x) in _groupsWPlayers && simulationEnabled _x && isDamageAllowed _x && rating _x > -2000 && _x isKindOf "CAManBase"});
+					_scope1count = count _scope1;
 					// ALL PLAYABLE (SLOTS)
-					_scope2count = count (allunits select {side (group _x) == Lifeline_Side && simulationEnabled _x && isDamageAllowed _x && ((_x in playableUnits) || (_x in switchableUnits)) && rating _x > -2000});
+					_slots = (Lifeline_Living_Units select {side (group _x) == Lifeline_Side && simulationEnabled _x && isDamageAllowed _x && ((_x in playableUnits) || (_x in switchableUnits)) && rating _x > -2000 && _x isKindOf "CAManBase"});
+					{_scope1 pushBackUnique _x} forEach _slots;
+					_scope2count = count _scope1;
 					// SIDE	
-					_scope3count = count (allunits select {side (group _x) == Lifeline_Side && simulationEnabled _x && isDamageAllowed _x && rating _x > -2000});
+					_scope3count = count (Lifeline_Living_Units select {side (group _x) == Lifeline_Side && simulationEnabled _x && isDamageAllowed _x && rating _x > -2000 && _x isKindOf "CAManBase"});
 
 				};	
 			};
