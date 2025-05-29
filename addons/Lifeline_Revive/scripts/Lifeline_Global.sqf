@@ -2840,7 +2840,14 @@ Lifeline_sort_order_incapacitated = {
 
 };
 
-
+// Lifeline_not_petros = {
+// 	params ["_unit"];
+// 	_return = true;
+// 	if (Lifeline_antistasiLoaded) then {
+// 		if (_unit == Petros) then {_return = false};
+// 	};
+// 	_return
+// };
 
 // these medic filters now turned into a function. Returns true if medic is available. 
 Lifeline_check_available_medic = {
@@ -2862,6 +2869,7 @@ Lifeline_check_available_medic = {
 		&& (lifestate _unit != "INCAPACITATED")
 		&& _unit getVariable ["Lifeline_ExitTravel", false] == false
 		&& _unit getVariable ["Lifeline_back2vehicle", false] == false //check unit is not heading back to vehicle
+		&& (if (Lifeline_antistasiLoaded) then {if (_unit == Petros) then {false} else {true}} else {true})
 };
 
 Lifeline_count_group_medics = {

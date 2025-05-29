@@ -114,6 +114,21 @@ if (isClass (configFile >> "cfgPatches" >> "JBOY_SOGAI_mod")) then {
 	};
 };
 
+	SPE_reviveToksaParams_initialized = true;
+	if (isClass (configFile >> "CfgMods" >> "SPE")) then {
+		diag_log "XEH_postInit.sqf +++++++++++++++++ SPEARHEAD 1944 DETECTED +++++++++++++++++++++++'";
+    // missionNamespace setVariable [
+    //     "BIS_fnc_storeParamsValues_data",
+    //     compileFinal ([false, " param [", "SPE_ReviveEnabled", " find toLower _this]"] joinString ""),
+    //     true
+    // ];
+
+	[] spawn {
+		waitUntil {!isNil "SPE_revive_system_mode"};
+		SPE_revive_system_mode = 3;
+		};
+	};
+
 diag_log format ["kkkkkkkkkkkkkkkkkkkkkkkkkkkk ACE DECLARED AGAIN var = %1 kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk", oldACE];
 
 taofoldingmap = 0;

@@ -40,10 +40,6 @@ if (isClass (configFile >> "cfgPatches" >> "JBOY_SOGAI_mod")) then {
 
 
 
-
-
-
-
 #include "\a3\ui_f\hpp\defineDIKCodes.inc"
 
 ["Lifeline Revive AI", "LifelineREV4", ["Activate", "Lifeline Revive AI"], {
@@ -238,7 +234,7 @@ if (Lifeline_ACEcheck_ == false) then {["Lifeline_cntdwn_disply", "SLIDER",   ["
 
     //SOUND
 ["Lifeline_radio", "CHECKBOX", ["Allow radio status messages", "Allow radio status messages. If medic is over 50m away, radio to assure.\n\n"], ["Lifeline Revive AI","SOUND"], true,true] call CBA_fnc_addSetting;
-["Lifeline_MedicComments", "CHECKBOX", ["AI Medic Comments", "Allow AI medic to speak with assurances to incap during revive.\nIgnored for ACE as this is compulsory due to black screen when incap.\n\n"], ["Lifeline Revive AI","SOUND"], true,true] call CBA_fnc_addSetting;
+["Lifeline_MedicComments", "CHECKBOX", ["AI Medic Voice During Revive", "Allow AI medic to speak with assurances to incap during revive.\nIgnored for ACE as this is compulsory due to black screen when incap.\n\n"], ["Lifeline Revive AI","SOUND"], true,true] call CBA_fnc_addSetting;
 ["Lifeline_Voices", "LIST",     ["Voice Accents",  "Commonwealth (British + Australian) or USA\n\n"], ["Lifeline Revive AI","SOUND"], [[1,2,3], ["All","British Empire", "USA"], 0],true] call CBA_fnc_addSetting;
 
     //TECH TWEAKS
@@ -407,6 +403,22 @@ if (Lifeline_remove_3rd_pty_revive == true && Lifeline_revive_enable) then {
 	// Pretend revive system was already initialized.
 	// See: vn_fnc_module_advancedrevive
 	vn_advanced_revive_started = true;
+
+
+	// Spearhead 1944 Revive
+	SPE_reviveToksaParams_initialized = true;
+	if (isClass (configFile >> "CfgMods" >> "SPE")) then {
+		diag_log "XEH_preInit.sqf ++++++++++++++++++ SPEARHEAD 1944 DETECTED +++++++++++++++++++++++'";
+		// missionNamespace setVariable [
+		// 	"BIS_fnc_storeParamsValues_data",
+		// 	compileFinal ([false, " param [", "SPE_ReviveEnabled", " find toLower _this]"] joinString ""),
+		// 	true
+		// ];
+	[] spawn {
+		waitUntil {!isNil "SPE_revive_system_mode"};
+		SPE_revive_system_mode = 3;
+		};
+	};
 
 	// Farooq Revive
 	// Overwrite player initialization.

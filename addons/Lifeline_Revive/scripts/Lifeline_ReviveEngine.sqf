@@ -1561,9 +1561,7 @@ if (isServer) then {
 			_dedicated_medic = false;
 			
 			// diag_log format ["PRIMARY LOOP [1485] uuuuuuuu FUCKING MEDIC LIMIT _medic_under_limit %2 incap: %1 ", name _incap, _medic_under_limit];
-
-
-			
+		
 			
 
 			// Lifeline_medicsMASCALcheck = Lifeline_healthy_units select {(side group _x) == (_incap_side)}; //added to only select units on the same side as the incap

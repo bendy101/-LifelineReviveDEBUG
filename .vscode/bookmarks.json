@@ -14,17 +14,7 @@
 					"label": ""
 				},
 				{
-					"line": 1961,
-					"column": 0,
-					"label": ""
-				}
-			]
-		},
-		{
-			"path": "addons/Lifeline_Revive/scripts/Lifeline_Global.sqf",
-			"bookmarks": [
-				{
-					"line": 630,
+					"line": 1959,
 					"column": 0,
 					"label": ""
 				}
