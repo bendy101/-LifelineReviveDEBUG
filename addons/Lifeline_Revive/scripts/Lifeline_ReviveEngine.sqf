@@ -389,7 +389,16 @@ if (isServer) then {
 							Lifeline_UnitVoicesCount = count Lifeline_UnitVoices;
 							};
 						Lifeline_UnitVoicesCount = Lifeline_UnitVoicesCount - 1;
-					};				
+					};	
+
+				// Dirty removal of revive handlers for SPEARHEAD 1944 revive system
+				if (Lifeline_SPE_revive_enable) then {
+					_x removeAllEventHandlers "Killed";
+					_x removeAllEventHandlers "Respawn";
+					_x removeAllEventHandlers "HandleHeal";
+					_x removeAllEventHandlers "handleDamage";
+				};
+
 
 				//set skill for your AI Units	
 				if (Lifeline_AI_skill > 0) then {

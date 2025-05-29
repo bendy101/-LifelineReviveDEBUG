@@ -99,8 +99,11 @@ if (((toLower missionName) find "dynamic recon ops") != -1
 };
 
 
+
 // wait for players 
 waitUntil {count (allPlayers - entities "HeadlessClient_F") >0};
+
+Lifeline_ASmission = false;
 
 if (isServer && Lifeline_antistasiLoaded && (((toLower missionName) find "antistasi") != -1) == true) then {
     diag_log "++++++++++++++++++++++ Antistasi mod detected - enabling waituntil Antistasi loaded";
@@ -113,6 +116,7 @@ if (isServer && Lifeline_antistasiLoaded && (((toLower missionName) find "antist
         !isNil "A3A_fnc_loadPlayer" &&
         !isNil "A3A_fnc_scheduler"
     };
+	Lifeline_ASmission = true;
     diag_log "++++++++++++++++++++++ WAITUNTIL PASSED Antistasi mod detected - enabling compatibility mode";
     sleep 5;
     diag_log "++++++++++++++++++++++ SLEEP 5 PASSED Antistasi mod detected - enabling compatibility mode";
@@ -166,17 +170,20 @@ if (isNil "oldACE") then {
  diag_log " ";
  diag_log " ";
 
+
+// GENERIC REMOVAL OF HANDLERS>>> DIRTY METHOD. Only used to override prairie fire so far...
+Lifeline_remove_all_handlers_dirty = {
+	params ["_unit"];
+	_unit removeAllEventHandlers "Killed"; 
+	_unit removeAllEventHandlers "Respawn"; 
+	_unit removeAllEventHandlers "HandleHeal";
+	_unit removeAllEventHandlers "handleDamage";
+};
+
 // attempt to remove 3rd part revives AFTER mission load. This method not recomended, use CBA setting to do this before mission for more thourough method.
 if (isNil "oldACE" && Lifeline_remove_3rd_pty_revive == false) then {
 
-	// GENERIC REMOVAL OF HANDLERS>>> DIRTY METHOD. Only used to override prairie fire so far...
-	Lifeline_remove_all_handlers_dirty = {
-		params ["_unit"];
-		_unit removeAllEventHandlers "Killed"; 
-		_unit removeAllEventHandlers "Respawn"; 
-		_unit removeAllEventHandlers "HandleHeal";
-		_unit removeAllEventHandlers "handleDamage";
-	};
+
 
 	_3rdpartyReviveDetected = "";
 	//Detect SOG PF REVIVE 

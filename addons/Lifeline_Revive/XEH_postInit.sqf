@@ -116,6 +116,7 @@ if (isClass (configFile >> "cfgPatches" >> "JBOY_SOGAI_mod")) then {
 
 	SPE_reviveToksaParams_initialized = true;
 	if (isClass (configFile >> "CfgMods" >> "SPE")) then {
+		
 		diag_log "XEH_postInit.sqf +++++++++++++++++ SPEARHEAD 1944 DETECTED +++++++++++++++++++++++'";
     // missionNamespace setVariable [
     //     "BIS_fnc_storeParamsValues_data",
@@ -126,6 +127,7 @@ if (isClass (configFile >> "cfgPatches" >> "JBOY_SOGAI_mod")) then {
 	[] spawn {
 		waitUntil {!isNil "SPE_revive_system_mode"};
 		SPE_revive_system_mode = 3;
+		Lifeline_SPE_revive_enable = true;
 		};
 	};
 
