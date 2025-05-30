@@ -1755,6 +1755,7 @@ Lifeline_countdown_timerACE = {
 
 // ======== FUNCTIONS FOR DIFFERENT ACE VERSIONS
 
+diag_log format ["[1758] +++++++++++++++++++++ Lifeline_ACE_Functions.sqf aceversion = %1 ++++++++++++++++++++++", aceversion];
 if (aceversion >= 19) then {
     Lifeline_check_carried_dragged = {
         params ["_incap"];

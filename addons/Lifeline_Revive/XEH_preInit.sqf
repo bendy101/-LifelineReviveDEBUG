@@ -18,12 +18,12 @@ diag_log format ["================================ VERSION: %1    %2'", Lifeline
 
 // check for ACE medical
 if (isClass (configFile >> "cfgPatches" >> "ace_medical")) then {
-	diag_log "++++++++++++++++++++ ACE MEDICAL +++++++++++++++++++'";
+	diag_log "XEH_preInit.sqf ++++++++++++++++++++ ACE MEDICAL +++++++++++++++++++'";
 	Lifeline_ACEcheck_ = true;
 } else {
 	oldACE = nil;
 	Lifeline_ACEcheck_ = false;
-	diag_log "++++++++++++++++++++ NO ACE MEDICAL ++++++++++++++++++++'";
+	diag_log "XEH_preInit.sqf ++++++++++++++++++++ NO ACE MEDICAL ++++++++++++++++++++'";
 };
 
 Lifeline_SOGAIcheck_ = false;
@@ -364,7 +364,7 @@ if (Lifeline_SOGAIcheck_ == true) then {
 ["Lifeline_hintsilent", "CHECKBOX", ["Debug Hints", "Debug Hints. Using BI 'hinstsilent'"], ["Lifeline Revive AI","~~DEBUG"], false,true] call CBA_fnc_addSetting;
 ["Lifeline_debug_soundalert", "CHECKBOX", ["Error Sound Alerts", "Sound Alerts when there is a bug."], ["Lifeline Revive AI","~~DEBUG"], false,true] call CBA_fnc_addSetting;
 ["Lifeline_HUD_names_pairtime", "CHECKBOX", ["pair timer for HUD list of units", "incl time for pairs in HUD list of incapped units and medics"], ["Lifeline Revive AI","~~DEBUG"], false,true] call CBA_fnc_addSetting;
-["Lifeline_StartReviveBETA", "CHECKBOX", ["BETA: test version of medic journey to incap", "Still not 100% convinced with my new code for the final 20 metres of medic getting to incap. \nStill testing.  \n\n"], ["Lifeline Revive AI","~~DEBUG"], false,true] call CBA_fnc_addSetting;
+["Lifeline_StartReviveBETA", "CHECKBOX", ["BETA: test version of medic journey to incap", "Still not 100% convinced with my new code for the final 20 metres of medic getting to incap. \nStill testing.  \n\n"], ["Lifeline Revive AI","~~DEBUG"], true,true] call CBA_fnc_addSetting;
 
 //OPFOR
 	// SEPARATE CBA
@@ -403,22 +403,6 @@ if (Lifeline_remove_3rd_pty_revive == true && Lifeline_revive_enable) then {
 	// Pretend revive system was already initialized.
 	// See: vn_fnc_module_advancedrevive
 	vn_advanced_revive_started = true;
-
-
-	// Spearhead 1944 Revive
-	SPE_reviveToksaParams_initialized = true;
-	if (isClass (configFile >> "CfgMods" >> "SPE")) then {
-		diag_log "XEH_preInit.sqf ++++++++++++++++++ SPEARHEAD 1944 DETECTED +++++++++++++++++++++++'";
-		// missionNamespace setVariable [
-		// 	"BIS_fnc_storeParamsValues_data",
-		// 	compileFinal ([false, " param [", "SPE_ReviveEnabled", " find toLower _this]"] joinString ""),
-		// 	true
-		// ];
-	[] spawn {
-		waitUntil {!isNil "SPE_revive_system_mode"};
-		SPE_revive_system_mode = 3;
-		};
-	};
 
 	// Farooq Revive
 	// Overwrite player initialization.

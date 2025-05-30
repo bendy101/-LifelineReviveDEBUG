@@ -32,7 +32,7 @@ class Extended_PostInit_EventHandlers
 {
 	class My_post_init_LifeLine
 	{
-		clientInit="call compile preProcessFileLineNumbers '\Lifeline_Revive\XEH_postInit.sqf'";
+		init = "call compile preProcessFileLineNumbers '\Lifeline_Revive\XEH_postInit.sqf'";
 	};
 };
 
