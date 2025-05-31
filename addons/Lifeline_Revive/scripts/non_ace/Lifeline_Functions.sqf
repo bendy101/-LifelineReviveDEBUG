@@ -128,8 +128,14 @@ Lifeline_Incapped = {
 	[_unit, _damage, _non_handler] spawn {
 		params ["_unit","_damage", "_non_handler"];	
 			// diag_log format ["%1 [0119] ~~~ captive %2", name _unit, captive _unit];
-		sleep 5; diag_log format ["%1 nnnnnnnnnnnnnnn INCAP sleep 5 finished nnnnnnnnnnnnnn", name _unit];	
-	
+		sleep 5; diag_log format ["%1 [0133 Lifeline_Functions.sqf]nnnnnnnnnnnnnnn INCAP sleep 5 finished nnnnnnnnnnnnnn", name _unit];	
+
+		// Exit early if unit became null or dead during the 5 second delay (instant death scenarios)
+		if (isNull _unit || !alive _unit) exitWith {
+			if (Lifeline_Revive_debug) then {
+				diag_log format ["%1 [0138]!!!!!!!!!!!!!!!!!! Lifeline_Incapped: Unit killed before 5 second delay EXIT", name _unit];
+			};
+		};
 
 //DEBUG
 		//5 sec timer constantly checking captive bug.
@@ -1666,11 +1672,11 @@ Lifeline_autoRecover_check = {
 	
 	_randm = [1,100] call BIS_fnc_randomInt; 
 	if (_percentchance == 100 OR _randm <= _percentchance) then {
-		diag_log format ["%1 ================ AUTORECOVER CHECK = TRUE ==================", name _unit];
+		diag_log format ["%1 [01671 Lifeline_Functions.sqf FNC_autoRecover_check ]================ AUTORECOVER CHECK = TRUE ==================", name _unit];
 		_unit setVariable ["Lifeline_autoRecover",true,true];diag_log format ["%1 [1305]!!!!!!!!! change var Lifeline_autoRecover = true !!!!!!!!!!!!!", name _unit];
 		true
 	} else {
-		diag_log format ["%1 ================ AUTORECOVER CHECK = FALSE ==================", name _unit];
+		diag_log format ["%1 [01671 Lifeline_Functions.sqf FNC_autoRecover_check ] ================ AUTORECOVER CHECK = FALSE ==================", name _unit];
 		_unit setVariable ["Lifeline_autoRecover",false,true];diag_log format ["%1 [1308]!!!!!!!!! change var Lifeline_autoRecover = false !!!!!!!!!!!!!", name _unit];
 		false
 	};

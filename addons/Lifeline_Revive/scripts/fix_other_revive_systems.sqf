@@ -453,7 +453,7 @@ if (isNil "oldACE" && Lifeline_remove_3rd_pty_revive == false) then {
 // }; // end isNil "oldACE"
 
 
-
+//DEBUG
 // PVP check
 /* if (isServer) then {
     // Initialize PVP status on server
@@ -489,6 +489,7 @@ if (isServer) then {
     };
     publicVariable "Lifeline_PVPstatus";
 }; */
+//ENDDEBUG
 
 //Detect PVP status if not defined (mission reload safety)
 Lifeline_PVPstatus = false;
