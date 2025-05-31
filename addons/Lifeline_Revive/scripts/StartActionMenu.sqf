@@ -257,7 +257,7 @@
 						terminate Lifeline_MenuScript;
 						Lifeline_cancel = true;
 						// [] call LifelineremoveactionmenuIDs;
-						[_dedi] spawn Lifeline_StartActionMenu;
+						[_dedi,Lifeline_PVPstatus] spawn Lifeline_StartActionMenu;
 						diag_log "kkkkkkkkkkk NO OPFOR %1";
 					},
 					[_dedi]
@@ -272,7 +272,7 @@
 						terminate Lifeline_MenuScript;
 						Lifeline_cancel = true;
 						// [] call LifelineremoveactionmenuIDs;
-						[_dedi] spawn Lifeline_StartActionMenu;
+						[_dedi,Lifeline_PVPstatus] spawn Lifeline_StartActionMenu;
 						diag_log "kkkkkkkkkkk INCLUDE OPFOR %1";
 					},
 					[_dedi]
