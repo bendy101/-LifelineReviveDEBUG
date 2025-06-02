@@ -1487,83 +1487,6 @@ if (isServer) then {
 
 
 
-			/*  // ======= MEDIC NUMERICAL LIMITS LOGIC ======== 
-			
-			if (Lifeline_Medic_Limit >= 0 && !(group _incap in Lifeline_Group_Mascal)) then {
-				diag_log format ["PRIMARY LOOP [1349] uuuuuuuuuuuuuuuuuuuuuuuuuu incap: %1 MEDIC LIMIT GATE 1 CHECK %2", name _incap, Lifeline_Medic_Limit];
-				// Subtract both incapacitated units and players from the group
-				_incap_group_units = (units group _incap) - Lifeline_incapacitated - (units group _incap select {isPlayer _x || !alive _x || lifeState _x == "DEAD"}); // exclude dead units
-				_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach _incap_group_units; diag_log format ["PRIMARY LOOP [1351] uuuuuuuuuuuuuuuuuuuuuuuuuu incap: %1 MEDIC LIMIT GATE 2 CHECK _incap_group_units %2", name _incap, _diag_array];
-
-				if (count _incap_group_units > 0) then {
-					Lifeline_healthy_units = _incap_group_units;
-					diag_log format ["PRIMARY LOOP [1355] uuuuuuuuuuuuuuuuuuuuuuuuuu incap: %1 MEDIC LIMIT GATE 3 CHECK _incap_group_units %2", name _incap, _incap_group_units];
-				};
-				_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_healthy_units; diag_log format ["PRIMARY LOOP [1355] uuuuuuuuuuuuuuuuuuuuuuuuuu incap: %1 MEDIC LIMIT GATE 3 CHECK _incap_group_units %2", name _incap, _diag_array];
-
-				_count_current_medics = [group _incap] call Lifeline_count_group_medics;
-				
-				// Standard group limits (1, 2, 3)
-				if (Lifeline_Medic_Limit == 1 && _count_current_medics > 0) then {
-					_medic_under_limit = false;	
-				};
-				if (Lifeline_Medic_Limit == 2 && _count_current_medics > 1) then {
-					_medic_under_limit = false;
-				};
-				if (Lifeline_Medic_Limit == 3 && _count_current_medics > 2) then {
-					_medic_under_limit = false;
-				};
-				
-				// Group limits plus unsuppressed units (4, 5, 6)
-				if (Lifeline_Medic_Limit >= 4 && Lifeline_Medic_Limit <= 6) then {
-					_limit_per_group = Lifeline_Medic_Limit - 3; // Convert 4->1, 5->2, 6->3
-					
-					// Check for the count of medics and if we've reached the base limit
-					if (_count_current_medics >= _limit_per_group) then {
-						// When we've reached the base limit, we'll only allow unsuppressed units to be medics
-						_suppressed_units = Lifeline_healthy_units select {getSuppression _x > 0.1};
-						// _suppressed_units = Lifeline_healthy_units select {_x getVariable ["testbaby",true] == true}; // TESTER
-						_unsuppressed_units = Lifeline_healthy_units - _suppressed_units;
-						
-						if (Lifeline_Revive_debug) then {
-							diag_log format ["PRIMARY LOOP [1387] Lifeline_Medic_Limit %1 reached (%2 group medics). %3 suppressed units excluded, %4 unsuppressed units still eligible.", 
-								Lifeline_Medic_Limit, _count_current_medics, count _suppressed_units, count _unsuppressed_units];
-						};
-						
-						// If there are no unsuppressed units, we'll check if all units are suppressed
-						if (count _unsuppressed_units == 0 && count _suppressed_units > 0) then {
-							// All units are suppressed, so we'll still use the first setting logic
-							if (Lifeline_Revive_debug) then {
-								diag_log format ["PRIMARY LOOP [1395] No unsuppressed units available - using fallback logic for setting %1", Lifeline_Medic_Limit];
-							};
-							
-							// Match the behavior of settings 1-3
-							if (_limit_per_group == 1 && _count_current_medics > 0) then {
-								_medic_under_limit = false;
-							};
-							if (_limit_per_group == 2 && _count_current_medics > 1) then {
-								_medic_under_limit = false;
-							};
-							if (_limit_per_group == 3 && _count_current_medics > 2) then {
-								_medic_under_limit = false;
-							};
-						} else {
-							// We have unsuppressed units available, use those
-							Lifeline_healthy_units = _unsuppressed_units;
-							_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach _unsuppressed_units; diag_log format ["PRIMARY LOOP [1403] uuuuuuuuuuuuuuuuuuuuuuuuuu MEDIC LIMIT GATE CHECK ELSE [1] _unsuppressed_units %2", name _incap, _diag_array];
-						};
-					};
-				};
-			} else {
-				Lifeline_healthy_units = Lifeline_All_Units - Lifeline_incapacitated;
-				_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_healthy_units; diag_log format ["PRIMARY LOOP [1403] uuuuuuuuuuuuuuuuuuuuuuuuuu MEDIC LIMIT GATE CHECK ELSE [2] Lifeline_healthy_units %2", name _incap, _diag_array];
-			}; 
-
-			_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_healthy_units; diag_log format ["PRIMARY LOOP [1410] uuuuuuuuuuuuuuuuuuuuuuuuuu incap: %1 MEDIC LIMIT GATE 2 CHECK _incap_group_units %2", name _incap, _diag_array];
-
-			// =========================== END OF MEDIC NUMERICAL LIMITS LOGIC ================================  */
-
-
 			_medic_under_limit = [_incap,false] call Lifeline_Medic_Num_Limit;
 			_dedicated_medic = false;
 			
@@ -1592,6 +1515,7 @@ if (isServer) then {
 			{
 				// _blacklist = _x call Lifeline_Blacklist_Check;
 				if (
+					//DEBUG
 					// !(side group _x == civilian) 
 					// && !isPlayer _x 
 					// && !([_x] call Lifeline_Blacklist_Check)
@@ -1607,6 +1531,7 @@ if (isServer) then {
 					// && _x getVariable ["Lifeline_ExitTravel", false] == false
 					// && (side (group _x) == side (group _incap)) // TEST FOR OPFOR
 					// (!Lifeline_Dedicated_Medic || (Lifeline_Dedicated_Medic && (_x getUnitTrait "medic" || _count_healthy_group > 0))) &&
+					//ENDDEBUG
 					(!Lifeline_Dedicated_Medic || (Lifeline_Dedicated_Medic && (_x getUnitTrait "medic" || _dedi_in_action || !_dedi_medic_available))) &&
 					_medic_under_limit &&
 					[_x,_incap] call Lifeline_check_available_medic
@@ -1623,12 +1548,12 @@ if (isServer) then {
 			// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_healthy_units; diag_log format ["%3 |uuuuuuuuuuu [1240] PRIMARY LOOP || Lifeline_healthy_units: %1 _medic_under_limit %2",_diag_array, _medic_under_limit, name _incap];
 			_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_medics2choose; diag_log format ["%3 |uuuuuuuuuuu [1241] PRIMARY LOOP || Lifeline_medics2choose: %1 _medic_under_limit %2",_diag_array, _medic_under_limit, name _incap];
 
-			
+			//DEBUG
            	// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_medicsMASCALcheck; diag_log format ["====== [1241] PRIMARY LOOP || Lifeline_medicsMASCALcheck: %1",_diag_array];
             // _Lifeline_medicsMASCALcheck = Lifeline_medicsMASCALcheck select {(side group _x) == (_incap_side)};
 			// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach _Lifeline_medicsMASCALcheck; diag_log format ["====== [1242] PRIMARY LOOP || _Lifeline_medicsMASCALcheck: %1",_diag_array];
 
-            //DEBUG
+
 			// CONSOLEincap = str format ["%1|%2",name _incap, _incap_side];		// console debugging temp	
 			//ENDDEBUG
 
@@ -1940,7 +1865,7 @@ if (isServer) then {
 				
 
 				diag_log format ["%1 | [1607] !!!!!!!!!!!! PRIMARY LOOP. JUST BEFORE SWITCH IN REJECT MEDIC Lifeline_side_switch %2 _incap_side %3", name _incap, Lifeline_side_switch, _incap_side];
-
+				//DEBUG
 				// SWITCH LOGIC IN REJECT MEDIC 
 
 			/* 	if ((!Lifeline_PVPstatus && Lifeline_Include_OPFOR) || Lifeline_PVPstatus) then {
@@ -1968,6 +1893,7 @@ if (isServer) then {
 						diag_log format ["%1 [1832] PRIMARY LOOP | OTHER SIDE SWITCH | OPFOR -> LIST | _opforUnits %2 Lifeline_side_switch %3 _check_both_sides %4", name _incap, count _opforUnits, Lifeline_side_switch, _check_both_sides];
 					};
 				}; */
+				//ENDDEBUG
 
 				
 
