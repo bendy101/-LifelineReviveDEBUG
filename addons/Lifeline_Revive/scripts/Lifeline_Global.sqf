@@ -92,6 +92,8 @@ Lifeline_format_name = {
 	};
 	if (_format in [4,5,6,7]) then {
 		_group = (groupId group _unit);
+	
+		//DEBUG
 		// diag_log str _group;
 		// if (isNil "_group" || _group == "") then {
 		// 	diag_log format ["%1 | ************** _group is nil **************", name _unit];
@@ -100,7 +102,7 @@ Lifeline_format_name = {
 		// 	diag_log format ["%1 | ************** _group is nil **************", name _unit];
 		// 	[_unit,"_group is nil"] call serverSide_unitstate;
 		// 	playsound "siren_1";
-		// 	};		
+		// 	};	//ENDDEBUG	
 	};
 
 	if (_format == 2) then {
@@ -581,9 +583,12 @@ Lifeline_reset2 = {
 			// _x setVariable ["Lifeline_ExitTravel", false, true];
 			
 			// these two variables below are just for SOG AI to avoid clashes. 
-
-		    _x setVariable ["isInjured",false,true]; 
-			_x setVariable ["isMedic",false,true]; 
+			if (Lifeline_SOGAIcheck_) then {
+				_x setVariable ["isInjured",false,true]; // double check this. Might not be needed.
+				_x setVariable ["isMedic",false,true];
+				diag_log format ["%1 | [604] !!!!!!!!!!!!! SOGAI CONT call Lifeline_SOGAI_Continue !!!!!!!!!!!!!", name _x];
+				_x call Lifeline_SOGAI_Continue;
+			}; 
             // -------------------- 
 
 			if (_x in Lifeline_Process) then {
@@ -2496,6 +2501,16 @@ Lifeline_StartRevive = {
 		// diag_log format ["%1 | %2 ====// WAITUNTIL REVIVE JOURNEY [1133] //==== AssignedMedic: %3 _exit: %4 DIST: %5", name _incap, name _medic, name (_incap getVariable ["Lifeline_AssignedMedic",[]] select 0), _exit,_medic distance2D _incap];
 
 		_exitanim = false;
+
+		//teleport if not under 2 metres == EXPERIMENTAL
+		if (_medic distance2D _incap > 2) then {
+			diag_log format ["%1 | %2 | [2516] TELEPORT MEDIC TO INCAP", name _incap, name _medic];
+			_newrevpos = [_incap, _medic, 0.8] call Lifeline_POSnexttoincap;
+			_medic setPos _newrevpos;
+			if (Lifeline_Revive_debug && Lifeline_debug_soundalert) then {
+				playsound "boing";
+			};
+		};
 
 		//call animations and medic hands-on revive
 		if (Lifeline_RevMethod != 3) then {
@@ -4867,4 +4882,67 @@ Lifeline_has_real_medic = {
     } forEach units _group;
     
     _hasRealMedic
+};
+
+
+// Functions for SOGAI. Pause / continue special manoeuvres.
+Lifeline_SOGAI_Break = {
+	params ["_unit"];
+	
+	if (missionNameSpace getVariable "jboy_pointUnit" isEqualTo _unit) then
+	{
+		missionNameSpace setVariable ["jboy_pointActive",false];
+		missionNameSpace setVariable ["jboy_pointUnit",objNull];
+		[] call jboy_addActionUnitTakePoint; 
+	};
+	[_unit] call jboy_unitRejoinGroup; // Unit rejoins player group (so no longer in grpNull)
+	diag_log format ["%1 | %2 | [4914] +++++++++++++++++++++++++++++++++++++++++ SOGAI_Break: Group: %3", name _unit, name _unit, groupId group _unit];
+	diag_log format ["%1 | %2 | [4914] +++++++++++++++++++++++++++++++++++++++++ SOGAI_Break: Group: %3", name _unit, name _unit, groupId group _unit];
+	diag_log format ["%1 | %2 | [4914] +++++++++++++++++++++++++++++++++++++++++ SOGAI_Break: Group: %3", name _unit, name _unit, groupId group _unit];
+	_group = group _unit;
+	[_unit,_group] spawn {
+		params ["_unit","_group"];
+		waitUntil {sleep 0.2; 
+			diag_log format ["%1 | %2 | [4917] uuuuuuuuuuuuuuuuuuuuuuuuuu SOGAI_Break: Group: %3", name _unit, name _unit, groupId group _unit];
+			if (group _unit != _group && (lifestate _unit == "INCAPACITATED")) then {
+				failMission "bugfound";
+				diag_log format ["%1 | %2 | [4917] uuuuuuuuuuuuuuuuuuuuuuuuuu SOGAI_Break: Group: %3 ENDMISSION", name _unit, name _unit, groupId group _unit];
+			};
+		(lifeState _unit != "INCAPACITATED")
+		};
+	};
+	_unit setVariable ["blueMoveCompleted",true,true]; // End blue fast move if injured
+	_unit setVariable ["jboy_busyBurning",false]; // A mis-named var that is overused in various places, so important
+
+	if (jboy_hasSpearhead and jboy_useAIHipfire and ((_unit getVariable ["jboy_usingHipFire",false]) or toLower (gestureState _unit) in ["spe_hipfire","spe_hipfire_sprint"])) then
+	{
+		_unit playGesture "SPE_HipFire_empty"; 
+	};
+};
+
+
+Lifeline_SOGAI_Continue = {
+	params ["_unit"];
+	diag_log format ["%1 | %2 | [4926] +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ SOGAI_Continue", name _unit, name _unit];
+ 		private _blueDest = (_unit getVariable ["blueDest",getPos _unit]);
+        if (missionNameSpace getVariable "leapfrogActive" and !isPlayer _unit) then
+        {
+            _unit doMove _blueDest;
+            //[_unit, _blueDest] spawn monitorBlueMove;
+            [[_unit], _blueDest] spawn sogStartBlueMove;
+        } else
+        {
+            if (missionNameSpace getVariable ["jboy_lastWheelMovementCommand","FOLLOW"] == "FOLLOW") then
+            {
+                _unit doMove getpos _unit;
+                _unit doFollow (leader group _unit); 
+            } else
+            {
+                if (missionNameSpace getVariable ["jboy_lastWheelMovementCommand","FOLLOW"] in ["FAST_MOVE","LAY_DOG","MOVE_TO_OBJECT"]) then
+                {
+                    _unit doMove _blueDest;
+                    [[_unit], _blueDest] spawn sogStartBlueMove;
+                };
+            };
+        };
 };

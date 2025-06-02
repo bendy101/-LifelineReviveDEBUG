@@ -76,6 +76,18 @@ Lifeline_mod = false;
 			waitUntil {(!isNil "jboy_medicStart")};
 			jboy_medicStart = compile preprocessFileLineNumbers ("");
 		};
+		if (Lifeline_Idle_Crouch) then {	
+			[] spawn {
+				waitUntil {(!isNil "jboy_followersCopyLeaderStance")};
+				jboy_followersCopyLeaderStance = compile preprocessFileLineNumbers ("");
+			};	
+		};
+		[] spawn {
+			if (Lifeline_SOGAI_orangetrian == false) then {
+				waitUntil {isNil {missionNameSpace getVariable "JBOY_showInjuredIcon"}};
+				missionNameSpace setVariable ["JBOY_showInjuredIcon", false];
+			};
+		};
 	};
 	
 

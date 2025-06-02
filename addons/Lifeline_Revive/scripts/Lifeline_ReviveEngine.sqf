@@ -1128,8 +1128,15 @@ if (isServer) then {
 											};
 											_x setVariable ["ReviveInProgress",0,true]; diag_log format ["%1 [983]!!!!!!!!! change var ReviveInProgress = 0 !!!!!!!!!!!!!", name _x];
 											_x setVariable ["Lifeline_AssignedMedic", [], true]; // added
-											//these two variables below are just for SOG AI to avoid clashes. 										
-											_x setVariable ["isInjured",false,true]; 											
+
+											// these two variables below are just for SOG AI to avoid clashes. 
+											if (Lifeline_SOGAIcheck_) then {
+												_x setVariable ["isInjured",false,true]; 
+												diag_log format ["%1 | [1135] !!!!!!!!!!!!! SOGAI CONT call Lifeline_SOGAI_Continue _x !!!!!!!!!!!!!", name _x];
+												_x call Lifeline_SOGAI_Continue;
+											}; 
+								            // -------------------- 
+										
 											// _x setVariable ["isMedic",false,true]; // keep off
 											// -------- 
 										};
@@ -1761,7 +1768,17 @@ if (isServer) then {
 						// if (Lifeline_debug_soundalert) then {["siren1"] remoteExec ["playSound",2];};
 					};
 					_medic setVariable ["ReviveInProgress",0,true];diag_log format ["%1 [3089]!!!!!!!!! [MEDIC] change var ReviveInProgress = 0 !!!!!!!!!!!!!", name _incap];				
-					_medic setVariable ["isMedic",false,true]; //just for SOG AI to avoid clashes. 
+					// _medic setVariable ["isMedic",false,true]; //just for SOG AI to avoid clashes. 
+
+					// these two variables below are just for SOG AI to avoid clashes. 
+					if (Lifeline_SOGAIcheck_) then {
+						_medic setVariable ["isMedic",false,true]; 
+						diag_log format ["%1 | [1135] !!!!!!!!!!!!! SOGAI CONT call Lifeline_SOGAI_Continue MEDIC !!!!!!!!!!!!!", name _medic];
+						_medic call Lifeline_SOGAI_Continue;
+					}; 
+					// -------------------- 
+
+
 					_medic = objNull;
 				}; // exitwith
 				//ENDDEBUG
@@ -1911,7 +1928,15 @@ if (isServer) then {
 				}; */
 
 				_incap setVariable ["ReviveInProgress",0,true];diag_log format ["%1 [3140]!!!!!!!!! [INCAP] change var ReviveInProgress = 0 !!!!!!!!!!!!!", name _incap];
-				_incap setVariable ["isInjured",false,true]; //just for SOG AI to avoid clashes. 
+
+				// these two variables below are just for SOG AI to avoid clashes. // dont think this is needed
+				/* if (Lifeline_SOGAIcheck_) then {
+					_incap setVariable ["isInjured",false,true]; 
+					diag_log format ["%1 | [1776] !!!!!!!!!!!!! SOGAI CONT call Lifeline_SOGAI_Continue INCAP !!!!!!!!!!!!!", name _incap];
+					_incap call Lifeline_SOGAI_Continue;
+				};  */
+            	// -------------------- 
+
 				
 
 				diag_log format ["%1 | [1607] !!!!!!!!!!!! PRIMARY LOOP. JUST BEFORE SWITCH IN REJECT MEDIC Lifeline_side_switch %2 _incap_side %3", name _incap, Lifeline_side_switch, _incap_side];
@@ -2027,10 +2052,24 @@ if (isServer) then {
 					publicVariable "Lifeline_Process";
 					_incap setVariable ["ReviveInProgress",3,true]; diag_log format ["%1 [1773]!!!!!!!!! [INCAP] change var ReviveInProgress = 3 !!!!!!!!!!!!!", name _incap];
 					_medic setVariable ["ReviveInProgress",1,true]; diag_log format ["%1 [1774]!!!!!!!!! [MEDIC] change var ReviveInProgress = 1 !!!!!!!!!!!!!", name _medic];
+
 					//these two variables below are just for SOG AI to avoid clashes. 
-					_incap setVariable ["isInjured",true,true]; 
-					_medic setVariable ["isMedic",true,true]; 
-                    // -------- 
+					// _incap setVariable ["isInjured",true,true]; 
+					// _medic setVariable ["isMedic",true,true]; 
+                    // // -------- 
+					// these two variables below are just for SOG AI to avoid clashes. 
+					if (Lifeline_SOGAIcheck_) then {
+						_incap setVariable ["isInjured",true,true]; 
+						_medic setVariable ["isMedic",true,true];
+						diag_log format ["%1 | [2065] !!!!!!!!!!!!! SOGAI CONT call Lifeline_SOGAI_Break INCAP !!!!!!!!!!!!!", name _incap];
+						_incap call Lifeline_SOGAI_Break;
+						diag_log format ["%1 | [2066] !!!!!!!!!!!!! SOGAI CONT call Lifeline_SOGAI_Break MEDIC !!!!!!!!!!!!!", name _medic];
+						_medic call Lifeline_SOGAI_Break;
+					}; 
+					// -------------------- 
+
+
+
 					if (lifestate _medic != "INCAPACITATED" && !(_medic getVariable ["Lifeline_Captive_Delay",false])) then {
 						_medic setVariable ["Lifeline_Captive",(captive _medic),true]; diag_log format ["%1 [1775]!!!!!!!!! [MEDIC] change var Lifeline_Captive = %2 !!!!!!!!!!!!!", name _medic, captive _medic];//2025
 					};

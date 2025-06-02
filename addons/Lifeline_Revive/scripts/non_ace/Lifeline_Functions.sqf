@@ -34,6 +34,13 @@ Lifeline_Incapped = {
 	Lifeline_incapacitated pushBackUnique _unit;
 	publicVariable "Lifeline_incapacitated";
 
+	// these two variables below are just for SOG AI to avoid clashes. 
+	if (Lifeline_SOGAIcheck_) then {
+		_unit setVariable ["isInjured",true,true]; 
+		diag_log format ["%1 | [0040] !!!!!!!!!!!!! SOGAI CONT call Lifeline_SOGAI_Break [Lifeline_Incapped] !!!!!!!!!!!!!", name _unit];
+		_unit call Lifeline_SOGAI_Break;
+	}; 
+
 	//DEBUG
 	if (Lifeline_Revive_debug) then {
 		// _diagtext = " ";if !(local _unit) then {[_diagtext] remoteExec ["diag_log", 2];} else {diag_log _diagtext};
@@ -136,6 +143,8 @@ Lifeline_Incapped = {
 				diag_log format ["%1 [0138]!!!!!!!!!!!!!!!!!! Lifeline_Incapped: Unit killed before 5 second delay EXIT", name _unit];
 			};
 		};
+
+
 
 //DEBUG
 		//5 sec timer constantly checking captive bug.
@@ -660,7 +669,7 @@ Lifeline_bandage_text = {
 					_text = selectRandom[ "Neck Wound", "Neck Wound", "Neck Wound", "Scalp Wound", "Broken Jaw", "Broken Jaw", "Broken Jaw", "Scalp Wound", "Scalp Wound", "Deep Scalp Cut", "Severe Gash", "Severe Laceration",  "Severe Avulsion", "Severe Laceration", "Severe Avulsion", "Severe Laceration", "Concussion", "Concussion", "Fractured Cranium", "Fractured Cranium", "Fractured Cranium", "Severe Gash", "Severe Gash", "Severe Gash"];
 				};
 				if (_part == "Torso:") exitWith {
-					_text = selectRandom[ "Fractured Shoulder", "Fractured Shoulder", "Fractured Shoulder", "Fractured Collarbone", "Fractured Collarbone", "Fractured Sternum", "Severe Puncture", "Severe Laceration",  "Severe Avulsion", "Severe Laceration", "Severe Avulsion", "Severe Laceration", "Fractured Pelvis", "Severe Gash", "Severe Gash", "Severe Gash"];
+					_text = selectRandom[ "Fractured Shoulder", "Fractured Shoulder", "Fractured Shoulder", "Fractured Collarbone", "Fractured Collarbone", "Fractured Sternum", "Severe Puncture", "Severe Laceration",  "Severe Avulsion", "Severe Laceration", "Severe Avulsion", "Severe Laceration", "Fractured Rib", "Severe Gash", "Severe Gash", "Severe Gash","Broken Rib","Broken Rib","Broken Rib"];
 				};
 				_text = selectRandom[ "Severe Puncture", "Severe Laceration",  "Severe Avulsion", "Severe Laceration", "Severe Avulsion", "Severe Laceration", "Severe Gash", "Severe Gash", "Severe Gash"];
 			} else {
@@ -677,7 +686,7 @@ Lifeline_bandage_text = {
 					_text = selectRandom[ "Broken Nose", "Broken Nose", "Broken Nose", "Broken Nose", "Neck Gash", "Neck Wound", "Neck Wound", "Scalp Wound", "Scalp Wound", "Cheek Wound", "Cheek Wound", "Smashed Teeth", "Smashed Teeth", "Smashed Teeth", "Severe Laceration",  "Severe Avulsion", "Severe Laceration", "Severe Avulsion", "Severe Laceration", "Concussion", "Concussion", "Fractured Scull", "Deep Gash", "Deep Gash", "Deep Gash"];
 				};
 				if (_part == "Torso:") exitWith {
-					_text = selectRandom[ "Fractured Sternum", "Severe Puncture", "Severe Laceration",  "Severe Avulsion", "Severe Laceration", "Severe Avulsion", "Severe Laceration", "Fractured Pelvis", "Deep Gash", "Deep Gash", "Deep Gash"];
+					_text = selectRandom[ "Fractured Sternum", "Severe Puncture", "Severe Laceration",  "Severe Avulsion", "Severe Laceration", "Severe Avulsion", "Severe Laceration", "Fractured Rib","Fractured Rib", "Deep Gash", "Deep Gash"];
 				};
 				_text = selectRandom["Penetration Wound", "Avulsion", "Deep Laceration", "Deep Puncture", "Moderate Avulsion", "Deep Avulsion","Avulsion", "Fracture", "Deep Laceration", "Compound Fracture", "Deep Puncture", "Severe Burns And Cuts", "Limb Fracture", "Moderate Avulsion", "Deep Avulsion", "Limb Fracture", "Deep Gash", "Deep Gash", "Deep Gash"];	
 			} else {
@@ -1769,9 +1778,18 @@ Lifeline_reset_variables = {
 		};
 	};
 	//these two variables below are just for SOG AI to avoid clashes.
-	_unit setVariable ["isInjured",false,true]; 
-	_unit setVariable ["isMedic",false,true]; 
+	// _unit setVariable ["isInjured",false,true]; 
+	// _unit setVariable ["isMedic",false,true]; 
     // -------- 
+
+    // these two variables below are just for SOG AI to avoid clashes. 
+	if (Lifeline_SOGAIcheck_) then {
+		_unit setVariable ["isInjured",false,true]; 
+		_unit setVariable ["isMedic",false,true];
+		diag_log format ["%1 | [1789] !!!!!!!!!!!!! SOGAI CONT call Lifeline_SOGAI_Continue [Lifeline_reset_variables] !!!!!!!!!!!!!", name _unit];
+		_unit call Lifeline_SOGAI_Continue;
+	}; 
+    // -------------------- 
 };
 
 
