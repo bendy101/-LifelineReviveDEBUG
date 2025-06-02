@@ -4900,6 +4900,7 @@ Lifeline_SOGAI_Break = {
 	diag_log format ["%1 | %2 | [4914] +++++++++++++++++++++++++++++++++++++++++ SOGAI_Break: Group: %3", name _unit, name _unit, groupId group _unit];
 	diag_log format ["%1 | %2 | [4914] +++++++++++++++++++++++++++++++++++++++++ SOGAI_Break: Group: %3", name _unit, name _unit, groupId group _unit];
 	_group = group _unit;
+	//DEBUG
 	[_unit,_group] spawn {
 		params ["_unit","_group"];
 		waitUntil {sleep 0.2; 
@@ -4909,8 +4910,8 @@ Lifeline_SOGAI_Break = {
 				diag_log format ["%1 | %2 | [4917] uuuuuuuuuuuuuuuuuuuuuuuuuu SOGAI_Break: Group: %3 ENDMISSION", name _unit, name _unit, groupId group _unit];
 			};
 		(lifeState _unit != "INCAPACITATED")
-		};
-	};
+		}; 
+	}; //ENDDEBUG
 	_unit setVariable ["blueMoveCompleted",true,true]; // End blue fast move if injured
 	_unit setVariable ["jboy_busyBurning",false]; // A mis-named var that is overused in various places, so important
 
