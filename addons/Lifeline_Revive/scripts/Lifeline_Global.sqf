@@ -469,29 +469,73 @@ Lifeline_AutoCrouch = {
 	// diag_log format ["%1 | ++++++++++++++++++++++++++++++++++++++++++ _crouchtrig: %2", name _x, _crouchtrig];
 	// _crouchtrig = _x getVariable ["Lifeline_crouchtrig",false];
 	// if (speed _x <= Lifeline_Idle_Crouch_Speed && stance _x == "STAND" && _crouchtrig == false && behaviour _x == "AWARE" && _x getVariable ["ReviveInProgress",0] == 0) then {
-	if (speed _x <= Lifeline_Idle_Crouch_Speed && stance _x != "PRONE" && _crouchtrig == false && behaviour _x == "AWARE" && _x getVariable ["ReviveInProgress",0] == 0) then {
-		// diag_log format ["%1 | [Lifeline_AutoCrouch] speed: %2, stance: %3, _crouchtrig: %4, behaviour: %5, ReviveInProgress: %6", name _x, speed _x, stance _x, _crouchtrig, behaviour _x, _x getVariable ["ReviveInProgress",0]];
-		_crouchtrig = true; 
-		if (stance _x != "CROUCH") then {
-			_x setUnitPos "MIDDLE";
+		if (speed _x <= Lifeline_Idle_Crouch_Speed && stance _x != "PRONE" && _crouchtrig == false && behaviour _x == "AWARE" && _x getVariable ["ReviveInProgress",0] == 0) then {
+			// diag_log format ["%1 | [Lifeline_AutoCrouch] speed: %2, stance: %3, _crouchtrig: %4, behaviour: %5, ReviveInProgress: %6", name _x, speed _x, stance _x, _crouchtrig, behaviour _x, _x getVariable ["ReviveInProgress",0]];
+			_crouchtrig = true; 
+			if (stance _x != "CROUCH") then {
+				_x setUnitPos "MIDDLE";
+			};
+			// diag_log format ["%1 | Set to crouch", name _x];
 		};
-		// diag_log format ["%1 | Set to crouch", name _x];
-	};
-	if ((speed _x > Lifeline_Idle_Crouch_Speed && _crouchtrig == true) || behaviour _x != "AWARE") then {
-		_crouchtrig = false;						
-		if (unitPos _x != "DOWN") then {
-			_x setUnitPos "AUTO";
+		if ((speed _x > Lifeline_Idle_Crouch_Speed && _crouchtrig == true) || behaviour _x != "AWARE") then {
+			_crouchtrig = false;						
+			if (unitPos _x != "DOWN") then {
+				_x setUnitPos "AUTO";
+			};
+			// diag_log format ["%1 | Return to previous stance: %2", name _x, unitPos _x];
+		}; 
+	// if (speed _x == 0 && _crouchtrig == true && (behaviour _x == "COMBAT" || behaviour _x == "STEALTH" || (isPlayer (leader group _x) && stance (leader group _x) == "PRONE" && behaviour _x == "AWARE"))) then {
+	if (speed _x <= Lifeline_Idle_Crouch_Speed && _crouchtrig == true && (behaviour _x == "COMBAT" || behaviour _x == "STEALTH" || (isPlayer (leader group _x) && stance (leader group _x) == "PRONE" && behaviour _x == "AWARE"))) then {
+			// diag_log format ["%1 | Return to auto: %2", name _x, unitPos _x];
+			_crouchtrig = false;
+			_x setUnitPos "DOWN";
+			_x setUnitPos "AUTO";  
 		};
-		// diag_log format ["%1 | Return to previous stance: %2", name _x, unitPos _x];
-	}; 
-	if (speed _x == 0 && _crouchtrig == true && (behaviour _x == "COMBAT" || behaviour _x == "STEALTH" || (isPlayer (leader group _x) && stance (leader group _x) == "PRONE" && behaviour _x == "AWARE"))) then {
-		// diag_log format ["%1 | Return to auto: %2", name _x, unitPos _x];
-		_crouchtrig = false;
-		_x setUnitPos "DOWN";
-		_x setUnitPos "AUTO";  
-	};
 	_x setVariable ["Lifeline_crouchtrig",_crouchtrig, true];
 };
+
+//DEBUG
+// WIP
+//tactical crouch
+/* Lifeline_AutoCrouch = {
+	params ["_x","_crouchtrig"];
+	// diag_log format ["%1 | ++++++++++++++++++++++++++++++++++++++++++ _crouchtrig: %2", name _x, _crouchtrig];
+	// _crouchtrig = _x getVariable ["Lifeline_crouchtrig",false];
+	// if (speed _x <= Lifeline_Idle_Crouch_Speed && stance _x == "STAND" && _crouchtrig == false && behaviour _x == "AWARE" && _x getVariable ["ReviveInProgress",0] == 0) then {
+		if (speed _x <= Lifeline_Idle_Crouch_Speed && stance _x != "PRONE" && _crouchtrig == false && behaviour _x == "AWARE" && _x getVariable ["ReviveInProgress",0] == 0) then {
+			// diag_log format ["%1 | [Lifeline_AutoCrouch] speed: %2, stance: %3, _crouchtrig: %4, behaviour: %5, ReviveInProgress: %6", name _x, speed _x, stance _x, _crouchtrig, behaviour _x, _x getVariable ["ReviveInProgress",0]];
+			_crouchtrig = true; 
+			if (stance _x != "CROUCH") then {
+				_x setUnitPos "MIDDLE";
+			};
+			// diag_log format ["%1 | Set to crouch", name _x];
+		};
+		if ((speed _x > Lifeline_Idle_Crouch_Speed && _crouchtrig == true) || behaviour _x != "AWARE") then {
+			_crouchtrig = false;						
+			if (unitPos _x != "DOWN") then {
+				_x setUnitPos "AUTO";
+			};
+			// diag_log format ["%1 | Return to previous stance: %2", name _x, unitPos _x];
+		}; 
+	// if (speed _x == 0 && _crouchtrig == true && (behaviour _x == "COMBAT" || behaviour _x == "STEALTH" || (isPlayer (leader group _x) && stance (leader group _x) == "PRONE" && behaviour _x == "AWARE"))) then {
+	if (_crouchtrig == true && (behaviour _x == "COMBAT" || behaviour _x == "STEALTH" || (isPlayer (leader group _x) && stance (leader group _x) == "PRONE" && behaviour _x == "AWARE"))) then {
+			diag_log format ["%1 | Return to auto: %2", name _x, unitPos _x];
+			diag_log format ["%1 | +++++++++++++++++++++++++++++++++++++++++++ PRONE ++++++++++++++++++++++++++++++++ %2", name _x, unitPos _x];
+			_crouchtrig = false;
+			_x setUnitPos "DOWN";
+			_x forceSpeed (_x getSpeed "NORMAL"); 
+			[_x] spawn {
+				params ["_x"];
+				waitUntil {
+				sleep 0.5;
+				(stance (leader group _x) != "PRONE") 
+				};
+				_x setUnitPos "AUTO";
+			};  
+		};
+	_x setVariable ["Lifeline_crouchtrig",_crouchtrig, true];
+}; */
+//ENDDEBUG
 
 
 
@@ -735,6 +779,7 @@ Lifeline_reset2 = {
 
 Lifeline_SelfHeal = {
 	params ["_unit"];
+	
 
 	diag_log format ["%1 [858] FNC Lifeline_SelfHeal !!!!!!!!!!! SELF HEAL   !!!!!!!!!!!!!!", name _unit];
     // Fix this later. A medic should be able to stop healing an incap to heal himself between incap heal animation
@@ -2503,7 +2548,7 @@ Lifeline_StartRevive = {
 		_exitanim = false;
 
 		//teleport if not under 2 metres == EXPERIMENTAL
-		if (_medic distance2D _incap > 2) then {
+		if (_medic distance2D _incap > 1.5) then {
 			diag_log format ["%1 | %2 | [2516] TELEPORT MEDIC TO INCAP", name _incap, name _medic];
 			_newrevpos = [_incap, _medic, 0.8] call Lifeline_POSnexttoincap;
 			_medic setPos _newrevpos;
@@ -4888,6 +4933,8 @@ Lifeline_has_real_medic = {
 // Functions for SOGAI. Pause / continue special manoeuvres.
 Lifeline_SOGAI_Break = {
 	params ["_unit"];
+
+	// if (isNil "_unit") exitWith {};
 	
 	if (missionNameSpace getVariable "jboy_pointUnit" isEqualTo _unit) then
 	{
@@ -4896,11 +4943,11 @@ Lifeline_SOGAI_Break = {
 		[] call jboy_addActionUnitTakePoint; 
 	};
 	[_unit] call jboy_unitRejoinGroup; // Unit rejoins player group (so no longer in grpNull)
-	diag_log format ["%1 | %2 | [4914] +++++++++++++++++++++++++++++++++++++++++ SOGAI_Break: Group: %3", name _unit, name _unit, groupId group _unit];
-	diag_log format ["%1 | %2 | [4914] +++++++++++++++++++++++++++++++++++++++++ SOGAI_Break: Group: %3", name _unit, name _unit, groupId group _unit];
-	diag_log format ["%1 | %2 | [4914] +++++++++++++++++++++++++++++++++++++++++ SOGAI_Break: Group: %3", name _unit, name _unit, groupId group _unit];
+	// diag_log format ["%1 | %2 | [4914] +++++++++++++++++++++++++++++++++++++++++ SOGAI_Break: Group: %3", name _unit, name _unit, groupId group _unit];
+	// diag_log format ["%1 | %2 | [4914] +++++++++++++++++++++++++++++++++++++++++ SOGAI_Break: Group: %3", name _unit, name _unit, groupId group _unit];
+	// diag_log format ["%1 | %2 | [4914] +++++++++++++++++++++++++++++++++++++++++ SOGAI_Break: Group: %3", name _unit, name _unit, groupId group _unit];
 	_group = group _unit;
-	//DEBUG
+	/* //DEBUG
 	[_unit,_group] spawn {
 		params ["_unit","_group"];
 		waitUntil {sleep 0.2; 
@@ -4911,7 +4958,7 @@ Lifeline_SOGAI_Break = {
 			};
 		(lifeState _unit != "INCAPACITATED")
 		}; 
-	}; //ENDDEBUG
+	}; //ENDDEBUG */
 	_unit setVariable ["blueMoveCompleted",true,true]; // End blue fast move if injured
 	_unit setVariable ["jboy_busyBurning",false]; // A mis-named var that is overused in various places, so important
 
@@ -4924,6 +4971,10 @@ Lifeline_SOGAI_Break = {
 
 Lifeline_SOGAI_Continue = {
 	params ["_unit"];
+
+	// if (isNil "_unit") exitWith {};
+
+
 	diag_log format ["%1 | %2 | [4926] +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ SOGAI_Continue", name _unit, name _unit];
  		private _blueDest = (_unit getVariable ["blueDest",getPos _unit]);
         if (missionNameSpace getVariable "leapfrogActive" and !isPlayer _unit) then

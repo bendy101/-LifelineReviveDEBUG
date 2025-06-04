@@ -1500,7 +1500,7 @@ if (isServer) then {
 			//DEBUG
 			// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_All_Units; diag_log format ["====== [1202] PRIMARY LOOP || Lifeline_All_Units: %1",_diag_array];
 			// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_incapacitated; diag_log format ["====== [1203] PRIMARY LOOP || Lifeline_incapacitated: %1",_diag_array];
-			// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_healthy_units; diag_log format ["====== [1204] PRIMARY LOOP || Lifeline_healthy_units: %1",_diag_array];
+			_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_healthy_units; diag_log format ["====== [1204] PRIMARY LOOP || Lifeline_healthy_units: %1",_diag_array];
 			// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_Process; diag_log format ["====== [1205] PRIMARY LOOP || Lifeline_Process: %1",_diag_array];
 			//ENDDEBUG
 
@@ -1533,8 +1533,8 @@ if (isServer) then {
 					// (!Lifeline_Dedicated_Medic || (Lifeline_Dedicated_Medic && (_x getUnitTrait "medic" || _count_healthy_group > 0))) &&
 					//ENDDEBUG
 					(!Lifeline_Dedicated_Medic || (Lifeline_Dedicated_Medic && (_x getUnitTrait "medic" || _dedi_in_action || !_dedi_medic_available))) &&
-					_medic_under_limit &&
-					[_x,_incap] call Lifeline_check_available_medic
+					_medic_under_limit
+					 && [_x,_incap] call Lifeline_check_available_medic
 				) then {
 					Lifeline_medics2choose pushBackUnique _x;
 				};
@@ -1561,7 +1561,7 @@ if (isServer) then {
 
 			_voice = "";
 
-			diag_log format ["%1 [1469] PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu COUNT Lifeline_medics2choose: %2 uuuuuuuuuuuuuuuuuuuuuuu", name _incap, count Lifeline_medics2choose];
+			// diag_log format ["%1 [1469] PRIMARY LOOP uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu COUNT Lifeline_medics2choose: %2 uuuuuuuuuuuuuuuuuuuuuuu", name _incap, count Lifeline_medics2choose];
 
 
 
@@ -1577,40 +1577,47 @@ if (isServer) then {
 
 				// diag_log format ["%1 | [1516] PRIMARY LOOP || Lifeline_medics: %2 count: %3", name _incap, Lifeline_medics, count Lifeline_medics];
 
-				// 2. Create an array of all groups in sorted order
-				_medicGroups = [];
-				{
-					_grp = group _x;
-					if !(_grp in _medicGroups) then {
-						_medicGroups pushBack _grp;
-					};
-				} forEach Lifeline_medics;
+				if (Lifeline_Medic_Limit > -1) then {
 
-				// 3. Create a new sorted array, processing each group's members by suppression
-				_sortedMedics = [];
-				{
-					_currentGroup = _x;
-					// Get all medics from current group
-					_groupMedics = Lifeline_medics select {group _x == _currentGroup};
-					// Sort them by suppression
-					_groupMedics = [_groupMedics, [], {getSuppression _x}, "ASCEND"] call BIS_fnc_sortBy;
-					// Add them to final array
-					_sortedMedics append _groupMedics;
-				} forEach _medicGroups;
-				//DEBUG
-				/* if (_sortedMedics isNotEqualTo Lifeline_medics) then {
-					playSound "siren1";
-					diag_log format ["%1 | [1541] =============================================", name _incap];
-					diag_log format ["%1 | [1541] PRIMARY LOOP || Lifeline_medics: %2 count: %3", name _incap, Lifeline_medics, count Lifeline_medics];
-					diag_log format ["%1 | [1541] PRIMARY LOOP ||   _sortedMedics: %2 count: %3", name _incap, _sortedMedics, count _sortedMedics];
-				}; */
-				//ENDDEBUG
+					// 2. Create an array of all groups in sorted order
+					_medicGroups = [];
+					{
+						_grp = group _x;
+						if !(_grp in _medicGroups) then {
+							_medicGroups pushBack _grp;
+						};
+					} forEach Lifeline_medics;
 
-				// Update the Lifeline_medics array with our new sorted order
-				Lifeline_medics = _sortedMedics;
+					// 3. Create a new sorted array, processing each group's members by suppression
+					_sortedMedics = [];
+					{
+						_currentGroup = _x;
+						// Get all medics from current group
+						_groupMedics = Lifeline_medics select {group _x == _currentGroup};
+						// Sort them by suppression
+						_groupMedics = [_groupMedics, [], {getSuppression _x}, "ASCEND"] call BIS_fnc_sortBy;
+						// Add them to final array
+						_sortedMedics append _groupMedics;
+					} forEach _medicGroups;
+					//DEBUG
+					/* if (_sortedMedics isNotEqualTo Lifeline_medics) then {
+						playSound "siren1";
+						diag_log format ["%1 | [1541] =============================================", name _incap];
+						diag_log format ["%1 | [1541] PRIMARY LOOP || Lifeline_medics: %2 count: %3", name _incap, Lifeline_medics, count Lifeline_medics];
+						diag_log format ["%1 | [1541] PRIMARY LOOP ||   _sortedMedics: %2 count: %3", name _incap, _sortedMedics, count _sortedMedics];
+					}; */
+					//ENDDEBUG
+
+					// Update the Lifeline_medics array with our new sorted order
+					Lifeline_medics = _sortedMedics;
+
+				};
+
+				_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_medics; diag_log format ["%3 |uuuuuuuuuuu [1616] PRIMARY LOOP || Lifeline_medics: %1 _medic_under_limit %2",_diag_array, Lifeline_medics, name _incap];
 
 
-				_arraynum = 0;
+
+				// _arraynum = 0;
 				_numMedics = count Lifeline_medics;
 				_arraynum = [0]; // MAKE IT ALWAYS CLOSEST
 				_medic = Lifeline_medics select (selectRandom _arraynum);
