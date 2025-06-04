@@ -4,17 +4,17 @@
 			"path": "addons/Lifeline_Revive/scripts/Lifeline_ReviveEngine.sqf",
 			"bookmarks": [
 				{
-					"line": 1487,
-					"column": 0,
-					"label": ""
-				},
-				{
 					"line": 1488,
 					"column": 0,
 					"label": ""
 				},
 				{
-					"line": 1916,
+					"line": 1489,
+					"column": 0,
+					"label": ""
+				},
+				{
+					"line": 1917,
 					"column": 0,
 					"label": ""
 				}

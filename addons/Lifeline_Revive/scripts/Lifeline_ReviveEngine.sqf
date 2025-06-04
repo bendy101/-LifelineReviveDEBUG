@@ -5,7 +5,7 @@ diag_log "                                                                      
 diag_log "                                                                                   			               '"; 
 diag_log "============================================================================================================='";
 diag_log "============================================================================================================='";
-diag_log "========================================== Lifeline_ReviveEngine.sqf ja ==========================================='";
+diag_log "========================================== Lifeline_ReviveEngine.sqf ==========================================='";
 diag_log format ["========================================== %1     %2 ==========================================='", Lifeline_Version, Lifeline_Version_no];
 diag_log "============================================================================================================='";
 
@@ -1361,7 +1361,7 @@ if (isServer) then {
 		Lifeline_incaps2choose = Lifeline_incapacitated select {!(_x in Lifeline_Process) && (lifestate _x == "INCAPACITATED") && (rating _x > -2000)};
 		
 
-		_diag_array = ""; {_diag_array = _diag_array + name _x + ":" + str group _x + ", " } foreach Lifeline_incaps2choose; diag_log format ["================ [1285] PRIMARY LOOP  %1 Lifeline_incaps2choose: %2", "temp", _diag_array];
+		// _diag_array = ""; {_diag_array = _diag_array + name _x + ":" + str group _x + ", " } foreach Lifeline_incaps2choose; diag_log format ["================ [1285] PRIMARY LOOP  %1 Lifeline_incaps2choose: %2", "temp", _diag_array];
 
 
 
@@ -1426,7 +1426,7 @@ if (isServer) then {
 			};
 
 
-			
+			//DEBUG
 			// Create arrays for side switching logic
 			// private _opforUnits = Lifeline_incaps2choose select {side group _x in Lifeline_OPFOR_Sides};
 			// private _bluforUnits = Lifeline_incaps2choose select {side group _x == Lifeline_Side};
@@ -1464,6 +1464,7 @@ if (isServer) then {
 				};
 				Lifeline_side_switch = 0;
 			}; */
+			//ENDDEBUG
 
 
 			_incap_side = side group _incap; 
@@ -1546,7 +1547,7 @@ if (isServer) then {
 			// } foreach Lifeline_medicsMASCALcheck;
 			
 			// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_healthy_units; diag_log format ["%3 |uuuuuuuuuuu [1240] PRIMARY LOOP || Lifeline_healthy_units: %1 _medic_under_limit %2",_diag_array, _medic_under_limit, name _incap];
-			_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_medics2choose; diag_log format ["%3 |uuuuuuuuuuu [1241] PRIMARY LOOP || Lifeline_medics2choose: %1 _medic_under_limit %2",_diag_array, _medic_under_limit, name _incap];
+			// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_medics2choose; diag_log format ["%3 |uuuuuuuuuuu [1241] PRIMARY LOOP || Lifeline_medics2choose: %1 _medic_under_limit %2",_diag_array, _medic_under_limit, name _incap];
 
 			//DEBUG
            	// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_medicsMASCALcheck; diag_log format ["====== [1241] PRIMARY LOOP || Lifeline_medicsMASCALcheck: %1",_diag_array];
@@ -1613,7 +1614,7 @@ if (isServer) then {
 
 				};
 
-				_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_medics; diag_log format ["%3 |uuuuuuuuuuu [1616] PRIMARY LOOP || Lifeline_medics: %1 _medic_under_limit %2",_diag_array, Lifeline_medics, name _incap];
+				// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_medics; diag_log format ["%3 |uuuuuuuuuuu [1616] PRIMARY LOOP || Lifeline_medics: %1 _medic_under_limit %2",_diag_array, Lifeline_medics, name _incap];
 
 
 
@@ -1645,7 +1646,7 @@ if (isServer) then {
 				// _sleep = 0.5; // faster queue when found medic
 				_sleep = 0.2; // faster queue when found medic
 
-
+				//DEBUG
 				/* if (_medic == objNull) then {			// SWITCH LOGIC IN REJECT MEDIC 
 
 					if ((!Lifeline_PVPstatus && Lifeline_Include_OPFOR) || Lifeline_PVPstatus) then {
@@ -1672,7 +1673,7 @@ if (isServer) then {
 						};
 					};
 				}; */
-
+				//ENDDEBUG
 
 
 
@@ -1751,12 +1752,12 @@ if (isServer) then {
 
 				Lifeline_medicsMASCALcheck = Lifeline_healthy_units select {(side group _x) == (_incap_side) && [_x,_incap] call Lifeline_check_medics_MASCAL};
 				Lifeline_medicsMASCALcheckTOTAL = (Lifeline_All_Units - Lifeline_incapacitated) select {(side group _x) == (_incap_side) && [_x,_incap] call Lifeline_check_medics_MASCAL};
-				_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_healthy_units; diag_log format ["uuuuuuuuuuu [1654] PRIMARY LOOP || Lifeline_healthy_units: %1",_diag_array];
-				_diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_medicsMASCALcheck; diag_log format ["uuuuuuuuuuu [1654] PRIMARY LOOP || Lifeline_medicsMASCALcheck: %1",_diag_array];
+				// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_healthy_units; diag_log format ["uuuuuuuuuuu [1654] PRIMARY LOOP || Lifeline_healthy_units: %1",_diag_array];
+				// _diag_array = ""; {_diag_array = _diag_array + name _x + ", " } foreach Lifeline_medicsMASCALcheck; diag_log format ["uuuuuuuuuuu [1654] PRIMARY LOOP || Lifeline_medicsMASCALcheck: %1",_diag_array];
 
 
-
-									//TEST
+				//DEBUG
+				//TEST
 				/* 	if (count Lifeline_incapacitated > 1) then {
 						private _firstUnit = Lifeline_incapacitated select 0;
 						Lifeline_incapacitated deleteAt 0;
@@ -1769,7 +1770,7 @@ if (isServer) then {
 
 				// diag_log format ["%1 uuuuuuuuuuu [1641] PRIMARY LOOP || Lifeline_medicsMASCALcheck: %2 _incap_side %3", name _incap, Lifeline_medicsMASCALcheck, _incap_side];
 				
-				//DEBUG
+				
 				
 				// ================ METHOD 1. WITH AUTO RECOVER TEXT CHANGE ================================
 
