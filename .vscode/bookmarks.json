@@ -19,6 +19,16 @@
 					"label": ""
 				}
 			]
+		},
+		{
+			"path": "addons/Lifeline_Revive/XEH_preInit.sqf",
+			"bookmarks": [
+				{
+					"line": 342,
+					"column": 0,
+					"label": ""
+				}
+			]
 		}
 	]
 }

@@ -15,6 +15,10 @@ if (Lifeline_Voices == 1) then { Lifeline_UnitVoices = ["Adam", "Antoni", "Arnol
 if (Lifeline_Voices == 2) then { Lifeline_UnitVoices = ["A006", "Alistair", "Allen", "Bruce", "Charlie", "Daniel", "Dave", "Hugh", "Philemon"]; };
 if (Lifeline_Voices == 3) then { Lifeline_UnitVoices = ["Adam", "Antoni", "Arnold", "Bill", "Callum", "Clyde"]; };
 
+
+// Lifeline_UnitVoices = ["Antoni"];
+
+
 Lifeline_RevProtect_Set = {	
 	if (Lifeline_RevProtect == 1) then {dmg_trig=false; cptv_trig=true};
 	if (Lifeline_RevProtect == 2) then {dmg_trig=true; cptv_trig=true};
@@ -453,7 +457,9 @@ if (isServer) then {
 				// add death event handler 
 				_x addMPEventHandler ["MPKilled", {
 						params ["_unit", "_killer", "_instigator", "_useEffects"];	
-						[[_unit],"killed EH [320] _Global.sqf"] call Lifeline_reset2;
+						diag_log format ["%1 [460] !!!!!!!!!!!!!!!! MPKilled !!!!!!!!!!!!!!!!", name _unit];
+						_unit setVariable ["lifeline_loadout",getUnitLoadout _unit,false];
+						[[_unit],"killed EH [461] _Global.sqf"] call Lifeline_reset2;
 						if (Lifeline_Revive_debug && Lifeline_PVPstatus == false && Lifeline_Include_OPFOR == true && (side group _X) in Lifeline_OPFOR_Sides) then {
 							if (Lifeline_RevProtect == 1) then {
 								if (Lifeline_debug_soundalert && Lifeline_soundalert_died) then {["memberdied1"] remoteExec ["playSound",0];};
